@@ -248,6 +248,12 @@ export function BudgetProvider({ children }) {
     return paidLog.some(p => p.recurring_id === expenseId)
   }
 
+  function getCategorySpent(categoryId) {
+    return transactions
+      .filter(t => t.category_id === categoryId)
+      .reduce((sum, t) => sum + parseFloat(t.amount || 0), 0)
+  }
+
   async function addRecurringExpense(payload) {
     const { data, error } = await supabase
       .from('cycle_recurring_expenses')
@@ -386,6 +392,7 @@ export function BudgetProvider({ children }) {
     incomeRecords, savingGoals, cycle, totals,
     // helpers
     isRecurringPaid,
+    getCategorySpent,
     // actions
     refresh: loadAll,
     addTransaction, updateTransaction, deleteTransaction,

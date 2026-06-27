@@ -53,9 +53,9 @@ export default function VariableBudgetRow({ category }) {
           {/* Amounts */}
           <div className="text-right flex-shrink-0">
             <span className="font-mono text-sm font-medium" style={{ color: statusColor }}>
-              {formatMoney(spent, 'ZAR', true)}
+              {formatMoney(spent, true)}
             </span>
-            <span className="font-mono text-xs text-muted"> / {formatMoney(budget, 'ZAR', true)}</span>
+            <span className="font-mono text-xs text-muted"> / {formatMoney(budget, true)}</span>
           </div>
         </div>
 
@@ -66,8 +66,8 @@ export default function VariableBudgetRow({ category }) {
         <div className="flex items-center justify-between mt-1.5">
           <span className="text-2xs text-muted">
             {isOver
-              ? <span className="text-danger">Over by {formatMoney(Math.abs(remaining), 'ZAR', true)}</span>
-              : <span className="text-muted">{formatMoney(remaining, 'ZAR', true)} remaining</span>
+              ? <span className="text-danger">Over by {formatMoney(Math.abs(remaining), true)}</span>
+              : <span className="text-muted">{formatMoney(remaining, true)} remaining</span>
             }
           </span>
           <span className="text-2xs text-muted font-mono">{Math.round(pct)}%</span>

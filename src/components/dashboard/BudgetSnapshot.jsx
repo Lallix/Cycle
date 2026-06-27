@@ -42,11 +42,11 @@ export default function BudgetSnapshot() {
               </div>
               <div className="text-right">
                 <span className="font-mono text-xs text-muted">
-                  {formatMoney(cat.spent, 'ZAR', true)}&nbsp;
+                  {formatMoney(cat.spent, true)}&nbsp;
                 </span>
                 <span className="font-mono text-xs text-muted">/</span>
                 <span className="font-mono text-xs text-text-secondary">
-                  &nbsp;{formatMoney(cat.budget_amount, 'ZAR', true)}
+                  &nbsp;{formatMoney(cat.budget_amount, true)}
                 </span>
               </div>
             </div>

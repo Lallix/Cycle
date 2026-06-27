@@ -69,7 +69,7 @@ function SummaryCell({ label, amount, color }) {
     <div className="flex flex-col items-center py-3 gap-0.5">
       <span className="text-2xs uppercase tracking-widest text-muted">{label}</span>
       <span className="font-mono text-sm font-medium" style={{ color }}>
-        {formatMoney(Math.abs(amount), 'ZAR', true)}
+        {formatMoney(Math.abs(amount), true)}
         {amount < 0 ? ' -' : ''}
       </span>
     </div>
