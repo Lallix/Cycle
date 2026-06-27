@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useBudget } from '../../context/BudgetContext'
 import { useToast } from '../ui/Toast'
 import { formatMoney, getAccountConfig, formatOrdinal, ACCOUNT_CONFIG } from '../../lib/format'
@@ -20,13 +20,12 @@ export default function FixedExpenseRow({ expense }) {
   const [deleting, setDeleting]   = useState(false)
   const [saving, setSaving]       = useState(false)
   const [form, setForm]           = useState({})
-  const [showActions, setShowActions] = useState(false)
 
   const acc    = getAccountConfig(expense.account)
   const isPaid = isRecurringPaid(expense.id)
 
   async function handleToggle() {
-    if (toggling || showActions) return
+    if (toggling) return
     setToggling(true)
     try {
       await toggleRecurringPaid(expense.id)
@@ -86,81 +85,54 @@ export default function FixedExpenseRow({ expense }) {
 
   return (
     <>
-      <div className="relative overflow-hidden">
-        {/* Action buttons revealed behind the row */}
-        <div className="absolute inset-y-0 right-0 flex items-center gap-1 pr-3">
-          <button
-            onClick={openEdit}
-            className="w-9 h-9 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center"
-          >
-            <Pencil size={15} className="text-gold" />
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            className="w-9 h-9 rounded-xl bg-danger/10 border border-danger/20 flex items-center justify-center"
-          >
-            {deleting
-              ? <RefreshCw size={15} className="text-danger animate-spin" />
-              : <Trash2 size={15} className="text-danger" />
-            }
-          </button>
-        </div>
+      <div className={`flex items-center gap-3 px-4 py-3.5 transition-opacity
+        ${isPaid ? 'opacity-60' : ''}`}>
 
-        {/* Main row — slides left to reveal actions */}
-        <div
-          className={`flex items-center gap-3 px-4 py-3.5 transition-all duration-200 bg-surface-1
-            ${isPaid ? 'opacity-60' : ''}
-            ${showActions ? '-translate-x-24' : 'translate-x-0'}`}
-        >
-          {/* Paid toggle */}
-          <button
-            className="flex-shrink-0"
-            onClick={handleToggle}
-            disabled={toggling}
-          >
-            {isPaid
-              ? <CheckCircle size={22} className="text-success" />
-              : <Circle size={22} className="text-muted" />
-            }
-          </button>
+        {/* Paid toggle */}
+        <button className="flex-shrink-0" onClick={handleToggle} disabled={toggling}>
+          {isPaid
+            ? <CheckCircle size={22} className="text-success" />
+            : <Circle size={22} className="text-muted" />
+          }
+        </button>
 
-          {/* Main content — tapping this toggles actions */}
-          <div
-            className="flex-1 flex items-center gap-3 min-w-0"
-            onClick={() => setShowActions(v => !v)}
-          >
-            {/* Name + due date */}
-            <div className="flex-1 min-w-0">
-              <p className={`text-sm font-medium truncate
-                ${isPaid ? 'line-through text-muted' : 'text-fg'}`}>
-                {expense.name}
-              </p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-xs text-muted">
-                  {expense.due_day ? `Due ${formatOrdinal(expense.due_day)}` : 'No due date'}
-                </span>
-                {expense.account && (
-                  <>
-                    <span className="text-xs text-muted">·</span>
-                    <span
-                      className="text-xs px-1.5 py-0.5 rounded-md"
-                      style={{ color: acc.color, backgroundColor: acc.bg, fontSize: '0.65rem' }}
-                    >
-                      {acc.label}
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Amount */}
-            <span className={`font-mono text-sm font-medium flex-shrink-0
-              ${isPaid ? 'text-success' : 'text-fg'}`}>
-              {formatMoney(expense.amount)}
+        {/* Name + due date */}
+        <div className="flex-1 min-w-0">
+          <p className={`text-sm font-medium truncate
+            ${isPaid ? 'line-through text-muted' : 'text-fg'}`}>
+            {expense.name}
+          </p>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <span className="text-xs text-muted">
+              {expense.due_day ? `Due ${formatOrdinal(expense.due_day)}` : 'No due date'}
             </span>
+            {expense.account && (
+              <>
+                <span className="text-xs text-muted">·</span>
+                <span
+                  className="text-xs px-1.5 py-0.5 rounded-md"
+                  style={{ color: acc.color, backgroundColor: acc.bg, fontSize: '0.65rem' }}
+                >
+                  {acc.label}
+                </span>
+              </>
+            )}
           </div>
         </div>
+
+        {/* Amount */}
+        <span className={`font-mono text-sm font-medium flex-shrink-0
+          ${isPaid ? 'text-success' : 'text-fg'}`}>
+          {formatMoney(expense.amount)}
+        </span>
+
+        {/* Edit button */}
+        <button
+          onClick={openEdit}
+          className="flex-shrink-0 w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center"
+        >
+          <Pencil size={14} className="text-gold" />
+        </button>
       </div>
 
       {/* Edit Sheet */}
