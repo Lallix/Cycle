@@ -4,10 +4,16 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   base: '/Cycle/',
+  define: {
+    // Bake build timestamp into the app as a global — visible in Settings
+    __APP_VERSION__: JSON.stringify(new Date().toISOString().slice(0, 16).replace('T', ' ')),
+  },
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // prompt: we control when to reload, not autoUpdate
+      // This lets us show a toast instead of silently reloading mid-session
+      registerType: 'prompt',
       includeAssets: ['icons/icon-192.png', 'icons/icon-512.png'],
       manifest: {
         name: 'Cycle — Budget App',
@@ -39,7 +45,13 @@ export default defineConfig({
         ]
       },
       workbox: {
+        // Each build gets a unique precache manifest — stale SW auto-expires
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Clean up old caches from previous versions on activation
+        cleanupOutdatedCaches: true,
+        // Skip waiting — new SW takes over immediately on next load
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
