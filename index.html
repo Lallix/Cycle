@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0E0E0E" />
+    <meta name="description" content="Cycle — Smart budget cycle tracking" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Cycle" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <link rel="icon" type="image/png" href="/icons/icon-192.png" />
+    <title>Cycle</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * { -webkit-tap-highlight-color: transparent; }
+      html, body, #root {
+        height: 100%;
+        width: 100%;
+        overscroll-behavior: none;
+        background-color: #0E0E0E;
+      }
+      body {
+        font-family: 'Poppins', system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      /* Hide scrollbar but keep scroll */
+      ::-webkit-scrollbar { width: 0; height: 0; }
+      ::selection { background: rgba(212,175,55,0.3); }
+    </style>
+    <script>
+      // Restore route saved by 404.html
+      (function() {
+        var route = sessionStorage.getItem('spa_route');
+        if (route) {
+          sessionStorage.removeItem('spa_route');
+          var target = '/Cycle' + (route.startsWith('/') ? route : '/' + route);
+          if (target !== window.location.pathname + window.location.search + window.location.hash) {
+            history.replaceState(null, null, target);
+          }
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
