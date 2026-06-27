@@ -21,7 +21,7 @@ export default function BudgetPage() {
   const toast = useToast()
 
   const [addFixedOpen, setAddFixedOpen] = useState(false)
-  const [fixedForm, setFixedForm] = useState({ description: '', amount: '', due_day: '1', account: 'FNB' })
+  const [fixedForm, setFixedForm] = useState({ name: '', amount: '', due_day: '1', account: 'Capitec' })
   const [savingFixed, setSavingFixed] = useState(false)
 
   if (loading) return <LoadingScreen />
@@ -47,7 +47,7 @@ export default function BudgetPage() {
       })
       toast('Recurring expense added ✓', 'success')
       setAddFixedOpen(false)
-      setFixedForm({ description: '', amount: '', due_day: '1', account: 'FNB' })
+      setFixedForm({ name: '', amount: '', due_day: '1', account: 'Capitec' })
     } catch (err) {
       toast(err.message, 'error')
     } finally {
@@ -151,8 +151,8 @@ export default function BudgetPage() {
             <input
               type="text"
               placeholder="e.g. Internet, Gym, Insurance"
-              value={fixedForm.description}
-              onChange={e => setFixedForm(f => ({ ...f, description: e.target.value }))}
+              value={fixedForm.name}
+              onChange={e => setFixedForm(f => ({ ...f, name: e.target.value }))}
               className="w-full bg-bg-elevated border border-border rounded-xl px-4 py-3 text-sm text-text-primary placeholder:text-muted focus:outline-none focus:border-gold transition-all"
             />
           </div>
@@ -175,7 +175,7 @@ export default function BudgetPage() {
               className="w-full bg-bg-elevated border border-border rounded-xl px-4 py-3 text-sm text-text-primary focus:outline-none focus:border-gold transition-all"
               style={{ colorScheme: 'dark' }}
             >
-              {Array.from({ length: 28 }, (_, i) => i + 1).map(d => (
+              {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
                 <option key={d} value={d}>Day {d}</option>
               ))}
             </select>

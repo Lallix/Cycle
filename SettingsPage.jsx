@@ -21,20 +21,19 @@ export default function SettingsPage() {
     biometricAvailable, biometricEnabled,
     registerBiometric, disableBiometric
   } = useAuth()
-  const { loading, categories, addCategory, updateCategory, loadCategories } = useBudget()
+  const { loading, categories, incomeRecords, addCategory, updateCategory, updateIncome } = useBudget()
   const toast = useToast()
 
   const [editProfileOpen, setEditProfileOpen] = useState(false)
   const [editCatOpen, setEditCatOpen] = useState(false)
   const [addIncomeOpen, setAddIncomeOpen] = useState(false)
-  const [catForm, setCatForm] = useState({ name: '', icon: '💳', color: '#D4AF37', budget_amount: '', type: 'variable' })
+  const [catForm, setCatForm] = useState({ name: '', icon: '💳', colour: '#D4AF37', budget_amount: '', type: 'variable' })
   const [editingCat, setEditingCat] = useState(null)
-  const [profileForm, setProfileForm] = useState({ full_name: profile?.full_name || '', cycle_start_day: profile?.cycle_start_day || 25, monthly_income: incomeRecords?.[0]?.amount || 5360 })
+  const [profileForm, setProfileForm] = useState({ full_name: profile?.full_name || '', cycle_start_day: profile?.cycle_start_day || 25 })
   const [saving, setSaving] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
   const [incomeForm, setIncomeForm] = useState({ amount: '', source: 'Salary' })
 
-  const { addIncome } = useBudget()
 
   const ICONS = ['💳', '🛒', '🍽️', '🚌', '🎬', '👗', '🎒', '💊', '⛽', '🏠', '📱', '✈️', '🎮', '📺', '🏋️', '☕']
   const COLORS = ['#D4AF37', '#3DD598', '#FF6B6B', '#FFB347', '#9B59B6', '#E91E63', '#00BCD4', '#4CAF50', '#FF9800']
@@ -63,9 +62,9 @@ export default function SettingsPage() {
       const data = {
         name: catForm.name,
         icon: catForm.icon,
-        color: catForm.colour,
+        colour: catForm.colour,
         budget_amount: catForm.budget_amount ? parseFloat(catForm.budget_amount) : null,
-        type: 'variable',
+        type: catForm.type || 'variable',
       }
       if (editingCat) {
         await updateCategory(editingCat.id, data)
@@ -75,7 +74,7 @@ export default function SettingsPage() {
         toast('Category added ✓', 'success')
       }
       setEditCatOpen(false)
-      setCatForm({ name: '', icon: '💳', color: '#D4AF37', budget_amount: '', type: 'variable' })
+      setCatForm({ name: '', icon: '💳', colour: '#D4AF37', budget_amount: '', type: 'variable' })
       setEditingCat(null)
     } catch (err) {
       toast(err.message, 'error')
@@ -105,18 +104,17 @@ export default function SettingsPage() {
     }
   }
 
-  async function handleAddIncome() {
+  async function handleUpdateIncome() {
     if (!incomeForm.amount) return
     setSaving(true)
     try {
-      await addIncome({
-        source: incomeForm.source,
-        amount: parseFloat(incomeForm.amount),
-        date: new Date().toISOString().split('T')[0],
-      })
-      toast('Income recorded ✓', 'success')
+      const existing = incomeRecords?.[0]
+      if (existing) {
+        await updateIncome(existing.id, parseFloat(incomeForm.amount))
+      }
+      toast('Income updated ✓', 'success')
       setAddIncomeOpen(false)
-      setIncomeForm({ amount: '', source: 'Salary' })
+      setIncomeForm({ amount: '' })
     } catch (err) {
       toast(err.message, 'error')
     } finally {
@@ -148,7 +146,7 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => {
-                setProfileForm({ full_name: profile?.full_name || '', cycle_start_day: profile?.cycle_start_day || 25, monthly_income: incomeRecords?.[0]?.amount || 5360 })
+                setProfileForm({ full_name: profile?.full_name || '', cycle_start_day: profile?.cycle_start_day || 25 })
                 setEditProfileOpen(true)
               }}
               className="tappable"
@@ -163,7 +161,7 @@ export default function SettingsPage() {
           </div>
           <div className="border-t border-border px-4 py-3 flex items-center justify-between">
             <span className="text-sm text-text-secondary">Monthly income</span>
-            <span className="text-sm font-mono text-success">{formatMoney(incomeRecords?.[0]?.amount || 5360)}</span>
+            <span className="text-sm font-mono text-success">{formatMoney(incomeRecords?.[0]?.amount || 0)}</span>
           </div>
         </div>
       </div>
@@ -222,7 +220,7 @@ export default function SettingsPage() {
           <button
             onClick={() => {
               setEditingCat(null)
-              setCatForm({ name: '', icon: '💳', color: '#D4AF37', budget_amount: '', type: 'variable' })
+              setCatForm({ name: '', icon: '💳', colour: '#D4AF37', budget_amount: '', type: 'variable' })
               setEditCatOpen(true)
             }}
             className="text-xs text-gold tappable"
@@ -240,7 +238,7 @@ export default function SettingsPage() {
                 setCatForm({
                   name: cat.name,
                   icon: cat.icon,
-                  color: cat.color,
+                  colour: cat.colour,
                   budget_amount: cat.budget_amount ? String(cat.budget_amount) : '',
                   type: cat.type,
                 })
@@ -391,7 +389,7 @@ export default function SettingsPage() {
               {COLORS.map(color => (
                 <button
                   key={color}
-                  onClick={() => setCatForm(f => ({ ...f, color }))}
+                  onClick={() => setCatForm(f => ({ ...f, colour: color }))}
                   className={`w-8 h-8 rounded-full border-2 transition-all active:scale-95 ${catForm.colour === color ? 'border-white scale-110' : 'border-transparent'}`}
                   style={{ backgroundColor: color }}
                 />
