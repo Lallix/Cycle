@@ -37,13 +37,18 @@
     </style>
     <script>
       // GitHub Pages SPA redirect handler
-      var redirect = sessionStorage.getItem('spa_redirect');
-      if (redirect) {
-        sessionStorage.removeItem('spa_redirect');
-        if (redirect !== window.location.pathname + window.location.search + window.location.hash) {
-          history.replaceState(null, null, redirect);
+      // Restores the path that 404.html saved before redirecting to root
+      (function() {
+        var redirect = sessionStorage.getItem('spa_redirect');
+        if (redirect) {
+          sessionStorage.removeItem('spa_redirect');
+          var base = '/Cycle';
+          var full = base + (redirect.startsWith('/') ? redirect : '/' + redirect);
+          if (full !== window.location.pathname + window.location.search + window.location.hash) {
+            history.replaceState(null, null, full);
+          }
         }
-      }
+      })();
     </script>
   </head>
   <body>

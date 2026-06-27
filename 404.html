@@ -3,13 +3,21 @@
   <head>
     <meta charset="utf-8">
     <script>
-      // GitHub Pages SPA redirect
-      // Stores the path in sessionStorage then redirects to index.html
+      // GitHub Pages SPA — redirect all 404s back to the app
+      // Preserves the intended path so React Router can handle it
+      var base = '/Cycle';
       var path = window.location.pathname;
       var query = window.location.search;
       var hash = window.location.hash;
-      sessionStorage.setItem('spa_redirect', path + query + hash);
-      window.location.replace('/Cycle/');
+
+      // Strip the base prefix if already there to avoid doubling it
+      var stripped = path.startsWith(base) ? path.slice(base.length) : path;
+
+      // Store the intended destination
+      sessionStorage.setItem('spa_redirect', stripped + query + hash);
+
+      // Redirect to the app root
+      window.location.replace(base + '/');
     </script>
   </head>
   <body></body>
