@@ -14,7 +14,7 @@ const BLANK_CAT = { name: '', icon: '🛒', colour: '#D4AF37', budget_amount: ''
 
 export default function SettingsPage() {
   const { user, profile, signOut, updateProfile } = useAuth()
-  const { categories, incomeRecords, addCategory, updateCategory, deleteCategory, updateIncome } = useBudget()
+  const { categories, incomeRecords, addCategory, updateCategory, deleteCategory, updateIncome, addIncome } = useBudget()
   const toast = useToast()
 
   const [profileOpen, setProfileOpen]   = useState(false)
@@ -52,14 +52,20 @@ export default function SettingsPage() {
   }
 
   async function saveIncome() {
-    if (!incomeAmount) return
+    if (!incomeAmount || parseFloat(incomeAmount) <= 0) {
+      toast('Enter a valid amount', 'error')
+      return
+    }
     setSaving(true)
     try {
       const existing = incomeRecords?.[0]
       if (existing) {
         await updateIncome(existing.id, parseFloat(incomeAmount))
-        toast('Income updated', 'success')
+      } else {
+        // No seed record yet — insert one directly
+        await addIncome(parseFloat(incomeAmount))
       }
+      toast('Income updated', 'success')
       setIncomeOpen(false)
     } catch (e) { toast(e.message, 'error') }
     finally { setSaving(false) }

@@ -335,6 +335,16 @@ export function BudgetProvider({ children }) {
     return data
   }
 
+  async function addIncome(amount) {
+    const { data, error } = await supabase
+      .from('cycle_income')
+      .insert({ user_id: user.id, amount, label: 'Monthly income', is_active: true })
+      .select().single()
+    if (error) throw error
+    setIncomeRecords(prev => [...prev, data])
+    return data
+  }
+
   async function addSavingGoal(payload) {
     const { data, error } = await supabase
       .from('cycle_saving_goals')
@@ -382,7 +392,7 @@ export function BudgetProvider({ children }) {
     toggleRecurringPaid,
     addRecurringExpense, updateRecurringExpense, deleteRecurringExpense,
     addCategory, updateCategory, deleteCategory,
-    updateIncome,
+    updateIncome, addIncome,
     addSavingGoal, updateSavingGoal, contributeSavings,
   }
 
