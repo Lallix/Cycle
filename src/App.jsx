@@ -10,7 +10,8 @@ import BudgetPage from './pages/BudgetPage';
 import ExpensesPage from './pages/ExpensesPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
-import AdminPage from './pages/AdminPage';
+import AdminPage from './pages/AdminPage'
+import { useServiceWorker } from './hooks/useServiceWorker';
 
 // ─── Auth Guard ───────────────────────────────────────────────────────────────
 
@@ -34,6 +35,7 @@ function RedirectIfAuthed({ children }) {
 // ─── Router Tree ──────────────────────────────────────────────────────────────
 
 function AppRoutes() {
+  useServiceWorker()
   return (
     <Routes>
       {/* Public */}

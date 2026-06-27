@@ -1,213 +1,209 @@
 import { useState } from 'react'
 import { useBudget } from '../context/BudgetContext'
-import { formatMoney } from '../lib/format'
+import { useToast } from '../components/ui/Toast'
+import { formatMoney, ACCOUNT_CONFIG } from '../lib/format'
 import PageHeader from '../components/ui/PageHeader'
+import Button from '../components/ui/Button'
+import BottomSheet from '../components/ui/BottomSheet'
 import FixedExpenseRow from '../components/budget/FixedExpenseRow'
 import VariableBudgetRow from '../components/budget/VariableBudgetRow'
-import LoadingScreen from '../components/ui/LoadingScreen'
-import EmptyState from '../components/ui/EmptyState'
-import BottomSheet from '../components/ui/BottomSheet'
-import Button from '../components/ui/Button'
-import { useToast } from '../components/ui/Toast'
 import { Plus } from 'lucide-react'
 
-const ACCOUNTS = ['Capitec', 'FNB', 'Cash']
+const ACCOUNTS = [
+  'Capitec', 'FNB', 'Absa', 'Standard', 'Nedbank',
+  'Investec', 'TymeBank', 'Discovery', 'African', 'Bidvest', 'Cash',
+]
+
+const BLANK_FIXED = { name: '', amount: '', account: 'Capitec', due_day: '1' }
 
 export default function BudgetPage() {
-  const { loading, recurringExpenses, categories, totals, addRecurring } = useBudget()
+  const { categories, recurringExpenses, totals, addRecurringExpense } = useBudget()
   const toast = useToast()
 
-  const [addFixedOpen, setAddFixedOpen] = useState(false)
-  const [fixedForm, setFixedForm] = useState({ description: '', amount: '', due_day: '1', account: 'FNB' })
-  const [savingFixed, setSavingFixed] = useState(false)
+  const [fixedOpen, setFixedOpen]   = useState(false)
+  const [fixedForm, setFixedForm]   = useState(BLANK_FIXED)
+  const [saving, setSaving]         = useState(false)
 
-  if (loading) return <LoadingScreen />
-
-  const fixedExpenses = recurringExpenses.filter(e => e.active)
-  const fixedPaid = fixedExpenses.filter(e => isRecurringPaid(e.id))
-  const fixedUnpaid = fixedExpenses.filter(e => !isRecurringPaid(e.id))
-
-  const variableCategories = categories.filter(c => c.type === 'variable' && c.budget_amount != null)
-  const unbudgetedCategories = categories.filter(c => c.type === 'variable' && c.budget_amount == null)
-
-  const unbudgetedSpent = totals.unbudgetedSpent
+  const variableCategories = categories.filter(c => c.type === 'variable')
+  const unbudgetedSpent    = totals.unbudgetedSpent || 0
 
   async function handleAddFixed() {
-    if (!fixedForm.description || !fixedForm.amount) return
-    setSavingFixed(true)
-    try {
-      await addRecurring({
-        description: fixedForm.description,
-        amount: parseFloat(fixedForm.amount),
-        due_day: parseInt(fixedForm.due_day),
-        account: fixedForm.account,
-      })
-      toast('Recurring expense added ✓', 'success')
-      setAddFixedOpen(false)
-      setFixedForm({ description: '', amount: '', due_day: '1', account: 'FNB' })
-    } catch (err) {
-      toast(err.message, 'error')
-    } finally {
-      setSavingFixed(false)
+    if (!fixedForm.name.trim() || !fixedForm.amount) {
+      toast('Name and amount are required', 'error')
+      return
     }
+    setSaving(true)
+    try {
+      await addRecurringExpense({
+        name:    fixedForm.name.trim(),
+        amount:  parseFloat(fixedForm.amount),
+        account: fixedForm.account,
+        due_day: parseInt(fixedForm.due_day, 10),
+      })
+      toast('Fixed expense added', 'success')
+      setFixedOpen(false)
+      setFixedForm(BLANK_FIXED)
+    } catch (e) { toast(e.message, 'error') }
+    finally { setSaving(false) }
   }
 
   return (
-    <div className="min-h-full bg-bg animate-fade-in"
-      style={{ paddingBottom: 'calc(64px + env(safe-area-inset-bottom) + 1rem)' }}
-    >
-      <PageHeader
-        title="Budget"
-        subtitle={`Cycle overview`}
-        action={
-          <button
-            onClick={() => setAddFixedOpen(true)}
-            className="w-9 h-9 flex items-center justify-center rounded-xl bg-bg-elevated border border-border tappable"
-          >
-            <Plus size={18} className="text-gold" />
-          </button>
-        }
-      />
+    <div className="pb-28">
+      <PageHeader title="Budget" subtitle={`Cycle total: ${formatMoney(totals.income)}`} />
 
-      {/* ── SECTION 1: Fixed Expenses ── */}
-      <div className="px-4 mb-2">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="section-label">Fixed Expenses</h2>
-          <div className="text-right">
-            <span className="font-mono text-xs text-success">{formatMoney(totals.fixedPaid, 'ZAR', true)} paid</span>
-            <span className="font-mono text-xs text-muted"> / {formatMoney(totals.fixedTotal, 'ZAR', true)}</span>
+      <div className="px-4 space-y-6">
+
+        {/* Fixed Expenses */}
+        <section>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs text-muted uppercase tracking-widest">Fixed Expenses</p>
+            <button
+              onClick={() => { setFixedForm(BLANK_FIXED); setFixedOpen(true) }}
+              className="flex items-center gap-1 text-xs text-gold hover:opacity-80"
+            >
+              <Plus size={13} /> Add
+            </button>
           </div>
-        </div>
 
-        <div className="bg-bg-card rounded-2xl border border-border overflow-hidden divide-y divide-border">
-          {fixedExpenses.length === 0 ? (
-            <EmptyState
-              icon="🔒"
-              title="No fixed expenses"
-              description="Tap + to add recurring bills"
-            />
-          ) : (
-            fixedExpenses.map(exp => (
+          <div className="bg-surface-1 border border-border rounded-2xl overflow-hidden divide-y divide-border">
+            {recurringExpenses.length === 0 && (
+              <p className="text-sm text-muted px-4 py-4">No fixed expenses yet</p>
+            )}
+            {recurringExpenses.map(exp => (
               <FixedExpenseRow key={exp.id} expense={exp} />
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* ── SECTION 2: Variable Budgets ── */}
-      <div className="px-4 mt-5 mb-2">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="section-label">Variable Budgets</h2>
-          <div className="text-right">
-            <span className="font-mono text-xs text-warning">{formatMoney(totals.variableSpent, 'ZAR', true)} spent</span>
-            <span className="font-mono text-xs text-muted"> / {formatMoney(totals.variableBudget, 'ZAR', true)}</span>
+            ))}
           </div>
-        </div>
 
-        <div className="bg-bg-card rounded-2xl border border-border overflow-hidden divide-y divide-border">
-          {variableCategories.length === 0 ? (
-            <EmptyState icon="📊" title="No budget categories" description="Set up budget categories in Settings" />
-          ) : (
-            variableCategories.map(cat => (
+          <div className="flex justify-between text-sm mt-2 px-1">
+            <span className="text-muted">Fixed total</span>
+            <span className="font-mono font-medium">{formatMoney(totals.fixedTotal)}</span>
+          </div>
+        </section>
+
+        {/* Variable Budget */}
+        <section>
+          <p className="text-xs text-muted uppercase tracking-widest mb-2">Variable Budget</p>
+          <div className="bg-surface-1 border border-border rounded-2xl overflow-hidden divide-y divide-border">
+            {variableCategories.length === 0 && (
+              <p className="text-sm text-muted px-4 py-4">Add categories in Settings</p>
+            )}
+            {variableCategories.map(cat => (
               <VariableBudgetRow key={cat.id} category={cat} />
-            ))
-          )}
-        </div>
-      </div>
+            ))}
+          </div>
 
-      {/* ── SECTION 3: Grand Summary ── */}
-      <div className="px-4 mt-5">
-        <h2 className="section-label">Cycle Summary</h2>
-        <div className="bg-bg-card rounded-2xl border border-border overflow-hidden divide-y divide-border">
-          <SummaryRow label="Total Fixed" value={totals.fixedTotal} />
-          <SummaryRow label="Fixed Paid" value={totals.fixedPaid} color="#3DD598" />
-          <SummaryRow label="Fixed Still to Pay" value={totals.fixedUnpaid} color="#FFB347" />
-          <SummaryRow label="Variable Budget" value={totals.variableBudget} />
-          <SummaryRow label="Variable Spent" value={totals.variableSpent} color="#FFB347" />
-          <SummaryRow label="Unbudgeted Spend" value={unbudgetedSpent} />
-          <div className="px-4 py-4 flex items-center justify-between bg-gold/5">
-            <span className="text-sm font-semibold text-text-primary">Total Committed</span>
-            <span className="font-mono text-sm font-semibold text-gold">
-              {formatMoney(totals.spent)}
-            </span>
+          <div className="flex justify-between text-sm mt-2 px-1">
+            <span className="text-muted">Variable total</span>
+            <span className="font-mono font-medium">{formatMoney(totals.variableSpent)} / {formatMoney(totals.variableBudget)}</span>
           </div>
-          <div className="px-4 py-4 flex items-center justify-between">
-            <span className="text-sm font-medium text-text-primary">Remaining</span>
-            <span className={`font-mono text-sm font-semibold ${totals.remaining < 0 ? 'text-danger' : 'text-success'}`}>
-              {formatMoney(totals.remaining)}
-            </span>
+        </section>
+
+        {/* Unbudgeted */}
+        {unbudgetedSpent > 0 && (
+          <section>
+            <p className="text-xs text-muted uppercase tracking-widest mb-2">Unbudgeted</p>
+            <div className="bg-surface-1 border border-border rounded-2xl px-4 py-3 flex justify-between">
+              <span className="text-sm text-muted">Untracked spend</span>
+              <span className="font-mono text-sm text-warning">{formatMoney(unbudgetedSpent)}</span>
+            </div>
+          </section>
+        )}
+
+        {/* Summary */}
+        <section>
+          <p className="text-xs text-muted uppercase tracking-widest mb-2">Summary</p>
+          <div className="bg-surface-1 border border-border rounded-2xl overflow-hidden divide-y divide-border">
+            {[
+              { label: 'Income', value: totals.income, color: 'text-success' },
+              { label: 'Fixed expenses', value: -totals.fixedTotal, color: 'text-fg' },
+              { label: 'Variable spend', value: -totals.variableSpent, color: 'text-fg' },
+              { label: 'Remaining', value: totals.remaining, color: totals.remaining >= 0 ? 'text-success' : 'text-danger' },
+            ].map(row => (
+              <div key={row.label} className="flex justify-between px-4 py-3 text-sm">
+                <span className="text-muted">{row.label}</span>
+                <span className={`font-mono font-medium ${row.color}`}>{formatMoney(row.value)}</span>
+              </div>
+            ))}
           </div>
-        </div>
+        </section>
       </div>
 
       {/* Add Fixed Expense Sheet */}
-      <BottomSheet open={addFixedOpen} onClose={() => setAddFixedOpen(false)} title="Add Fixed Expense">
-        <div className="px-5 pb-8 space-y-4">
+      <BottomSheet open={fixedOpen} onClose={() => setFixedOpen(false)} title="Add Fixed Expense">
+        <div className="px-5 space-y-4 pb-8">
           <div>
-            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Description</label>
+            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Name</label>
             <input
               type="text"
-              placeholder="e.g. Internet, Gym, Insurance"
-              value={fixedForm.description}
-              onChange={e => setFixedForm(f => ({ ...f, description: e.target.value }))}
-              className="w-full bg-bg-elevated border border-border rounded-xl px-4 py-3 text-sm text-text-primary placeholder:text-muted focus:outline-none focus:border-gold transition-all"
+              value={fixedForm.name}
+              onChange={e => setFixedForm(f => ({ ...f, name: e.target.value }))}
+              placeholder="e.g. Rent"
+              className="w-full bg-surface-1 border border-border rounded-xl px-4 py-3 text-sm"
             />
           </div>
+
           <div>
             <label className="text-xs text-muted uppercase tracking-widest block mb-2">Amount</label>
-            <input
-              type="number"
-              inputMode="decimal"
-              placeholder="R0.00"
-              value={fixedForm.amount}
-              onChange={e => setFixedForm(f => ({ ...f, amount: e.target.value }))}
-              className="w-full bg-bg-elevated border border-border rounded-xl px-4 py-3 text-sm text-text-primary placeholder:text-muted focus:outline-none focus:border-gold transition-all font-mono"
-            />
+            <div className="flex items-center gap-2 bg-surface-1 border border-border rounded-xl px-4 py-3">
+              <span className="text-muted font-mono">R</span>
+              <input
+                type="number"
+                inputMode="decimal"
+                value={fixedForm.amount}
+                onChange={e => setFixedForm(f => ({ ...f, amount: e.target.value }))}
+                placeholder="0.00"
+                className="flex-1 bg-transparent font-mono text-lg outline-none"
+              />
+            </div>
           </div>
+
           <div>
             <label className="text-xs text-muted uppercase tracking-widest block mb-2">Due Day</label>
             <select
               value={fixedForm.due_day}
               onChange={e => setFixedForm(f => ({ ...f, due_day: e.target.value }))}
-              className="w-full bg-bg-elevated border border-border rounded-xl px-4 py-3 text-sm text-text-primary focus:outline-none focus:border-gold transition-all"
+              className="w-full bg-surface-1 border border-border rounded-xl px-4 py-3 text-sm"
               style={{ colorScheme: 'dark' }}
             >
-              {Array.from({ length: 28 }, (_, i) => i + 1).map(d => (
+              {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
                 <option key={d} value={d}>Day {d}</option>
               ))}
             </select>
           </div>
+
           <div>
             <label className="text-xs text-muted uppercase tracking-widest block mb-2">Account</label>
-            <div className="flex gap-2">
-              {ACCOUNTS.map(acc => (
-                <button
-                  key={acc}
-                  onClick={() => setFixedForm(f => ({ ...f, account: acc }))}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all active:scale-95
-                    ${fixedForm.account === acc ? 'bg-gold/10 border-gold/40 text-gold' : 'bg-bg-elevated border-border text-muted'}`}
-                >
-                  {acc}
-                </button>
-              ))}
+            <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+              {ACCOUNTS.map(acc => {
+                const cfg      = ACCOUNT_CONFIG[acc]
+                const selected = fixedForm.account === acc
+                return (
+                  <button
+                    key={acc}
+                    onClick={() => setFixedForm(f => ({ ...f, account: acc }))}
+                    className="flex-shrink-0 px-3 py-2 rounded-xl text-xs font-medium border transition-all whitespace-nowrap"
+                    style={selected ? {
+                      backgroundColor: cfg?.bg,
+                      color:           cfg?.color,
+                      borderColor:     cfg?.color,
+                    } : {
+                      backgroundColor: 'transparent',
+                      borderColor:     'rgba(255,255,255,0.1)',
+                      color:           'rgba(255,255,255,0.4)',
+                    }}
+                  >
+                    {cfg?.label || acc}
+                  </button>
+                )
+              })}
             </div>
           </div>
-          <Button onClick={handleAddFixed} loading={savingFixed} fullWidth size="lg" className="mt-2">
-            Add Fixed Expense
+
+          <Button variant="primary" size="lg" onClick={handleAddFixed} disabled={saving} className="w-full">
+            {saving ? 'Saving…' : 'Add Fixed Expense'}
           </Button>
         </div>
       </BottomSheet>
-    </div>
-  )
-}
-
-function SummaryRow({ label, value, color }) {
-  return (
-    <div className="px-4 py-3 flex items-center justify-between">
-      <span className="text-sm text-text-secondary">{label}</span>
-      <span className="font-mono text-sm font-medium" style={{ color: color || '#F5F5F5' }}>
-        {formatMoney(value)}
-      </span>
     </div>
   )
 }

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script>
+      // Save the path the user was trying to reach, then send them to the app root.
+      // index.html will read this and hand it to React Router.
+      var base = '/Cycle';
+      var path = window.location.pathname;
+      // Strip the base if it's already there
+      var route = path.startsWith(base) ? path.slice(base.length) || '/' : path;
+      sessionStorage.setItem('spa_route', route + window.location.search + window.location.hash);
+      window.location.replace(base + '/');
+    </script>
+  </head>
+  <body></body>
+</html>

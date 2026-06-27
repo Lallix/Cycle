@@ -36,16 +36,14 @@
       ::selection { background: rgba(212,175,55,0.3); }
     </style>
     <script>
-      // GitHub Pages SPA redirect handler
-      // Restores the path that 404.html saved before redirecting to root
+      // Restore route saved by 404.html
       (function() {
-        var redirect = sessionStorage.getItem('spa_redirect');
-        if (redirect) {
-          sessionStorage.removeItem('spa_redirect');
-          var base = '/Cycle';
-          var full = base + (redirect.startsWith('/') ? redirect : '/' + redirect);
-          if (full !== window.location.pathname + window.location.search + window.location.hash) {
-            history.replaceState(null, null, full);
+        var route = sessionStorage.getItem('spa_route');
+        if (route) {
+          sessionStorage.removeItem('spa_route');
+          var target = '/Cycle' + (route.startsWith('/') ? route : '/' + route);
+          if (target !== window.location.pathname + window.location.search + window.location.hash) {
+            history.replaceState(null, null, target);
           }
         }
       })();

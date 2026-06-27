@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useBudget } from '../context/BudgetContext'
 import { useToast } from '../components/ui/Toast'
-import { formatMoney } from '../lib/format'
+import { formatMoney , ACCOUNT_CONFIG} from '../lib/format'
 import PageHeader from '../components/ui/PageHeader'
 import ExpenseItem from '../components/expenses/ExpenseItem'
 import ExpenseFilters from '../components/expenses/ExpenseFilters'
@@ -14,7 +14,10 @@ import Input from '../components/ui/Input'
 import { Plus, Search } from 'lucide-react'
 import { format } from 'date-fns'
 
-const ACCOUNTS = ['Capitec', 'FNB', 'Cash']
+const ACCOUNTS = [
+  'Capitec', 'FNB', 'Absa', 'Standard', 'Nedbank',
+  'Investec', 'TymeBank', 'Discovery', 'African', 'Bidvest', 'Cash'
+]
 
 export default function ExpensesPage() {
   const { loading, transactions, categories, deleteTransaction, updateTransaction, totals } = useBudget()
@@ -215,8 +218,7 @@ export default function ExpensesPage() {
                 <button
                   key={acc}
                   onClick={() => setEditForm(f => ({ ...f, account: acc }))}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all active:scale-95
-                    ${editForm.account === acc ? 'bg-gold/10 border-gold/40 text-gold' : 'bg-bg-elevated border-border text-muted'}`}
+                  className="flex-shrink-0 px-3 py-2 rounded-xl text-xs font-medium border transition-all active:scale-95 whitespace-nowrap"
                 >
                   {acc}
                 </button>
