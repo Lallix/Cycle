@@ -1,19 +1,32 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useBudget } from '../../context/BudgetContext'
 import { useToast } from '../ui/Toast'
-import { formatMoney, getAccountConfig, formatOrdinal } from '../../lib/format'
-import { CheckCircle, Circle } from 'lucide-react'
+import { formatMoney, getAccountConfig, formatOrdinal, ACCOUNT_CONFIG } from '../../lib/format'
+import { CheckCircle, Circle, Pencil, Trash2, RefreshCw } from 'lucide-react'
+import BottomSheet from '../ui/BottomSheet'
+import Button from '../ui/Button'
+
+const ACCOUNTS = [
+  'Capitec', 'FNB', 'Absa', 'Standard', 'Nedbank',
+  'Investec', 'TymeBank', 'Discovery', 'African', 'Bidvest', 'Cash',
+]
 
 export default function FixedExpenseRow({ expense }) {
-  const { toggleRecurringPaid, isRecurringPaid } = useBudget()
+  const { toggleRecurringPaid, isRecurringPaid, updateRecurringExpense, deleteRecurringExpense } = useBudget()
   const toast = useToast()
-  const [toggling, setToggling] = useState(false)
 
-  const acc = getAccountConfig(expense.account)
+  const [toggling, setToggling]   = useState(false)
+  const [editOpen, setEditOpen]   = useState(false)
+  const [deleting, setDeleting]   = useState(false)
+  const [saving, setSaving]       = useState(false)
+  const [form, setForm]           = useState({})
+  const [showActions, setShowActions] = useState(false)
+
+  const acc    = getAccountConfig(expense.account)
   const isPaid = isRecurringPaid(expense.id)
 
   async function handleToggle() {
-    if (toggling) return
+    if (toggling || showActions) return
     setToggling(true)
     try {
       await toggleRecurringPaid(expense.id)
@@ -25,48 +38,213 @@ export default function FixedExpenseRow({ expense }) {
     }
   }
 
+  function openEdit() {
+    setShowActions(false)
+    setForm({
+      name:    expense.name || '',
+      amount:  String(expense.amount || ''),
+      account: expense.account || 'Capitec',
+      due_day: String(expense.due_day || '1'),
+    })
+    setEditOpen(true)
+  }
+
+  async function handleSave() {
+    if (!form.name.trim() || !form.amount) {
+      toast('Name and amount are required', 'error')
+      return
+    }
+    setSaving(true)
+    try {
+      await updateRecurringExpense(expense.id, {
+        name:    form.name.trim(),
+        amount:  parseFloat(form.amount),
+        account: form.account,
+        due_day: parseInt(form.due_day, 10),
+      })
+      toast('Updated ✓', 'success')
+      setEditOpen(false)
+    } catch (e) {
+      toast(e.message, 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleDelete() {
+    setDeleting(true)
+    try {
+      await deleteRecurringExpense(expense.id)
+      toast('Removed', 'success')
+    } catch (e) {
+      toast(e.message, 'error')
+    } finally {
+      setDeleting(false)
+      setShowActions(false)
+    }
+  }
+
   return (
-    <div
-      className={`flex items-center gap-3 px-4 py-3.5 tappable transition-all duration-200
-        ${isPaid ? 'opacity-60' : ''}`}
-      onClick={handleToggle}
-    >
-      {/* Status icon */}
-      <div className="flex-shrink-0">
-        {isPaid
-          ? <CheckCircle size={22} className="text-success" />
-          : <Circle size={22} className="text-warning" />
-        }
-      </div>
-
-      {/* Category icon */}
-      <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0"
-        style={{ backgroundColor: `${expense.cycle_cycle_categories?.colour || '#607D8B'}22` }}
-      >
-        {expense.cycle_categories?.icon || '🔒'}
-      </div>
-
-      {/* Name + due date */}
-      <div className="flex-1 min-w-0">
-        <p className={`text-sm font-medium truncate ${isPaid ? 'line-through text-muted' : 'text-text-primary'}`}>
-          {expense.description}
-        </p>
-        <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="text-2xs text-muted">Due {formatOrdinal(expense.due_day)}</span>
-          <span className="text-2xs text-muted">·</span>
-          <span className="text-2xs px-1.5 py-0.5 rounded-md"
-            style={{ color: acc.color, backgroundColor: acc.bg, fontSize: '0.6rem' }}
+    <>
+      <div className="relative overflow-hidden">
+        {/* Action buttons revealed behind the row */}
+        <div className="absolute inset-y-0 right-0 flex items-center gap-1 pr-3">
+          <button
+            onClick={openEdit}
+            className="w-9 h-9 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center"
           >
-            {expense.account}
-          </span>
+            <Pencil size={15} className="text-gold" />
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="w-9 h-9 rounded-xl bg-danger/10 border border-danger/20 flex items-center justify-center"
+          >
+            {deleting
+              ? <RefreshCw size={15} className="text-danger animate-spin" />
+              : <Trash2 size={15} className="text-danger" />
+            }
+          </button>
+        </div>
+
+        {/* Main row — slides left to reveal actions */}
+        <div
+          className={`flex items-center gap-3 px-4 py-3.5 transition-all duration-200 bg-surface-1
+            ${isPaid ? 'opacity-60' : ''}
+            ${showActions ? '-translate-x-24' : 'translate-x-0'}`}
+        >
+          {/* Paid toggle */}
+          <button
+            className="flex-shrink-0"
+            onClick={handleToggle}
+            disabled={toggling}
+          >
+            {isPaid
+              ? <CheckCircle size={22} className="text-success" />
+              : <Circle size={22} className="text-muted" />
+            }
+          </button>
+
+          {/* Main content — tapping this toggles actions */}
+          <div
+            className="flex-1 flex items-center gap-3 min-w-0"
+            onClick={() => setShowActions(v => !v)}
+          >
+            {/* Name + due date */}
+            <div className="flex-1 min-w-0">
+              <p className={`text-sm font-medium truncate
+                ${isPaid ? 'line-through text-muted' : 'text-fg'}`}>
+                {expense.name}
+              </p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-xs text-muted">
+                  {expense.due_day ? `Due ${formatOrdinal(expense.due_day)}` : 'No due date'}
+                </span>
+                {expense.account && (
+                  <>
+                    <span className="text-xs text-muted">·</span>
+                    <span
+                      className="text-xs px-1.5 py-0.5 rounded-md"
+                      style={{ color: acc.color, backgroundColor: acc.bg, fontSize: '0.65rem' }}
+                    >
+                      {acc.label}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Amount */}
+            <span className={`font-mono text-sm font-medium flex-shrink-0
+              ${isPaid ? 'text-success' : 'text-fg'}`}>
+              {formatMoney(expense.amount)}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Amount */}
-      <span className={`font-mono text-sm font-medium flex-shrink-0
-        ${isPaid ? 'text-success line-through' : 'text-text-primary'}`}>
-        {formatMoney(expense.amount)}
-      </span>
-    </div>
+      {/* Edit Sheet */}
+      <BottomSheet open={editOpen} onClose={() => setEditOpen(false)} title="Edit Fixed Expense">
+        <div className="px-5 space-y-4 pb-8">
+          <div>
+            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Name</label>
+            <input
+              type="text"
+              value={form.name || ''}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              className="w-full bg-surface-1 border border-border rounded-xl px-4 py-3 text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Amount</label>
+            <div className="flex items-center gap-2 bg-surface-1 border border-border rounded-xl px-4 py-3">
+              <span className="text-muted font-mono">R</span>
+              <input
+                type="number"
+                inputMode="decimal"
+                value={form.amount || ''}
+                onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
+                className="flex-1 bg-transparent font-mono text-lg outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Due Day</label>
+            <select
+              value={form.due_day || '1'}
+              onChange={e => setForm(f => ({ ...f, due_day: e.target.value }))}
+              className="w-full bg-surface-1 border border-border rounded-xl px-4 py-3 text-sm"
+              style={{ colorScheme: 'dark' }}
+            >
+              {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                <option key={d} value={d}>Day {d}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Account</label>
+            <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+              {ACCOUNTS.map(acc => {
+                const cfg      = ACCOUNT_CONFIG[acc]
+                const selected = form.account === acc
+                return (
+                  <button
+                    key={acc}
+                    onClick={() => setForm(f => ({ ...f, account: acc }))}
+                    className="flex-shrink-0 px-3 py-2 rounded-xl text-xs font-medium border transition-all whitespace-nowrap"
+                    style={selected ? {
+                      backgroundColor: cfg?.bg,
+                      color:           cfg?.color,
+                      borderColor:     cfg?.color,
+                    } : {
+                      backgroundColor: 'transparent',
+                      borderColor:     'rgba(255,255,255,0.1)',
+                      color:           'rgba(255,255,255,0.4)',
+                    }}
+                  >
+                    {cfg?.label || acc}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <Button variant="primary" size="lg" onClick={handleSave} disabled={saving} className="w-full">
+            {saving ? 'Saving…' : 'Save Changes'}
+          </Button>
+
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="w-full py-3 text-sm text-danger border border-danger/20 rounded-xl hover:bg-danger/5 transition-colors"
+          >
+            {deleting ? 'Removing…' : 'Remove this expense'}
+          </button>
+        </div>
+      </BottomSheet>
+    </>
   )
 }
