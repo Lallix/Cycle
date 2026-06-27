@@ -13,43 +13,37 @@ const ACCOUNTS = [
 ]
 
 export default function AddExpenseSheet({ open, onClose, prefillCategory = null }) {
-  const { categories, addTransaction, loadTransactions } = useBudget()
+  const { categories, addTransaction } = useBudget()
   const toast = useToast()
 
-  const [amount, setAmount] = useState('')
-  const [description, setDescription] = useState('')
+  const [amount, setAmount]         = useState('')
+  const [notes, setNotes]           = useState('')
   const [categoryId, setCategoryId] = useState('')
-  const [account, setAccount] = useState('Capitec')
-  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'))
-  const [notes, setNotes] = useState('')
+  const [account, setAccount]       = useState('Capitec')
+  const [date, setDate]             = useState(format(new Date(), 'yyyy-MM-dd'))
   const [showMoreCats, setShowMoreCats] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [errors, setErrors] = useState({})
+  const [loading, setLoading]       = useState(false)
+  const [errors, setErrors]         = useState({})
   const amountRef = useRef(null)
 
-  // Variable categories (budgeted + unbudgeted)
-  const varCategories = categories.filter(c => c.type === 'variable')
-  const firstEight = varCategories.slice(0, 8)
-  const rest = varCategories.slice(8)
+  const varCategories = categories.filter(c => c.type === 'variable' || c.type === 'unbudgeted')
+  const firstEight    = varCategories.slice(0, 8)
+  const rest          = varCategories.slice(8)
 
   useEffect(() => {
     if (open) {
-      // Reset form
       setAmount('')
-      setDescription('')
+      setNotes('')
       setCategoryId(prefillCategory || '')
       setAccount('Capitec')
       setDate(format(new Date(), 'yyyy-MM-dd'))
-      setNotes('')
       setErrors({})
       setShowMoreCats(false)
-      // Focus amount input
       setTimeout(() => amountRef.current?.focus(), 400)
     }
   }, [open, prefillCategory])
 
   function handleAmountInput(val) {
-    // Only allow numbers and one decimal
     const cleaned = val.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')
     setAmount(cleaned)
     setErrors(e => ({ ...e, amount: null }))
@@ -63,7 +57,6 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
   function validate() {
     const errs = {}
     if (!amount || parseFloat(amount) <= 0) errs.amount = 'Enter a valid amount'
-    if (!description.trim()) errs.description = 'Description is required'
     setErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -73,14 +66,13 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
     setLoading(true)
     try {
       await addTransaction({
-        description: description.trim(),
-        amount: parseFloat(amount),
+        amount:      parseFloat(amount),
         category_id: categoryId || null,
         account,
         date,
-        notes: notes.trim() || null,
+        notes:       notes.trim() || null,
       })
-      toast('Expense added ✓', 'success')
+      toast('Expense added', 'success')
       onClose()
     } catch (err) {
       toast(err.message || 'Failed to save', 'error')
@@ -91,10 +83,10 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
 
   return (
     <BottomSheet open={open} onClose={onClose} title="Add Expense">
-      <div className="px-5 pb-safe space-y-5" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 1.5rem)' }}>
+      <div className="px-5 space-y-5" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 1.5rem)' }}>
 
-        {/* Amount input — big and prominent */}
-        <div className="bg-bg-elevated rounded-2xl border border-border px-4 py-4">
+        {/* Amount */}
+        <div className="bg-surface-1 rounded-2xl border border-border px-4 py-4">
           <label className="text-xs text-muted uppercase tracking-widest block mb-2">Amount</label>
           <div className="flex items-center gap-2">
             <span className="font-mono text-3xl text-muted font-light">R</span>
@@ -105,39 +97,27 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
               placeholder="0.00"
               value={amount}
               onChange={e => handleAmountInput(e.target.value)}
-              className="flex-1 bg-transparent font-mono text-4xl font-medium text-text-primary focus:outline-none placeholder:text-border-light"
+              className="flex-1 bg-transparent font-mono text-3xl outline-none text-fg placeholder-muted"
             />
           </div>
-          {errors.amount && <p className="text-xs text-danger mt-1">{errors.amount}</p>}
-
+          {errors.amount && (
+            <p className="text-xs text-danger mt-1">{errors.amount}</p>
+          )}
           {/* Quick amounts */}
           <div className="flex gap-2 mt-3">
             {QUICK_AMOUNTS.map(q => (
               <button
                 key={q}
                 onClick={() => addQuickAmount(q)}
-                className="quick-amount"
+                className="flex-1 py-1.5 rounded-lg text-xs font-mono border border-border text-muted hover:text-fg hover:border-border-strong transition-colors"
               >
-                +{formatMoney(q, 'ZAR', true).replace('R', 'R')}
+                +{formatMoney(q)}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Description */}
-        <div>
-          <label className="text-xs text-muted uppercase tracking-widest block mb-2">Description</label>
-          <input
-            type="text"
-            placeholder="What was this for?"
-            value={description}
-            onChange={e => { setDescription(e.target.value); setErrors(e => ({ ...e, description: null })) }}
-            className={`w-full bg-bg-elevated border rounded-xl px-4 py-3 text-sm text-text-primary placeholder:text-muted focus:outline-none focus:border-gold transition-all ${errors.description ? 'border-danger' : 'border-border'}`}
-          />
-          {errors.description && <p className="text-xs text-danger mt-1">{errors.description}</p>}
-        </div>
-
-        {/* Category grid */}
+        {/* Category */}
         <div>
           <label className="text-xs text-muted uppercase tracking-widest block mb-2">Category</label>
           <div className="grid grid-cols-4 gap-2">
@@ -145,24 +125,24 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
               <button
                 key={cat.id}
                 onClick={() => setCategoryId(cat.id === categoryId ? '' : cat.id)}
-                className={`category-btn ${cat.id === categoryId ? 'selected' : ''}`}
+                className={`py-2 px-1 rounded-xl text-xs border transition-all active:scale-95 flex flex-col items-center gap-1
+                  ${categoryId === cat.id
+                    ? 'border-gold/50 bg-gold/10 text-gold'
+                    : 'border-border bg-surface-1 text-muted'}`}
               >
-                <span className="text-xl">{cat.icon}</span>
-                <span className="text-2xs text-center leading-tight text-text-secondary truncate w-full">
-                  {cat.name.split(' ')[0]}
-                </span>
+                <span className="text-lg">{cat.icon || '💳'}</span>
+                <span className="truncate w-full text-center">{cat.name}</span>
               </button>
             ))}
           </div>
-
           {rest.length > 0 && (
             <>
               <button
-                onClick={() => setShowMoreCats(!showMoreCats)}
-                className="flex items-center gap-1 mt-2 text-xs text-muted tappable"
+                onClick={() => setShowMoreCats(v => !v)}
+                className="flex items-center gap-1 text-xs text-muted mt-2 hover:text-fg transition-colors"
               >
-                <ChevronDown size={14} className={`transition-transform ${showMoreCats ? 'rotate-180' : ''}`} />
-                {showMoreCats ? 'Less' : `${rest.length} more`}
+                <ChevronDown size={12} className={`transition-transform ${showMoreCats ? 'rotate-180' : ''}`} />
+                {showMoreCats ? 'Show less' : `${rest.length} more`}
               </button>
               {showMoreCats && (
                 <div className="grid grid-cols-4 gap-2 mt-2">
@@ -170,12 +150,13 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
                     <button
                       key={cat.id}
                       onClick={() => setCategoryId(cat.id === categoryId ? '' : cat.id)}
-                      className={`category-btn ${cat.id === categoryId ? 'selected' : ''}`}
+                      className={`py-2 px-1 rounded-xl text-xs border transition-all active:scale-95 flex flex-col items-center gap-1
+                        ${categoryId === cat.id
+                          ? 'border-gold/50 bg-gold/10 text-gold'
+                          : 'border-border bg-surface-1 text-muted'}`}
                     >
-                      <span className="text-xl">{cat.icon}</span>
-                      <span className="text-2xs text-center leading-tight text-text-secondary truncate w-full">
-                        {cat.name.split(' ')[0]}
-                      </span>
+                      <span className="text-lg">{cat.icon || '💳'}</span>
+                      <span className="truncate w-full text-center">{cat.name}</span>
                     </button>
                   ))}
                 </div>
@@ -184,7 +165,7 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
           )}
         </div>
 
-        {/* Account selector */}
+        {/* Account */}
         <div>
           <label className="text-xs text-muted uppercase tracking-widest block mb-2">Account</label>
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
@@ -220,33 +201,34 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
             type="date"
             value={date}
             onChange={e => setDate(e.target.value)}
-            className="w-full bg-bg-elevated border border-border rounded-xl px-4 py-3 text-sm text-text-primary focus:outline-none focus:border-gold transition-all font-mono"
+            className="w-full bg-surface-1 border border-border rounded-xl px-4 py-3 text-sm text-fg"
             style={{ colorScheme: 'dark' }}
           />
         </div>
 
         {/* Notes (optional) */}
         <div>
-          <label className="text-xs text-muted uppercase tracking-widest block mb-2">Notes <span className="text-border-light normal-case">(optional)</span></label>
+          <label className="text-xs text-muted uppercase tracking-widest block mb-2">Notes <span className="normal-case">(optional)</span></label>
           <input
             type="text"
-            placeholder="Any additional notes..."
+            placeholder="e.g. Checkers weekly shop"
             value={notes}
             onChange={e => setNotes(e.target.value)}
-            className="w-full bg-bg-elevated border border-border rounded-xl px-4 py-3 text-sm text-text-primary placeholder:text-muted focus:outline-none focus:border-gold transition-all"
+            className="w-full bg-surface-1 border border-border rounded-xl px-4 py-3 text-sm text-fg placeholder-muted"
           />
         </div>
 
-        {/* Save button */}
+        {/* Save */}
         <Button
-          onClick={handleSave}
-          loading={loading}
-          fullWidth
+          variant="primary"
           size="lg"
-          className="mt-2"
+          onClick={handleSave}
+          disabled={loading}
+          className="w-full"
         >
-          Save Expense
+          {loading ? 'Saving…' : 'Add Expense'}
         </Button>
+
       </div>
     </BottomSheet>
   )
