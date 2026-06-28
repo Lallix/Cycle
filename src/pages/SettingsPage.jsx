@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useBudget } from '../context/BudgetContext'
 import { useToast } from '../components/ui/Toast'
-import { formatMoney, EMOJI_OPTIONS, COLOR_OPTIONS } from '../lib/format'
+import { formatMoney, COLOR_OPTIONS } from '../lib/format'
 import PageHeader from '../components/ui/PageHeader'
 import Button from '../components/ui/Button'
 import BottomSheet from '../components/ui/BottomSheet'
-import { User, Wallet, LogOut, Plus, Edit2, Trash2, RefreshCw } from 'lucide-react'
+import { User, Wallet, LogOut, Plus, Edit2, Trash2, RefreshCw, Smile } from 'lucide-react'
+import Picker from '@emoji-mart/react'
+import data from '@emoji-mart/data'
 
 const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev'
 
@@ -25,6 +27,7 @@ export default function SettingsPage() {
   const [profileForm, setProfileForm]   = useState({ full_name: '', cycle_start_day: 25 })
   const [incomeAmount, setIncomeAmount] = useState('')
   const [saving, setSaving]             = useState(false)
+  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
 
   // ── Profile ────────────────────────────────────────────────
   function openProfile() {
@@ -342,17 +345,42 @@ export default function SettingsPage() {
 
           <div>
             <label className="text-xs text-muted uppercase tracking-widest block mb-2">Icon</label>
-            <div className="grid grid-cols-10 gap-2">
-              {EMOJI_OPTIONS.map(em => (
-                <button
-                  key={em}
-                  onClick={() => setCatForm(f => ({ ...f, icon: em }))}
-                  className={`text-xl p-1 rounded-lg border transition-all ${catForm.icon === em ? 'border-gold bg-gold/10' : 'border-transparent hover:border-border'}`}
-                >
-                  {em}
-                </button>
-              ))}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: 14,
+                background: '#2E2E2E', border: '0.5px solid #3A3A3A',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26,
+              }}>
+                {catForm.icon || '💳'}
+              </div>
+              <button
+                onClick={() => setEmojiPickerOpen(v => !v)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '8px 14px', borderRadius: 10,
+                  background: '#2E2E2E', border: '0.5px solid #3A3A3A',
+                  color: '#FFD166', fontFamily: 'Inter, sans-serif', fontSize: 13, cursor: 'pointer',
+                }}
+              >
+                <Smile size={15} />
+                {emojiPickerOpen ? 'Close picker' : 'Choose emoji'}
+              </button>
             </div>
+            {emojiPickerOpen && (
+              <div style={{ marginTop: 10, borderRadius: 16, overflow: 'hidden', border: '0.5px solid #2A2A2A' }}>
+                <Picker
+                  data={data}
+                  theme="dark"
+                  onEmojiSelect={(emoji) => {
+                    setCatForm(f => ({ ...f, icon: emoji.native }))
+                    setEmojiPickerOpen(false)
+                  }}
+                  previewPosition="none"
+                  skinTonePosition="none"
+                  maxFrequentRows={2}
+                />
+              </div>
+            )}
           </div>
 
           <div>

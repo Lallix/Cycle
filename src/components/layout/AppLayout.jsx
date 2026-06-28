@@ -51,10 +51,18 @@ export default function AppLayout() {
 
   return (
     <div className="flex flex-col bg-bg" style={{ height: '100dvh' }}>
-      {/* Page content */}
+      {/* Page content — fade transition on route change */}
       <main className="flex-1 overflow-y-auto overscroll-contain">
-        <Outlet />
+        <div style={{ animation: 'pageFadeIn 0.25s ease-out both' }}>
+          <Outlet />
+        </div>
       </main>
+      <style>{`
+        @keyframes pageFadeIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
 
       {/* Bottom nav */}
       <nav

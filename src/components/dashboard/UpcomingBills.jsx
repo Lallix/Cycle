@@ -6,7 +6,7 @@ import { CheckCircle, Clock } from 'lucide-react'
 import { format } from 'date-fns'
 
 export default function UpcomingBills() {
-  const { recurringExpenses, cycle, toggleRecurringPaid } = useBudget()
+  const { recurringExpenses, cycle, toggleRecurringPaid, isRecurringPaid } = useBudget()
   const toast = useToast()
 
   const upcoming = getUpcomingDays(recurringExpenses, cycle, 7)
@@ -16,7 +16,7 @@ export default function UpcomingBills() {
   async function handleToggle(expense) {
     try {
       await toggleRecurringPaid(expense.id)
-      toast(expense.paid_this_cycle ? 'Marked as unpaid' : 'Marked as paid ✓', 'success')
+      toast(isRecurringPaid(expense.id) ? 'Marked as unpaid' : 'Marked as paid ✓', 'success')
     } catch (err) {
       toast('Failed to update', 'error')
     }
@@ -41,7 +41,7 @@ export default function UpcomingBills() {
               className={`
                 flex-shrink-0 flex flex-col gap-2.5 p-3.5 rounded-2xl border min-w-[130px]
                 transition-all duration-150 active:scale-95 text-left
-                ${exp.paid_this_cycle
+                ${isRecurringPaid(exp.id)
                   ? 'bg-bg-elevated border-success/30 opacity-60'
                   : 'bg-bg-card border-border'
                 }
@@ -54,14 +54,14 @@ export default function UpcomingBills() {
                 }`}>
                   {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : format(exp.dueDate, 'd MMM')}
                 </span>
-                {exp.paid_this_cycle
+                {isRecurringPaid(exp.id)
                   ? <CheckCircle size={14} className="text-success" />
                   : <Clock size={14} className="text-muted" />
                 }
               </div>
 
               {/* Name */}
-              <p className="text-xs font-medium text-text-primary leading-tight">{exp.description}</p>
+              <p className="text-xs font-medium text-text-primary leading-tight">{exp.name}</p>
 
               {/* Amount + account */}
               <div>

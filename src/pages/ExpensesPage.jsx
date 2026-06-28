@@ -27,8 +27,7 @@ export default function ExpensesPage() {
   const [editOpen, setEditOpen] = useState(false)
   const [editingTx, setEditingTx] = useState(null)
   const [search, setSearch] = useState('')
-  const [filterAccount, setFilterAccount] = useState('All')
-  const [filterCategory, setFilterCategory] = useState(null)
+  const [activeFilter, setActiveFilter] = useState(null)
   const [editForm, setEditForm] = useState({})
   const [saving, setSaving] = useState(false)
 
@@ -37,12 +36,18 @@ export default function ExpensesPage() {
   // Filter transactions
   const filtered = useMemo(() => {
     return transactions.filter(tx => {
-      const matchSearch = !search || tx.description.toLowerCase().includes(search.toLowerCase())
-      const matchAccount = filterAccount === 'All' || tx.account === filterAccount
-      const matchCat = !filterCategory || tx.category_id === filterCategory
-      return matchSearch && matchAccount && matchCat
+      const cat = tx.cycle_categories || tx.categories
+      const catName = cat?.name || ''
+      const matchSearch = !search ||
+        (cat?.name || '').toLowerCase().includes(search.toLowerCase()) ||
+        (tx.notes || '').toLowerCase().includes(search.toLowerCase()) ||
+        (tx.account || '').toLowerCase().includes(search.toLowerCase())
+      const matchFilter = !activeFilter ||
+        (activeFilter.type === 'category' && tx.category_id === activeFilter.id) ||
+        (activeFilter.type === 'account' && tx.account === activeFilter.value)
+      return matchSearch && matchFilter
     })
-  }, [transactions, search, filterAccount, filterCategory])
+  }, [transactions, search, activeFilter])
 
   // Group by date
   const grouped = useMemo(() => {
@@ -58,7 +63,7 @@ export default function ExpensesPage() {
   function handleEdit(tx) {
     setEditingTx(tx)
     setEditForm({
-      description: tx.description,
+      notes: tx.notes || '',
       amount: String(tx.amount),
       category_id: tx.category_id || '',
       account: tx.account,
@@ -126,11 +131,8 @@ export default function ExpensesPage() {
       {/* Filters */}
       <div className="mb-4">
         <ExpenseFilters
-          active={filterAccount}
-          onChange={setFilterAccount}
-          categories={categories.filter(c => c.type === 'variable')}
-          activeCategory={filterCategory}
-          onCategoryChange={setFilterCategory}
+          activeFilter={activeFilter}
+          onFilterChange={setActiveFilter}
         />
       </div>
 
@@ -179,11 +181,11 @@ export default function ExpensesPage() {
       <BottomSheet open={editOpen} onClose={() => setEditOpen(false)} title="Edit Expense">
         <div className="px-5 pb-8 space-y-4">
           <div>
-            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Description</label>
+            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Notes</label>
             <input
               type="text"
-              value={editForm.description || ''}
-              onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
+              value={editForm.notes || ''}
+              onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
               className="w-full bg-bg-elevated border border-border rounded-xl px-4 py-3 text-sm text-text-primary placeholder:text-muted focus:outline-none focus:border-gold transition-all"
             />
           </div>
