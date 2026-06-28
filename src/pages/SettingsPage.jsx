@@ -215,7 +215,10 @@ export default function SettingsPage() {
           </button>
         </section>
 
-        <p className="text-center text-xs text-muted pb-2">Cycle · {APP_VERSION}</p>
+        <div className="flex flex-col items-center gap-1 pb-4 pt-2">
+          <p className="text-xs text-muted">Cycle · {APP_VERSION}</p>
+          <p className="text-xs" style={{ color: '#3A3530', letterSpacing: '0.08em' }}>Crafted by PGV</p>
+        </div>
       </div>
 
       {/* Edit Profile Sheet */}

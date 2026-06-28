@@ -4,10 +4,21 @@
 
 @layer base {
   :root {
-    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-top:    env(safe-area-inset-top, 0px);
     --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-    --nav-height: 64px;
-    --header-height: 56px;
+    --nav-height:       64px;
+    --header-height:    56px;
+
+    /* Design bible gold scale */
+    --gold:       #FFD166;
+    --gold-dark:  #E6BB45;
+    --gold-light: #FFE8A3;
+    --gold-glow:  rgba(255,209,102,0.25);
+
+    /* Surface scale */
+    --bg:          #0D0D0D;
+    --bg-surface:  #1B1B1B;
+    --bg-elevated: #2E2E2E;
   }
 
   * {
@@ -21,174 +32,323 @@
   }
 
   body {
-    background-color: #0E0E0E;
-    color: #F5F5F5;
-    font-family: 'Poppins', system-ui, sans-serif;
+    background-color: #0D0D0D;
+    color: #FFFFFF;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
     min-height: 100svh;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Headings use Poppins SemiBold */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-weight: 600;
+    color: #FFFFFF;
+  }
+
+  /* All inputs use Inter */
   input, textarea, select {
     outline: none;
-    font-family: 'Poppins', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #FFFFFF;
+    background: transparent;
+  }
+
+  /* Inputs on dark backgrounds */
+  input::placeholder,
+  textarea::placeholder {
+    color: #717179;
+  }
+
+  /* Dark colour scheme for native pickers */
+  input[type="date"],
+  input[type="number"],
+  select {
+    color-scheme: dark;
   }
 
   button {
     cursor: pointer;
-    font-family: 'Poppins', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 }
 
 @layer components {
-  /* Money values always use DM Mono */
+
+  /* ── Money / numeric values — Poppins Medium tabular ─────── */
   .money {
-    font-family: 'DM Mono', monospace;
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-weight: 500;
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
   }
 
-  /* Card styles */
+  /* ── Heading utility ─────────────────────────────────────── */
+  .heading {
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-weight: 600;
+  }
+
+  /* ── Card ────────────────────────────────────────────────── */
   .card {
-    @apply bg-bg-card rounded-2xl border border-border p-4;
+    background: #1B1B1B;
+    border-radius: 1.25rem;       /* 20px — design bible rule 12 */
+    border: 0.5px solid #2A2A2A;
+    padding: 1rem;
   }
 
-  .card-surface {
-    @apply bg-bg-surface rounded-2xl border border-border p-4;
+  .card-elevated {
+    background: #2E2E2E;
+    border-radius: 1.25rem;
+    border: 0.5px solid #3A3A3A;
+    padding: 1rem;
   }
 
-  /* Gold gradient text */
+  /* ── Gold gradient text ──────────────────────────────────── */
   .text-gold-gradient {
-    background: linear-gradient(135deg, #D4AF37 0%, #E5C76B 100%);
+    background: linear-gradient(135deg, #FFD166 0%, #FFE8A3 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* Input styles */
+  /* ── Input base ──────────────────────────────────────────── */
   .input-base {
-    @apply w-full bg-bg-elevated border border-border rounded-xl px-4 py-3 text-text-primary text-sm transition-all duration-200;
-    @apply focus:border-gold focus:ring-1 focus:ring-gold/30;
-    @apply placeholder:text-muted;
+    width: 100%;
+    background: #1B1B1B;
+    border: 0.5px solid #2A2A2A;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: #FFFFFF;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.875rem;
+    transition: border-color 0.2s ease;
   }
 
-  /* Bottom nav safe area */
+  .input-base:focus {
+    border-color: rgba(255,209,102,0.5);
+    box-shadow: 0 0 0 3px rgba(255,209,102,0.08);
+  }
+
+  .input-base::placeholder {
+    color: #717179;
+  }
+
+  /* ── Navigation safe area ────────────────────────────────── */
   .nav-safe {
     padding-bottom: calc(var(--safe-area-bottom) + 0.5rem);
   }
 
-  /* Page padding accounting for nav */
   .page-content {
     padding-bottom: calc(var(--nav-height) + var(--safe-area-bottom) + 1rem);
     padding-top: var(--safe-area-top);
   }
 
-  /* Shimmer loading effect */
+  /* ── Shimmer skeleton ────────────────────────────────────── */
   .shimmer {
-    background: linear-gradient(90deg, #1C1C1C 25%, #242424 50%, #1C1C1C 75%);
+    background: linear-gradient(90deg, #1B1B1B 25%, #2E2E2E 50%, #1B1B1B 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
   }
 
   @keyframes shimmer {
-    0% { background-position: 200% 0; }
+    0%   { background-position: 200% 0; }
     100% { background-position: -200% 0; }
   }
 
-  /* Progress bar animation */
+  /* ── Progress bar ────────────────────────────────────────── */
   .progress-bar {
-    transition: width 0.6s cubic-bezier(0.32, 0.72, 0, 1);
+    transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  /* Swipe delete hint */
-  .swipe-item {
-    transition: transform 0.2s ease;
-    will-change: transform;
-  }
-
-  /* FAB */
+  /* ── FAB ─────────────────────────────────────────────────── */
   .fab {
-    @apply fixed bottom-0 right-4 w-14 h-14 rounded-full bg-gradient-gold shadow-gold flex items-center justify-center z-40 transition-all duration-200;
-    @apply active:scale-95;
+    position: fixed;
+    right: 1rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background: #FFD166;
+    box-shadow: 0 0 24px rgba(255,209,102,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 40;
+    transition: all 0.2s ease;
     bottom: calc(var(--nav-height) + var(--safe-area-bottom) + 1rem);
   }
 
-  /* Bottom sheet overlay */
+  .fab:active {
+    transform: scale(0.93);
+    box-shadow: 0 0 12px rgba(255,209,102,0.2);
+  }
+
+  /* ── Bottom sheet ────────────────────────────────────────── */
   .sheet-overlay {
-    @apply fixed inset-0 bg-black/70 backdrop-blur-sm z-50;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 50;
   }
 
-  /* Bottom sheet */
   .sheet {
-    @apply fixed bottom-0 left-0 right-0 bg-bg-surface rounded-t-3xl z-50 shadow-sheet;
-    @apply animate-slide-up;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: #1B1B1B;
+    border-radius: 1.5rem 1.5rem 0 0;
+    border-top: 0.5px solid #2A2A2A;
+    z-index: 51;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.7);
     max-height: 92svh;
+    overflow-y: auto;
+    animation: slideUp 0.35s cubic-bezier(0.22,1,0.36,1);
   }
 
-  /* Badge */
+  /* ── Badge ───────────────────────────────────────────────── */
   .badge {
-    @apply inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
   }
 
-  /* Status badge */
-  .badge-paid {
-    @apply bg-success/20 text-success;
-  }
+  .badge-paid   { background: rgba(34,197,94,0.15);  color: #22C55E; }
+  .badge-unpaid { background: rgba(255,179,71,0.15);  color: #FFB347; }
+  .badge-over   { background: rgba(239,68,68,0.15);   color: #EF4444; }
 
-  .badge-unpaid {
-    @apply bg-warning/20 text-warning;
-  }
-
-  /* Quick amount button */
+  /* ── Quick amount ────────────────────────────────────────── */
   .quick-amount {
-    @apply flex-1 bg-bg-elevated border border-border rounded-xl py-2.5 text-center text-sm font-medium text-text-secondary;
-    @apply transition-all duration-150 active:scale-95 hover:border-gold/50 hover:text-gold;
+    flex: 1;
+    background: #2E2E2E;
+    border: 0.5px solid #3A3A3A;
+    border-radius: 0.75rem;
+    padding: 0.625rem 0;
+    text-align: center;
+    font-size: 0.8125rem;
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-weight: 500;
+    color: #A1A1AA;
+    transition: all 0.15s ease;
   }
 
-  /* Category grid button */
-  .category-btn {
-    @apply flex flex-col items-center gap-1.5 p-3 rounded-2xl border border-border bg-bg-elevated;
-    @apply transition-all duration-150 active:scale-95;
+  .quick-amount:active {
+    transform: scale(0.95);
+    border-color: rgba(255,209,102,0.4);
+    color: #FFD166;
   }
+
+  /* ── Category button ─────────────────────────────────────── */
+  .category-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.625rem 0.25rem;
+    border-radius: 0.875rem;
+    border: 0.5px solid #2A2A2A;
+    background: #1B1B1B;
+    transition: all 0.15s ease;
+  }
+
+  .category-btn:active { transform: scale(0.94); }
 
   .category-btn.selected {
-    @apply border-gold bg-gold/10;
+    border-color: rgba(255,209,102,0.5);
+    background: rgba(255,209,102,0.08);
   }
 
-  /* Tappable default */
+  /* ── Tappable ────────────────────────────────────────────── */
   .tappable {
-    @apply transition-all duration-150 active:scale-95;
+    transition: all 0.15s ease;
   }
+  .tappable:active { transform: scale(0.97); }
 
-  /* Section label */
+  /* ── Section label ───────────────────────────────────────── */
   .section-label {
-    @apply text-xs font-semibold uppercase tracking-widest text-muted mb-3;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #717179;
+    margin-bottom: 0.75rem;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 
-  /* Divider */
-  .divider {
-    @apply border-t border-border;
+  /* ── Divider ─────────────────────────────────────────────── */
+  .divider { border-top: 0.5px solid #2A2A2A; }
+
+  /* ── Gold ring glow (used on splash + hero) ──────────────── */
+  .ring-glow {
+    filter: drop-shadow(0 0 8px rgba(255,209,102,0.4))
+            drop-shadow(0 0 20px rgba(255,209,102,0.15));
+  }
+
+  /* ── Primary button (design bible style) ────────────────── */
+  .btn-primary {
+    width: 100%;
+    padding: 0.875rem;
+    background: #FFD166;
+    border-radius: 0.875rem;
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #0D0D0D;
+    text-align: center;
+    transition: all 0.2s ease;
+    border: none;
+  }
+  .btn-primary:active {
+    transform: scale(0.97);
+    background: #E6BB45;
+  }
+
+  /* ── Secondary button ────────────────────────────────────── */
+  .btn-secondary {
+    width: 100%;
+    padding: 0.875rem;
+    background: transparent;
+    border-radius: 0.875rem;
+    border: 0.5px solid #3A3A3A;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: #FFFFFF;
+    text-align: center;
+    transition: all 0.2s ease;
+  }
+  .btn-secondary:active {
+    transform: scale(0.97);
+    border-color: rgba(255,209,102,0.3);
   }
 }
 
 @layer utilities {
-  /* Prevent text selection on interactive elements */
   .no-select {
     -webkit-user-select: none;
     user-select: none;
   }
 
-  /* Safe padding bottom */
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  .pt-safe { padding-top: env(safe-area-inset-top); }
 
-  .pt-safe {
-    padding-top: env(safe-area-inset-top);
-  }
-
-  /* Overflow visible but clip only on x */
   .overflow-clip-x {
     overflow-x: hidden;
     overflow-y: visible;
   }
+
+  /* Hide scrollbar but keep scroll */
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
 }

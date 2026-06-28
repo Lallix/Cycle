@@ -1,70 +1,59 @@
-/**
- * BrandLogo — V1 Placeholder
- * ─────────────────────────────────────────────────────────
- * This is a temporary placeholder for Version 1.
- * In Version 2, replace this entire file with your production logo.
- * The component API is:
- *   <BrandLogo size={number} animated={boolean} className={string} />
- * ─────────────────────────────────────────────────────────
- */
+// Ring mark — used in loading screens, settings footer, etc.
+// No letter inside — the ring IS the logo (design bible section 4)
 
 export default function BrandLogo({ size = 48, animated = false, className = '' }) {
-  const strokeWidth = size < 60 ? 2.5 : 2
-  const innerSize = size * 0.5
-  const fontSize = size * 0.22
+  const s = size
+  const stroke = Math.max(1.5, s * 0.03)
 
   return (
     <div
       className={`relative flex items-center justify-center ${className}`}
-      style={{ width: size, height: size }}
+      style={{ width: s, height: s }}
     >
-      {/* Outer gold ring */}
-      <svg
-        width={size}
-        height={size}
-        viewBox={`0 0 ${size} ${size}`}
-        className={animated ? 'animate-pulse-gold' : ''}
-      >
-        {/* Glow effect */}
-        <defs>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
+      {animated && (
+        <style>{`
+          @keyframes blSpinCW  { from { transform: rotate(0deg) }   to { transform: rotate(360deg) } }
+          @keyframes blSpinCCW { from { transform: rotate(0deg) }   to { transform: rotate(-360deg) } }
+        `}</style>
+      )}
 
-        {/* Outer circle */}
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={size / 2 - strokeWidth / 2 - 1}
-          stroke="#D4AF37"
-          strokeWidth={strokeWidth}
-          fill="none"
-          filter="url(#glow)"
-        />
-
-        {/* Inner subtle ring */}
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={size / 2 - strokeWidth * 3}
-          stroke="rgba(212,175,55,0.2)"
-          strokeWidth={1}
-          fill="none"
-        />
-      </svg>
-
-      {/* Letter mark */}
+      {/* Outer ring CW */}
       <div
-        className="absolute inset-0 flex items-center justify-center"
-        style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: fontSize, color: '#D4AF37' }}
-      >
-        C
-      </div>
+        className="absolute rounded-full"
+        style={{
+          width: s * 0.94, height: s * 0.94,
+          border: `${stroke}px solid transparent`,
+          borderTopColor: '#FFD166',
+          borderRightColor: '#FFD166',
+          borderBottomColor: '#2A2010',
+          borderLeftColor: '#2A2010',
+          animation: animated ? 'blSpinCW 4s linear infinite' : 'none',
+          filter: 'drop-shadow(0 0 4px rgba(255,209,102,0.4))',
+        }}
+      />
+
+      {/* Inner ring CCW */}
+      <div
+        className="absolute rounded-full"
+        style={{
+          width: s * 0.68, height: s * 0.68,
+          border: `${stroke}px solid transparent`,
+          borderTopColor: '#FFE8A3',
+          borderLeftColor: '#FFE8A3',
+          borderBottomColor: '#1A1508',
+          borderRightColor: '#1A1508',
+          animation: animated ? 'blSpinCCW 2.5s linear infinite' : 'none',
+        }}
+      />
+
+      {/* Centre fill */}
+      <div
+        className="absolute rounded-full"
+        style={{
+          width: s * 0.36, height: s * 0.36,
+          background: '#0D0D0D',
+        }}
+      />
     </div>
   )
 }
