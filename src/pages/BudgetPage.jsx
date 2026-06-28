@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { useBudget } from '../context/BudgetContext'
+import { useNavigate } from 'react-router-dom'
 import { useToast } from '../components/ui/Toast'
 import { formatMoney, ACCOUNT_CONFIG } from '../lib/format'
-import PageHeader from '../components/ui/PageHeader'
 import Button from '../components/ui/Button'
 import BottomSheet from '../components/ui/BottomSheet'
 import FixedExpenseRow from '../components/budget/FixedExpenseRow'
 import VariableBudgetRow from '../components/budget/VariableBudgetRow'
-import { Plus } from 'lucide-react'
+import { Plus, ArrowLeft } from 'lucide-react'
 
 const ACCOUNTS = [
   'Capitec', 'FNB', 'Absa', 'Standard', 'Nedbank',
@@ -18,6 +18,7 @@ const BLANK_FIXED = { name: '', amount: '', account: 'Capitec', due_day: '1' }
 
 export default function BudgetPage() {
   const { categories, recurringExpenses, totals, addRecurringExpense } = useBudget()
+  const navigate = useNavigate()
   const toast = useToast()
 
   const [fixedOpen, setFixedOpen]   = useState(false)
@@ -49,7 +50,25 @@ export default function BudgetPage() {
 
   return (
     <div className="pb-28">
-      <PageHeader title="Budget" subtitle={`Cycle total: ${formatMoney(totals.income)}`} />
+      {/* Header with back button */}
+      <div
+        className="flex items-center gap-3 px-4 pb-2"
+        style={{ paddingTop: 'max(env(safe-area-inset-top), 1rem)' }}
+      >
+        <button
+          onClick={() => navigate('/')}
+          className="w-9 h-9 flex items-center justify-center rounded-2xl border border-border tappable"
+          style={{ background: '#1B1B1B' }}
+        >
+          <ArrowLeft size={18} className="text-subtle" />
+        </button>
+        <div>
+          <h1 className="heading text-lg text-fg">Budget</h1>
+          <p className="text-xs text-subtle" style={{ fontFamily: 'Inter, sans-serif' }}>
+            Cycle total · {formatMoney(totals.income)}
+          </p>
+        </div>
+      </div>
 
       <div className="px-4 space-y-6">
 

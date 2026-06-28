@@ -78,7 +78,7 @@ export default function App() {
 
   useEffect(() => {
     // Show splash for ~2.2s then start fade-out
-    const timer = setTimeout(() => setSplashVisible(false), 2200);
+    const timer = setTimeout(() => setSplashVisible(false), 2500);
     return () => clearTimeout(timer);
   }, []);
 

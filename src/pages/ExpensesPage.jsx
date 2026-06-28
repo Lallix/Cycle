@@ -105,7 +105,7 @@ export default function ExpensesPage() {
       style={{ paddingBottom: 'calc(64px + env(safe-area-inset-bottom) + 5rem)' }}
     >
       <PageHeader
-        title="Expenses"
+        title="Transactions"
         subtitle={`${filtered.length} transactions · ${formatMoney(totalShown)} total`}
       />
 
