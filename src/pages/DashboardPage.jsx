@@ -38,23 +38,43 @@ export default function DashboardPage() {
           <h1 className="heading text-lg text-fg">{firstName}</h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Refresh */}
           <button
             onClick={refresh}
             disabled={refreshing}
-            className="w-9 h-9 flex items-center justify-center rounded-2xl border border-border tappable"
-            style={{ background: '#1B1B1B' }}
+            style={{
+              width: 38, height: 38,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              borderRadius: 12, border: '0.5px solid #2A2A2A',
+              background: '#1B1B1B', cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
           >
-            <RefreshCw size={15} className={`text-subtle ${refreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw size={16} color={refreshing ? '#FFD166' : '#717179'}
+              className={refreshing ? 'animate-spin' : ''} />
           </button>
+
+          {/* Savings */}
           <button
             onClick={() => setSavingsOpen(true)}
-            className="w-9 h-9 flex items-center justify-center rounded-2xl border border-border tappable"
-            style={{ background: '#1B1B1B' }}
+            style={{
+              width: 38, height: 38,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              borderRadius: 12,
+              border: '0.5px solid rgba(255,209,102,0.25)',
+              background: 'rgba(255,209,102,0.08)',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
           >
-            <PiggyBank size={17} className="text-gold" />
+            <PiggyBank size={18} color="#FFD166" />
           </button>
-          <BrandLogo size={32} animated />
+
+          {/* Brand mark — decorative only */}
+          <div style={{ pointerEvents: 'none' }}>
+            <BrandLogo size={32} animated />
+          </div>
         </div>
       </div>
 
