@@ -9,6 +9,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading]                 = useState(true)
   const [biometricAvailable, setBiometricAvailable] = useState(false)
   const [biometricEnabled, setBiometricEnabled]     = useState(false)
+  const [sessionUnlocked, setSessionUnlocked]       = useState(false)
 
   useEffect(() => { checkBiometric() }, [])
 
@@ -158,6 +159,7 @@ export function AuthProvider({ children }) {
       user, profile, loading,
       biometricAvailable, biometricEnabled,
       signIn, signUp, signOut, resetPassword,
+      sessionUnlocked, setSessionUnlocked,
       updateProfile, refreshProfile,
       registerBiometric, authenticateWithBiometric, disableBiometric,
     }}>

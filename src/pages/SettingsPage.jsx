@@ -13,7 +13,7 @@ const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '
 const BLANK_CAT = { name: '', icon: '🛒', colour: '#D4AF37', budget_amount: '', type: 'variable' }
 
 export default function SettingsPage() {
-  const { user, profile, signOut, updateProfile } = useAuth()
+  const { user, profile, signOut, updateProfile, biometricAvailable, biometricEnabled, registerBiometric, disableBiometric } = useAuth()
   const { categories, incomeRecords, addCategory, updateCategory, deleteCategory, updateIncome, addIncome } = useBudget()
   const toast = useToast()
 
@@ -204,6 +204,41 @@ export default function SettingsPage() {
             )}
           </div>
         </section>
+
+        {/* Biometric */}
+        {biometricAvailable && (
+          <section>
+            <p className="text-xs text-muted uppercase tracking-widest mb-2">Security</p>
+            <div className="border border-border rounded-2xl overflow-hidden" style={{ background: '#1B1B1B' }}>
+              <div className="flex items-center justify-between p-4">
+                <div>
+                  <p className="text-sm font-medium text-fg" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    {biometricEnabled ? 'Biometric unlock' : 'Enable biometric unlock'}
+                  </p>
+                  <p className="text-xs text-subtle mt-0.5" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    {biometricEnabled ? 'Face ID / fingerprint active' : 'Use Face ID or fingerprint to unlock'}
+                  </p>
+                </div>
+                <button
+                  onClick={biometricEnabled ? disableBiometric : async () => {
+                    const ok = await registerBiometric()
+                    if (ok) toast('Biometric unlock enabled', 'success')
+                    else toast('Setup failed — try again', 'error')
+                  }}
+                  className="px-4 py-2 rounded-xl text-xs font-medium transition-all"
+                  style={{
+                    background: biometricEnabled ? 'rgba(239,68,68,0.1)' : 'rgba(255,209,102,0.1)',
+                    color: biometricEnabled ? '#EF4444' : '#FFD166',
+                    border: `0.5px solid ${biometricEnabled ? 'rgba(239,68,68,0.2)' : 'rgba(255,209,102,0.2)'}`,
+                    fontFamily: 'Inter, sans-serif',
+                  }}
+                >
+                  {biometricEnabled ? 'Disable' : 'Enable'}
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Sign out */}
         <section>

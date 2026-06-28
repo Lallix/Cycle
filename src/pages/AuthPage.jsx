@@ -1,38 +1,55 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Fingerprint } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../components/ui/Toast'
-import BrandLogo from '../components/branding/BrandLogo'
-import Button from '../components/ui/Button'
-import Input from '../components/ui/Input'
 
-const MODES = {
-  SIGNIN: 'signin',
-  SIGNUP: 'signup',
-  RESET: 'reset',
+const MODES = { SIGNIN: 'signin', SIGNUP: 'signup', RESET: 'reset' }
+
+// Mini ring for auth page header
+function AuthRing() {
+  return (
+    <>
+      <style>{`
+        @keyframes arCW  { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes arCCW { from{transform:rotate(0deg)} to{transform:rotate(-360deg)} }
+      `}</style>
+      <div style={{ width: 64, height: 64, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{
+          position: 'absolute', width: 60, height: 60, borderRadius: '50%',
+          border: '2px solid transparent',
+          borderTopColor: '#FFD166', borderRightColor: '#FFD166',
+          borderBottomColor: '#2A2010', borderLeftColor: '#2A2010',
+          animation: 'arCW 4s linear infinite',
+          filter: 'drop-shadow(0 0 5px rgba(255,209,102,0.5))',
+        }} />
+        <div style={{
+          position: 'absolute', width: 40, height: 40, borderRadius: '50%',
+          border: '1.5px solid transparent',
+          borderTopColor: '#FFE8A3', borderLeftColor: '#FFE8A3',
+          borderBottomColor: '#1A1508', borderRightColor: '#1A1508',
+          animation: 'arCCW 2.5s linear infinite',
+        }} />
+        <div style={{ position: 'absolute', width: 20, height: 20, borderRadius: '50%', background: '#0D0D0D' }} />
+      </div>
+    </>
+  )
 }
 
 export default function AuthPage() {
   const navigate = useNavigate()
-  const { signIn, signUp, resetPassword, biometricAvailable, biometricEnabled, authenticateWithBiometric } = useAuth()
+  const { signIn, signUp, resetPassword } = useAuth()
   const toast = useToast()
 
-  const [mode, setMode] = useState(MODES.SIGNIN)
-  const [loading, setLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-
-  const [form, setForm] = useState({
-    email: '',
-    password: '',
-    fullName: '',
-  })
-
-  const [errors, setErrors] = useState({})
+  const [mode, setMode]           = useState(MODES.SIGNIN)
+  const [loading, setLoading]     = useState(false)
+  const [showPassword, setShowPw] = useState(false)
+  const [form, setForm]           = useState({ email: '', password: '', fullName: '' })
+  const [errors, setErrors]       = useState({})
 
   function setField(field, value) {
-    setForm(prev => ({ ...prev, [field]: value }))
-    setErrors(prev => ({ ...prev, [field]: null }))
+    setForm(p => ({ ...p, [field]: value }))
+    setErrors(p => ({ ...p, [field]: null }))
   }
 
   function validate() {
@@ -51,7 +68,6 @@ export default function AuthPage() {
   async function handleSubmit(e) {
     e.preventDefault()
     if (!validate()) return
-
     setLoading(true)
     try {
       if (mode === MODES.SIGNIN) {
@@ -59,11 +75,11 @@ export default function AuthPage() {
         navigate('/')
       } else if (mode === MODES.SIGNUP) {
         await signUp(form.email, form.password, form.fullName)
-        toast('Account created! Check your email to confirm.', 'success', 5000)
+        toast('Account created! Check your email to confirm.', 'success')
         setMode(MODES.SIGNIN)
-      } else if (mode === MODES.RESET) {
+      } else {
         await resetPassword(form.email)
-        toast('Reset link sent to your email.', 'success', 5000)
+        toast('Reset link sent to your email.', 'success')
         setMode(MODES.SIGNIN)
       }
     } catch (err) {
@@ -73,168 +89,211 @@ export default function AuthPage() {
     }
   }
 
-  async function handleBiometric() {
-    setLoading(true)
-    try {
-      const success = await authenticateWithBiometric()
-      if (success) {
-        toast('Welcome back!', 'success')
-        navigate('/')
-      } else {
-        toast('Biometric authentication failed', 'error')
-      }
-    } catch {
-      toast('Biometric not available', 'error')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const inputStyle = (hasError) => ({
+    width: '100%', padding: '13px 16px',
+    background: '#1B1B1B',
+    border: `0.5px solid ${hasError ? '#EF4444' : '#2A2A2A'}`,
+    borderRadius: 12, color: '#FFFFFF',
+    fontFamily: 'Inter, sans-serif', fontSize: 14,
+    outline: 'none',
+    transition: 'border-color 0.2s ease',
+  })
 
   return (
-    <div className="min-h-svh bg-bg flex flex-col items-center justify-center px-6 py-12 animate-fade-in">
-      {/* Logo */}
-      <div className="flex flex-col items-center gap-4 mb-10">
-        <BrandLogo size={72} />
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gold tracking-widest uppercase">Cycle</h1>
-          <p className="text-xs text-muted mt-1 tracking-widest uppercase">Budget</p>
+    <div style={{
+      minHeight: '100svh', background: '#0D0D0D',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      padding: '48px 24px',
+    }}>
+
+      {/* Header */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 36 }}>
+        <AuthRing />
+        <div style={{
+          fontFamily: 'Poppins, sans-serif', fontSize: 26, fontWeight: 300,
+          color: '#FFD166', letterSpacing: '0.28em', textTransform: 'uppercase', marginTop: 16,
+        }}>
+          CYCLE
+        </div>
+        <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#717179', marginTop: 4, letterSpacing: '0.1em' }}>
+          Your budget. Your cycle.
+        </div>
+        <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 10, color: '#3A3530', marginTop: 4, letterSpacing: '0.08em' }}>
+          Crafted by PGV
         </div>
       </div>
 
       {/* Card */}
-      <div className="w-full max-w-sm bg-bg-surface rounded-3xl border border-border p-6 shadow-card">
+      <div style={{
+        width: '100%', maxWidth: 380,
+        background: '#1B1B1B',
+        borderRadius: 24, border: '0.5px solid #2A2A2A',
+        padding: 24,
+      }}>
+
         {/* Mode tabs */}
         {mode !== MODES.RESET && (
-          <div className="flex bg-bg-elevated rounded-xl p-1 mb-6">
+          <div style={{
+            display: 'flex', background: '#0D0D0D',
+            borderRadius: 12, padding: 4, marginBottom: 24,
+          }}>
             {[MODES.SIGNIN, MODES.SIGNUP].map(m => (
               <button
                 key={m}
                 onClick={() => { setMode(m); setErrors({}) }}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all duration-200 active:scale-95
-                  ${mode === m ? 'bg-bg-card text-text-primary shadow-sm' : 'text-muted'}`}
+                style={{
+                  flex: 1, padding: '9px 0',
+                  borderRadius: 9, border: 'none',
+                  background: mode === m ? '#2E2E2E' : 'transparent',
+                  color: mode === m ? '#FFFFFF' : '#717179',
+                  fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: mode === m ? 500 : 400,
+                  transition: 'all 0.2s ease', cursor: 'pointer',
+                }}
               >
-                {m === MODES.SIGNIN ? 'Sign In' : 'Sign Up'}
+                {m === MODES.SIGNIN ? 'Sign in' : 'Create account'}
               </button>
             ))}
           </div>
         )}
 
-        {/* Reset mode header */}
+        {/* Reset header */}
         {mode === MODES.RESET && (
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-text-primary">Reset Password</h2>
-            <p className="text-sm text-muted mt-1">We'll send a reset link to your email.</p>
+          <div style={{ marginBottom: 24 }}>
+            <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 18, fontWeight: 500, color: '#FFFFFF' }}>
+              Reset password
+            </p>
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#717179', marginTop: 4 }}>
+              We'll send a reset link to your email.
+            </p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Full name (signup only) */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+          {/* Full name — signup only */}
           {mode === MODES.SIGNUP && (
-            <Input
-              label="Full Name"
-              placeholder="Your name"
-              value={form.fullName}
-              onChange={e => setField('fullName', e.target.value)}
-              error={errors.fullName}
-              autoComplete="name"
-            />
+            <div>
+              <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#717179', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>
+                Name
+              </label>
+              <input
+                type="text" placeholder="Your full name"
+                value={form.fullName}
+                onChange={e => setField('fullName', e.target.value)}
+                autoComplete="name"
+                style={inputStyle(errors.fullName)}
+              />
+              {errors.fullName && <p style={{ fontSize: 11, color: '#EF4444', marginTop: 4, fontFamily: 'Inter, sans-serif' }}>{errors.fullName}</p>}
+            </div>
           )}
 
           {/* Email */}
-          <Input
-            label="Email"
-            type="email"
-            placeholder="you@example.com"
-            value={form.email}
-            onChange={e => setField('email', e.target.value)}
-            error={errors.email}
-            autoComplete="email"
-            inputMode="email"
-          />
+          <div>
+            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#717179', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>
+              Email
+            </label>
+            <input
+              type="email" placeholder="you@example.com"
+              value={form.email}
+              onChange={e => setField('email', e.target.value)}
+              autoComplete="email" inputMode="email"
+              style={inputStyle(errors.email)}
+            />
+            {errors.email && <p style={{ fontSize: 11, color: '#EF4444', marginTop: 4, fontFamily: 'Inter, sans-serif' }}>{errors.email}</p>}
+          </div>
 
           {/* Password */}
           {mode !== MODES.RESET && (
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-text-secondary uppercase tracking-wide">
+            <div>
+              <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#717179', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>
                 Password
               </label>
-              <div className="relative">
+              <div style={{ position: 'relative' }}>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   value={form.password}
                   onChange={e => setField('password', e.target.value)}
                   autoComplete={mode === MODES.SIGNUP ? 'new-password' : 'current-password'}
-                  className={`
-                    w-full bg-bg-elevated border rounded-xl px-4 py-3 pr-12 text-sm
-                    text-text-primary placeholder:text-muted
-                    focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/20
-                    transition-all duration-200
-                    ${errors.password ? 'border-danger' : 'border-border'}
-                  `}
+                  style={{ ...inputStyle(errors.password), paddingRight: 48 }}
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-text-secondary transition-colors"
+                  onClick={() => setShowPw(v => !v)}
+                  style={{
+                    position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', color: '#717179', cursor: 'pointer',
+                  }}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              {errors.password && <p className="text-xs text-danger">{errors.password}</p>}
+              {errors.password && <p style={{ fontSize: 11, color: '#EF4444', marginTop: 4, fontFamily: 'Inter, sans-serif' }}>{errors.password}</p>}
             </div>
           )}
 
-          {/* Forgot password link */}
+          {/* Forgot password */}
           {mode === MODES.SIGNIN && (
             <button
               type="button"
               onClick={() => setMode(MODES.RESET)}
-              className="text-xs text-muted hover:text-gold text-right transition-colors"
+              style={{
+                fontFamily: 'Inter, sans-serif', fontSize: 12,
+                color: '#717179', background: 'none', border: 'none',
+                textAlign: 'right', cursor: 'pointer',
+                alignSelf: 'flex-end',
+              }}
             >
               Forgot password?
             </button>
           )}
 
           {/* Submit */}
-          <Button
+          <button
             type="submit"
-            loading={loading}
-            fullWidth
-            size="lg"
-            className="mt-2"
+            disabled={loading}
+            style={{
+              width: '100%', padding: '14px 0', marginTop: 4,
+              background: loading ? '#B8922E' : '#FFD166',
+              borderRadius: 14, border: 'none',
+              fontFamily: 'Poppins, sans-serif', fontSize: 15, fontWeight: 600,
+              color: '#0D0D0D', cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s ease',
+              boxShadow: loading ? 'none' : '0 0 20px rgba(255,209,102,0.2)',
+            }}
           >
-            {mode === MODES.SIGNIN ? 'Sign In' : mode === MODES.SIGNUP ? 'Create Account' : 'Send Reset Link'}
-          </Button>
+            {loading
+              ? 'Please wait...'
+              : mode === MODES.SIGNIN ? 'Sign in'
+              : mode === MODES.SIGNUP ? 'Create account'
+              : 'Send reset link'
+            }
+          </button>
 
-          {/* Biometric */}
-          {mode === MODES.SIGNIN && biometricEnabled && (
+          {/* Back to sign in */}
+          {mode === MODES.RESET && (
             <button
               type="button"
-              onClick={handleBiometric}
-              disabled={loading}
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-border bg-bg-elevated text-sm text-text-secondary tappable"
+              onClick={() => setMode(MODES.SIGNIN)}
+              style={{
+                fontFamily: 'Inter, sans-serif', fontSize: 13,
+                color: '#717179', background: 'none', border: 'none',
+                cursor: 'pointer', textAlign: 'center', marginTop: 4,
+              }}
             >
-              <Fingerprint size={20} className="text-gold" />
-              Use Biometric Login
+              ← Back to sign in
             </button>
           )}
         </form>
-
-        {/* Back to sign in (reset mode) */}
-        {mode === MODES.RESET && (
-          <button
-            onClick={() => setMode(MODES.SIGNIN)}
-            className="mt-4 text-xs text-muted hover:text-gold w-full text-center transition-colors"
-          >
-            ← Back to sign in
-          </button>
-        )}
       </div>
 
-      <p className="mt-8 text-2xs text-muted text-center">
-        Cycle v1.0 · Schurco Slurry SA
-      </p>
+      {/* Footer */}
+      <div style={{ marginTop: 32, textAlign: 'center' }}>
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#3A3530', letterSpacing: '0.06em' }}>
+          Crafted by PGV
+        </p>
+      </div>
     </div>
   )
 }
