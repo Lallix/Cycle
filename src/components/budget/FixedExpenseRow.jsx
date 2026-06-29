@@ -38,7 +38,6 @@ export default function FixedExpenseRow({ expense }) {
   }
 
   function openEdit() {
-    setShowActions(false)
     setForm({
       name:    expense.name || '',
       amount:  String(expense.amount || ''),

@@ -5,7 +5,6 @@ import { formatMoney , ACCOUNT_CONFIG} from '../lib/format'
 import PageHeader from '../components/ui/PageHeader'
 import ExpenseItem from '../components/expenses/ExpenseItem'
 import ExpenseFilters from '../components/expenses/ExpenseFilters'
-import AddExpenseSheet from '../components/expenses/AddExpenseSheet'
 import BottomSheet from '../components/ui/BottomSheet'
 import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
@@ -164,18 +163,6 @@ export default function ExpensesPage() {
           ))}
         </div>
       )}
-
-      {/* FAB */}
-      <button
-        className="fab"
-        onClick={() => setAddOpen(true)}
-        aria-label="Add expense"
-      >
-        <Plus size={26} strokeWidth={2.5} className="text-bg" />
-      </button>
-
-      {/* Add sheet */}
-      <AddExpenseSheet open={addOpen} onClose={() => setAddOpen(false)} />
 
       {/* Edit sheet */}
       <BottomSheet open={editOpen} onClose={() => setEditOpen(false)} title="Edit Expense">
