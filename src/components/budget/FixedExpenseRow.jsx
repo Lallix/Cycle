@@ -4,6 +4,7 @@ import { useToast } from '../ui/Toast'
 import { formatMoney, getAccountConfig, formatOrdinal } from '../../lib/format'
 import { CheckCircle, Circle, Pencil, Trash2, RefreshCw } from 'lucide-react'
 import BottomSheet from '../ui/BottomSheet'
+import AccountPicker from '../ui/AccountPicker'
 import Button from '../ui/Button'
 
 export default function FixedExpenseRow({ expense }) {
