@@ -31,6 +31,14 @@ export default {
         fg: '#FFFFFF',           // Text Primary
         muted: '#A1A1AA',        // Text Secondary / Tertiary
         subtle: '#717179',       // Text Tertiary
+        // ── Ivory (for cards and hero surfaces) ──────────────────
+        ivory: {
+          DEFAULT: '#FAF7F0',   // warm ivory — card backgrounds
+          warm:    '#F5F0E8',   // slightly darker ivory
+          border:  '#E8E0D0',   // ivory border
+          muted:   '#9A9080',   // muted text on ivory
+          text:    '#1C1814',   // dark text on ivory
+        },
         // ── Borders ───────────────────────────────────────────────
         border: {
           DEFAULT: '#2A2A2A',

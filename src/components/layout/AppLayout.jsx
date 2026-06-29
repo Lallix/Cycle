@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { createPortal } from 'react-dom'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { LayoutDashboard, BarChart3, List, Settings, Plus } from 'lucide-react'
 import AddExpenseSheet from '../expenses/AddExpenseSheet'
@@ -112,11 +111,7 @@ export default function AppLayout() {
         </div>
       </nav>
 
-      {/* Add expense sheet — rendered via portal to escape flex/transform stacking context */}
-      {createPortal(
-        <AddExpenseSheet open={addOpen} onClose={() => setAddOpen(false)} />,
-        document.body
-      )}
+      <AddExpenseSheet open={addOpen} onClose={() => setAddOpen(false)} />
     </div>
   )
 }
