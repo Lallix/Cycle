@@ -83,7 +83,30 @@ export default function AuthPage() {
         setMode(MODES.SIGNIN)
       }
     } catch (err) {
-      toast(err.message || 'Something went wrong', 'error')
+      // Map Supabase error messages to user-friendly versions
+      const msg = err.message || ''
+      let friendly = 'Something went wrong — please try again'
+
+      if (msg.includes('Invalid login credentials') || msg.includes('invalid_credentials')) {
+        friendly = 'Incorrect email or password'
+      } else if (msg.includes('Email not confirmed')) {
+        friendly = 'Please confirm your email before signing in'
+      } else if (msg.includes('User already registered')) {
+        friendly = 'An account with this email already exists'
+      } else if (
+        msg.includes('Signups not allowed') ||
+        msg.includes('signup') ||
+        msg.includes('not enabled') ||
+        mode === MODES.SIGNUP
+      ) {
+        friendly = 'Access is by invitation only — contact Gideon to request access'
+      } else if (msg.includes('rate limit') || msg.includes('too many')) {
+        friendly = 'Too many attempts — please wait a moment and try again'
+      } else if (msg.includes('network') || msg.includes('fetch')) {
+        friendly = 'Connection error — check your internet and try again'
+      }
+
+      toast(friendly, 'error')
     } finally {
       setLoading(false)
     }
