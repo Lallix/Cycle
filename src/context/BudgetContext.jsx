@@ -125,6 +125,18 @@ export function BudgetProvider({ children }) {
     return data
   }
 
+  // Fetch transactions for any cycle key (used by Reports + Transactions history)
+  async function getTransactionsForCycle(cycleKey) {
+    const { data, error } = await supabase
+      .from('cycle_transactions')
+      .select(`*, cycle_categories(id, name, icon, colour, budget_amount, type)`)
+      .eq('user_id', user.id)
+      .eq('cycle_key', cycleKey)
+      .order('transaction_date', { ascending: false })
+    if (error) throw error
+    return data || []
+  }
+
   async function loadSavingGoals() {
     const { data, error } = await supabase
       .from('cycle_saving_goals')
@@ -395,6 +407,7 @@ export function BudgetProvider({ children }) {
     getCategorySpent,
     // actions
     refresh: loadAll,
+    getTransactionsForCycle,
     addTransaction, updateTransaction, deleteTransaction,
     toggleRecurringPaid,
     addRecurringExpense, updateRecurringExpense, deleteRecurringExpense,

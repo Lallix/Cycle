@@ -1,16 +1,17 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useBudget } from '../context/BudgetContext'
+import { useAuth } from '../context/AuthContext'
 import { useToast } from '../components/ui/Toast'
-import { formatMoney , ACCOUNT_CONFIG} from '../lib/format'
-import PageHeader from '../components/ui/PageHeader'
+import { formatMoney, ACCOUNT_CONFIG } from '../lib/format'
+import { getLastNCycles } from '../lib/cycle'
 import ExpenseItem from '../components/expenses/ExpenseItem'
 import ExpenseFilters from '../components/expenses/ExpenseFilters'
+import CycleSelector from '../components/ui/CycleSelector'
 import BottomSheet from '../components/ui/BottomSheet'
 import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
 import LoadingScreen from '../components/ui/LoadingScreen'
-import Input from '../components/ui/Input'
-import { Plus, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { format } from 'date-fns'
 
 const ACCOUNTS = [
@@ -19,24 +20,42 @@ const ACCOUNTS = [
 ]
 
 export default function ExpensesPage() {
-  const { loading, transactions, categories, deleteTransaction, updateTransaction, totals } = useBudget()
+  const { loading, transactions, categories, deleteTransaction, updateTransaction, getTransactionsForCycle } = useBudget()
+  const { profile } = useAuth()
   const toast = useToast()
 
-  const [addOpen, setAddOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
-  const [editingTx, setEditingTx] = useState(null)
-  const [search, setSearch] = useState('')
+  const [editOpen, setEditOpen]       = useState(false)
+  const [editingTx, setEditingTx]     = useState(null)
+  const [search, setSearch]           = useState('')
   const [activeFilter, setActiveFilter] = useState(null)
-  const [editForm, setEditForm] = useState({})
-  const [saving, setSaving] = useState(false)
+  const [editForm, setEditForm]       = useState({})
+  const [saving, setSaving]           = useState(false)
+  const [cycleIndex, setCycleIndex]   = useState(0)
+  const [historyTx, setHistoryTx]     = useState(null)
+  const [loadingHistory, setLoadingHistory] = useState(false)
+
+  // Load transactions when navigating to a past cycle
+  useEffect(() => {
+    if (cycleIndex === 0) { setHistoryTx(null); return }
+    const cycles = getLastNCycles(12, profile?.cycle_start_day || 25)
+    const selected = cycles[cycleIndex]
+    if (!selected) return
+    setLoadingHistory(true)
+    getTransactionsForCycle(selected.key)
+      .then(data => setHistoryTx(data))
+      .catch(e => toast(e.message, 'error'))
+      .finally(() => setLoadingHistory(false))
+  }, [cycleIndex])
 
   if (loading) return <LoadingScreen />
 
-  // Filter transactions
+  // Use current cycle transactions or historical ones
+  const sourceTx = cycleIndex === 0 ? transactions : (historyTx || [])
+
+  // Group and filter
   const filtered = useMemo(() => {
-    return transactions.filter(tx => {
+    return sourceTx.filter(tx => {
       const cat = tx.cycle_categories || tx.categories
-      const catName = cat?.name || ''
       const matchSearch = !search ||
         (cat?.name || '').toLowerCase().includes(search.toLowerCase()) ||
         (tx.notes || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -46,117 +65,129 @@ export default function ExpensesPage() {
         (activeFilter.type === 'account' && tx.account === activeFilter.value)
       return matchSearch && matchFilter
     })
-  }, [transactions, search, activeFilter])
+  }, [sourceTx, search, activeFilter])
 
-  // Group by date
   const grouped = useMemo(() => {
-    const groups = {}
+    const map = {}
     filtered.forEach(tx => {
       const key = tx.transaction_date
-      if (!groups[key]) groups[key] = []
-      groups[key].push(tx)
+      if (!map[key]) map[key] = []
+      map[key].push(tx)
     })
-    return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a))
+    return Object.entries(map).sort(([a], [b]) => b.localeCompare(a))
   }, [filtered])
 
-  function handleEdit(tx) {
-    setEditingTx(tx)
-    setEditForm({
-      notes: tx.notes || '',
-      amount: String(tx.amount),
-      category_id: tx.category_id || '',
-      account: tx.account,
-      date: tx.transaction_date,
-      notes: tx.notes || '',
-    })
-    setEditOpen(true)
-  }
+  const totalSpent = filtered.reduce((s, t) => s + parseFloat(t.amount || 0), 0)
 
   async function handleDelete(id) {
     try {
       await deleteTransaction(id)
-      toast('Expense deleted', 'info')
-    } catch (err) {
-      toast(err.message, 'error')
-    }
+      toast('Deleted', 'success')
+    } catch (e) { toast(e.message, 'error') }
+  }
+
+  function handleEdit(tx) {
+    setEditingTx(tx)
+    setEditForm({
+      amount:      String(tx.amount || ''),
+      category_id: tx.category_id || '',
+      account:     tx.account || 'Capitec',
+      date:        tx.transaction_date || '',
+      notes:       tx.notes || '',
+    })
+    setEditOpen(true)
   }
 
   async function handleSaveEdit() {
-    if (!editingTx || !editForm.description || !editForm.amount) return
+    if (!editForm.amount || parseFloat(editForm.amount) <= 0) {
+      toast('Enter a valid amount', 'error'); return
+    }
     setSaving(true)
     try {
       await updateTransaction(editingTx.id, {
-        description: editForm.description,
-        amount: parseFloat(editForm.amount),
+        amount:      parseFloat(editForm.amount),
         category_id: editForm.category_id || null,
-        account: editForm.account,
-        date: editForm.date,
-        notes: editForm.notes || null,
+        account:     editForm.account,
+        date:        editForm.date,
+        notes:       editForm.notes || null,
       })
-      toast('Expense updated ✓', 'success')
+      toast('Updated ✓', 'success')
       setEditOpen(false)
-    } catch (err) {
-      toast(err.message, 'error')
-    } finally {
-      setSaving(false)
-    }
+    } catch (e) { toast(e.message, 'error') }
+    finally { setSaving(false) }
   }
 
-  const totalShown = filtered.reduce((sum, tx) => sum + parseFloat(tx.amount || 0), 0)
+  const inputStyle = {
+    width: '100%', padding: '12px 16px',
+    background: '#2E2E2E', border: '0.5px solid #3A3A3A',
+    borderRadius: 12, color: '#FFFFFF',
+    fontFamily: 'Inter, sans-serif', fontSize: 14,
+    outline: 'none',
+  }
 
   return (
-    <div className="min-h-full bg-bg animate-fade-in"
-      style={{ paddingBottom: 'calc(64px + env(safe-area-inset-bottom) + 5rem)' }}
-    >
-      <PageHeader
-        title="Transactions"
-        subtitle={`${filtered.length} transactions · ${formatMoney(totalShown)} total`}
-      />
+    <div style={{ minHeight: '100%', background: '#0D0D0D', paddingBottom: 120 }}>
+
+      {/* Header */}
+      <div style={{ padding: 'max(env(safe-area-inset-top), 16px) 16px 12px' }}>
+        <h1 style={{ fontFamily: 'Poppins, sans-serif', fontSize: 22, fontWeight: 600, color: '#FFFFFF' }}>
+          Transactions
+        </h1>
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#717179', marginTop: 2 }}>
+          {filtered.length} transaction{filtered.length !== 1 ? 's' : ''} · {formatMoney(totalSpent)} total
+        </p>
+      </div>
+
+      {/* Cycle selector */}
+      <CycleSelector cycleIndex={cycleIndex} onChange={setCycleIndex} />
 
       {/* Search */}
-      <div className="px-4 mb-3">
-        <div className="relative">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
-          <input
-            type="search"
-            placeholder="Search expenses..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full bg-bg-elevated border border-border rounded-xl pl-10 pr-4 py-3 text-sm text-text-primary placeholder:text-muted focus:outline-none focus:border-gold transition-all"
-          />
-        </div>
+      <div style={{ margin: '0 16px 12px', position: 'relative' }}>
+        <Search size={15} color="#717179" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
+        <input
+          type="text"
+          placeholder="Search expenses..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ ...inputStyle, paddingLeft: 38 }}
+        />
       </div>
 
       {/* Filters */}
-      <div className="mb-4">
-        <ExpenseFilters
-          activeFilter={activeFilter}
-          onFilterChange={setActiveFilter}
-        />
+      <div style={{ marginBottom: 12 }}>
+        <ExpenseFilters activeFilter={activeFilter} onFilterChange={setActiveFilter} />
       </div>
 
-      {/* Transactions grouped by date */}
-      {filtered.length === 0 ? (
-        <EmptyState
-          icon="🔍"
-          title={search ? 'No results' : 'No expenses yet'}
-          description={search ? 'Try a different search term' : 'Tap + to record your first expense'}
-        />
+      {/* Transactions */}
+      {loadingHistory ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
+          <div style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #FFD166', borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />
+          <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div style={{ padding: '0 16px' }}>
+          <EmptyState
+            icon="🔍"
+            title={search ? 'No results' : cycleIndex > 0 ? 'No expenses this cycle' : 'No expenses yet'}
+            description={search ? 'Try a different search term' : 'Tap + to record your first expense'}
+          />
+        </div>
       ) : (
-        <div className="px-4 space-y-4">
+        <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {grouped.map(([date, txs]) => (
             <div key={date}>
-              <p className="text-xs text-muted font-medium mb-2">
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#717179', fontWeight: 500, marginBottom: 8 }}>
                 {format(new Date(date), 'EEEE, d MMMM')}
               </p>
-              <div className="bg-bg-card rounded-2xl border border-border overflow-hidden divide-y divide-border">
-                {txs.map(tx => (
-                  <ExpenseItem
-                    key={tx.id}
-                    transaction={tx}
-                    onDelete={handleDelete}
-                    onEdit={handleEdit}
-                  />
+              <div style={{ background: '#1B1B1B', borderRadius: 16, border: '0.5px solid #2A2A2A', overflow: 'hidden' }}>
+                {txs.map((tx, i) => (
+                  <div key={tx.id} style={{ borderBottom: i < txs.length - 1 ? '0.5px solid #2A2A2A' : 'none' }}>
+                    <ExpenseItem
+                      transaction={tx}
+                      onDelete={handleDelete}
+                      onEdit={cycleIndex === 0 ? handleEdit : undefined}
+                    />
+                  </div>
                 ))}
               </div>
             </div>
@@ -166,72 +197,61 @@ export default function ExpensesPage() {
 
       {/* Edit sheet */}
       <BottomSheet open={editOpen} onClose={() => setEditOpen(false)} title="Edit Expense">
-        <div className="px-5 pb-8 space-y-4">
+        <div style={{ padding: '0 20px 32px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+
           <div>
-            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Notes</label>
-            <input
-              type="text"
-              value={editForm.notes || ''}
-              onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
-              className="w-full bg-bg-elevated border border-border rounded-xl px-4 py-3 text-sm text-text-primary placeholder:text-muted focus:outline-none focus:border-gold transition-all"
-            />
-          </div>
-          <div>
-            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Amount</label>
-            <input
-              type="number"
-              inputMode="decimal"
-              value={editForm.amount || ''}
-              onChange={e => setEditForm(f => ({ ...f, amount: e.target.value }))}
-              className="w-full bg-bg-elevated border border-border rounded-xl px-4 py-3 text-sm text-text-primary placeholder:text-muted focus:outline-none focus:border-gold transition-all font-mono"
-            />
-          </div>
-          <div>
-            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Category</label>
-            <select
-              value={editForm.category_id || ''}
-              onChange={e => setEditForm(f => ({ ...f, category_id: e.target.value }))}
-              className="w-full bg-bg-elevated border border-border rounded-xl px-4 py-3 text-sm text-text-primary focus:outline-none focus:border-gold transition-all"
-              style={{ colorScheme: 'dark' }}
-            >
-              <option value="">No category</option>
-              {categories.filter(c => c.type === 'variable').map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Account</label>
-            <div className="flex gap-2">
-              {ACCOUNTS.map(acc => (
-                <button
-                  key={acc}
-                  onClick={() => setEditForm(f => ({ ...f, account: acc }))}
-                  className="flex-shrink-0 px-3 py-2 rounded-xl text-xs font-medium border transition-all active:scale-95 whitespace-nowrap"
-                >
-                  {acc}
-                </button>
-              ))}
+            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#717179', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Amount</label>
+            <div style={{ position: 'relative' }}>
+              <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', fontFamily: 'Poppins, sans-serif', color: '#717179' }}>R</span>
+              <input type="number" inputMode="decimal" value={editForm.amount || ''} onChange={e => setEditForm(f => ({...f, amount: e.target.value}))} style={{ ...inputStyle, paddingLeft: 32 }} />
             </div>
           </div>
+
           <div>
-            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Date</label>
-            <input
-              type="date"
-              value={editForm.date || ''}
-              onChange={e => setEditForm(f => ({ ...f, date: e.target.value }))}
-              className="w-full bg-bg-elevated border border-border rounded-xl px-4 py-3 text-sm text-text-primary focus:outline-none focus:border-gold transition-all font-mono"
-              style={{ colorScheme: 'dark' }}
-            />
+            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#717179', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Notes</label>
+            <input type="text" placeholder="Optional note" value={editForm.notes || ''} onChange={e => setEditForm(f => ({...f, notes: e.target.value}))} style={inputStyle} />
           </div>
-          <div className="flex gap-3 pt-2">
-            <Button variant="danger" onClick={() => { handleDelete(editingTx?.id); setEditOpen(false) }} className="flex-1">
-              Delete
-            </Button>
-            <Button onClick={handleSaveEdit} loading={saving} className="flex-1">
-              Save Changes
-            </Button>
+
+          <div>
+            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#717179', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Date</label>
+            <input type="date" value={editForm.date || ''} onChange={e => setEditForm(f => ({...f, date: e.target.value}))} style={{ ...inputStyle, colorScheme: 'dark' }} />
           </div>
+
+          <div>
+            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#717179', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 8 }}>Account</label>
+            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
+              {ACCOUNTS.map(acc => {
+                const cfg = ACCOUNT_CONFIG[acc]
+                const selected = editForm.account === acc
+                return (
+                  <button key={acc} onClick={() => setEditForm(f => ({...f, account: acc}))}
+                    style={{
+                      flexShrink: 0, padding: '7px 12px', borderRadius: 10, border: '0.5px solid',
+                      fontSize: 12, fontFamily: 'Inter, sans-serif', whiteSpace: 'nowrap', cursor: 'pointer',
+                      background: selected ? cfg?.bg : 'transparent',
+                      color: selected ? cfg?.color : '#717179',
+                      borderColor: selected ? cfg?.color : '#3A3A3A',
+                    }}
+                  >
+                    {cfg?.label || acc}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <button
+            onClick={handleSaveEdit} disabled={saving}
+            style={{
+              width: '100%', padding: '14px 0', marginTop: 4,
+              background: saving ? '#B8922E' : '#FFD166',
+              borderRadius: 14, border: 'none',
+              fontFamily: 'Poppins, sans-serif', fontSize: 15, fontWeight: 600,
+              color: '#0D0D0D', cursor: 'pointer',
+            }}
+          >
+            {saving ? 'Saving...' : 'Save changes'}
+          </button>
         </div>
       </BottomSheet>
     </div>
