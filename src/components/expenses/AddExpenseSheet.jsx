@@ -1,17 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useBudget } from '../../context/BudgetContext'
 import { useToast } from '../ui/Toast'
-import { formatMoney, ACCOUNT_CONFIG, QUICK_AMOUNTS } from '../../lib/format'
+import { formatMoney, QUICK_AMOUNTS } from '../../lib/format'
 import BottomSheet from '../ui/BottomSheet'
 import { format } from 'date-fns'
 import { ChevronDown, Smile } from 'lucide-react'
 import Picker from '@emoji-mart/react'
 import data from '@emoji-mart/data'
-
-const ACCOUNTS = [
-  'Capitec', 'FNB', 'Absa', 'Standard', 'Nedbank',
-  'Investec', 'TymeBank', 'Discovery', 'African', 'Bidvest', 'Cash'
-]
 
 const s = {
   label: {
@@ -163,24 +158,7 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
         {/* Account */}
         <div>
           <label style={s.label}>Account</label>
-          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
-            {ACCOUNTS.map(acc => {
-              const cfg = ACCOUNT_CONFIG[acc]
-              const sel = account === acc
-              return (
-                <button key={acc} onClick={() => setAccount(acc)} style={{
-                  flexShrink: 0, padding: '7px 12px', borderRadius: 10, cursor: 'pointer',
-                  border: `0.5px solid ${sel ? cfg?.color : '#3A3A3A'}`,
-                  background: sel ? cfg?.bg : 'transparent',
-                  color: sel ? cfg?.color : '#717179',
-                  fontFamily: 'Inter, sans-serif', fontSize: 12, whiteSpace: 'nowrap',
-                  transition: 'all 0.15s ease',
-                }}>
-                  {cfg?.label || acc}
-                </button>
-              )
-            })}
-          </div>
+          <AccountPicker value={account} onChange={setAccount} />
         </div>
 
         {/* Date */}

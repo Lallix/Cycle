@@ -1,15 +1,10 @@
 import { useState } from 'react'
 import { useBudget } from '../../context/BudgetContext'
 import { useToast } from '../ui/Toast'
-import { formatMoney, getAccountConfig, formatOrdinal, ACCOUNT_CONFIG } from '../../lib/format'
+import { formatMoney, getAccountConfig, formatOrdinal } from '../../lib/format'
 import { CheckCircle, Circle, Pencil, Trash2, RefreshCw } from 'lucide-react'
 import BottomSheet from '../ui/BottomSheet'
 import Button from '../ui/Button'
-
-const ACCOUNTS = [
-  'Capitec', 'FNB', 'Absa', 'Standard', 'Nedbank',
-  'Investec', 'TymeBank', 'Discovery', 'African', 'Bidvest', 'Cash',
-]
 
 export default function FixedExpenseRow({ expense }) {
   const { toggleRecurringPaid, isRecurringPaid, updateRecurringExpense, deleteRecurringExpense } = useBudget()
@@ -177,30 +172,7 @@ export default function FixedExpenseRow({ expense }) {
 
           <div>
             <label className="text-xs text-muted uppercase tracking-widest block mb-2">Account</label>
-            <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-              {ACCOUNTS.map(acc => {
-                const cfg      = ACCOUNT_CONFIG[acc]
-                const selected = form.account === acc
-                return (
-                  <button
-                    key={acc}
-                    onClick={() => setForm(f => ({ ...f, account: acc }))}
-                    className="flex-shrink-0 px-3 py-2 rounded-xl text-xs font-medium border transition-all whitespace-nowrap"
-                    style={selected ? {
-                      backgroundColor: cfg?.bg,
-                      color:           cfg?.color,
-                      borderColor:     cfg?.color,
-                    } : {
-                      backgroundColor: 'transparent',
-                      borderColor:     'rgba(255,255,255,0.1)',
-                      color:           'rgba(255,255,255,0.4)',
-                    }}
-                  >
-                    {cfg?.label || acc}
-                  </button>
-                )
-              })}
-            </div>
+            <AccountPicker value={form.account} onChange={(val) => setForm(f => ({ ...f, account: val }))} />
           </div>
 
           <Button variant="primary" size="lg" onClick={handleSave} disabled={saving} className="w-full">

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useBudget } from '../context/BudgetContext'
 import { useToast } from '../components/ui/Toast'
-import { formatMoney, COLOR_OPTIONS } from '../lib/format'
+import { formatMoney, COLOR_OPTIONS, getAccountConfig } from '../lib/format'
 import PageHeader from '../components/ui/PageHeader'
 import Button from '../components/ui/Button'
 import BottomSheet from '../components/ui/BottomSheet'
@@ -10,13 +10,18 @@ import { User, Wallet, LogOut, Plus, Edit2, Trash2, RefreshCw, Smile } from 'luc
 import Picker from '@emoji-mart/react'
 import data from '@emoji-mart/data'
 
+const BANK_OPTIONS = [
+  'Capitec', 'FNB', 'Absa', 'Standard', 'Nedbank',
+  'Investec', 'TymeBank', 'Discovery', 'African', 'Bidvest',
+]
+
 const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev'
 
 const BLANK_CAT = { name: '', icon: '🛒', colour: '#D4AF37', budget_amount: '', type: 'variable' }
 
 export default function SettingsPage() {
   const { user, profile, signOut, updateProfile, biometricAvailable, biometricEnabled, registerBiometric, disableBiometric } = useAuth()
-  const { categories, incomeRecords, addCategory, updateCategory, deleteCategory, updateIncome, addIncome } = useBudget()
+  const { categories, incomeRecords, accounts, addCategory, updateCategory, deleteCategory, updateIncome, addIncome, addAccount, deleteAccount } = useBudget()
   const toast = useToast()
 
   const [profileOpen, setProfileOpen]   = useState(false)
@@ -28,6 +33,9 @@ export default function SettingsPage() {
   const [incomeAmount, setIncomeAmount] = useState('')
   const [saving, setSaving]             = useState(false)
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
+  const [accountOpen, setAccountOpen]         = useState(false)
+  const [accountForm, setAccountForm]         = useState({ name: '', bank: 'Capitec' })
+  const [savingAccount, setSavingAccount]     = useState(false)
 
   // ── Profile ────────────────────────────────────────────────
   function openProfile() {
@@ -72,6 +80,26 @@ export default function SettingsPage() {
       setIncomeOpen(false)
     } catch (e) { toast(e.message, 'error') }
     finally { setSaving(false) }
+  }
+
+  // ── Accounts ──────────────────────────────────────────────
+  async function handleAddAccount() {
+    if (!accountForm.name.trim()) { toast('Enter an account name', 'error'); return }
+    setSavingAccount(true)
+    try {
+      await addAccount({ name: accountForm.name.trim(), bank: accountForm.bank })
+      toast('Account added ✓', 'success')
+      setAccountOpen(false)
+      setAccountForm({ name: '', bank: 'Capitec' })
+    } catch (e) { toast(e.message, 'error') }
+    finally { setSavingAccount(false) }
+  }
+
+  async function handleDeleteAccount(acc) {
+    try {
+      await deleteAccount(acc.id)
+      toast('Account removed', 'success')
+    } catch (e) { toast(e.message, 'error') }
   }
 
   // ── Categories ─────────────────────────────────────────────
@@ -174,6 +202,49 @@ export default function SettingsPage() {
           </div>
         </section>
 
+        {/* My Accounts */}
+        <section>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs text-muted uppercase tracking-widest">My Accounts</p>
+            <button onClick={() => setAccountOpen(true)} className="flex items-center gap-1 text-xs text-gold hover:opacity-80">
+              <Plus size={13} /> Add
+            </button>
+          </div>
+          <div className="border border-border rounded-2xl overflow-hidden" style={{ background: '#1B1B1B' }}>
+            {accounts.length === 0 && (
+              <p className="text-sm text-muted px-4 py-4">No accounts yet — add one above</p>
+            )}
+            {accounts.map(acc => {
+              const cfg = getAccountConfig(acc.bank || acc.name)
+              return (
+                <div key={acc.id} className="flex items-center gap-3 px-4 py-3 border-b border-border last:border-0">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: cfg.bg }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: cfg.color, fontFamily: 'Inter, sans-serif' }}>
+                      {acc.bank?.slice(0,2) || acc.name?.slice(0,2)}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-fg">{acc.name}</p>
+                    {acc.name !== acc.bank && (
+                      <p className="text-xs text-subtle">{acc.bank}</p>
+                    )}
+                  </div>
+                  {acc.is_default && (
+                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 6, background: 'rgba(255,209,102,0.1)', color: '#FFD166', fontFamily: 'Inter, sans-serif' }}>
+                      Default
+                    </span>
+                  )}
+                  <button onClick={() => handleDeleteAccount(acc)}
+                    className="p-1.5 rounded-lg hover:bg-danger/10 transition-colors">
+                    <Trash2 size={14} className="text-subtle hover:text-danger" />
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+
         {/* Variable budget categories */}
         <section>
           <div className="flex items-center justify-between mb-2">
@@ -258,6 +329,51 @@ export default function SettingsPage() {
           <p className="text-xs" style={{ color: '#3A3530', letterSpacing: '0.08em' }}>Crafted by PGV</p>
         </div>
       </div>
+
+      {/* Add Account Sheet */}
+      <BottomSheet open={accountOpen} onClose={() => setAccountOpen(false)} title="Add Account">
+        <div className="px-5 space-y-4 pb-8">
+          <div>
+            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Account name</label>
+            <input
+              type="text"
+              placeholder="e.g. Capitec Cheque, FNB Credit"
+              value={accountForm.name}
+              onChange={e => setAccountForm(f => ({ ...f, name: e.target.value }))}
+              style={{ width: '100%', padding: '12px 16px', background: '#2E2E2E', border: '0.5px solid #3A3A3A', borderRadius: 12, color: '#FFFFFF', fontFamily: 'Inter, sans-serif', fontSize: 14, outline: 'none' }}
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Bank</label>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {BANK_OPTIONS.map(bank => {
+                const cfg = getAccountConfig(bank)
+                const sel = accountForm.bank === bank
+                return (
+                  <button key={bank} onClick={() => setAccountForm(f => ({ ...f, bank }))}
+                    style={{
+                      padding: '7px 12px', borderRadius: 10, cursor: 'pointer',
+                      border: `0.5px solid ${sel ? cfg.color : '#3A3A3A'}`,
+                      background: sel ? cfg.bg : 'transparent',
+                      color: sel ? cfg.color : '#717179',
+                      fontFamily: 'Inter, sans-serif', fontSize: 12,
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {bank}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+          <button
+            onClick={handleAddAccount} disabled={savingAccount}
+            style={{ width: '100%', padding: '14px 0', background: savingAccount ? '#B8922E' : '#FFD166', borderRadius: 14, border: 'none', fontFamily: 'Poppins, sans-serif', fontSize: 15, fontWeight: 600, color: '#0D0D0D', cursor: 'pointer' }}
+          >
+            {savingAccount ? 'Adding...' : 'Add Account'}
+          </button>
+        </div>
+      </BottomSheet>
 
       {/* Edit Profile Sheet */}
       <BottomSheet open={profileOpen} onClose={() => setProfileOpen(false)} title="Edit Profile">

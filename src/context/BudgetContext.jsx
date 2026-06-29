@@ -16,6 +16,7 @@ export function BudgetProvider({ children }) {
   const [paidLog, setPaidLog]                 = useState([])   // cycle_recurring_paid_log
   const [incomeRecords, setIncomeRecords]     = useState([])
   const [savingGoals, setSavingGoals]         = useState([])
+  const [accounts, setAccounts]               = useState([])
 
   const [cycle, setCycle]   = useState(null)
   const [totals, setTotals] = useState({
@@ -42,7 +43,7 @@ export function BudgetProvider({ children }) {
 
   function resetData() {
     setCategories([]); setTransactions([]); setRecurringExpenses([])
-    setPaidLog([]); setIncomeRecords([]); setSavingGoals([])
+    setPaidLog([]); setIncomeRecords([]); setSavingGoals([]); setAccounts([])
     setTotals({ income:0, spent:0, fixedTotal:0, fixedPaid:0,
       variableSpent:0, variableBudget:0, unbudgetedSpent:0, remaining:0, savingsTotal:0 })
   }
@@ -52,7 +53,7 @@ export function BudgetProvider({ children }) {
     try {
       await Promise.all([
         loadCategories(), loadTransactions(), loadRecurringExpenses(),
-        loadPaidLog(), loadIncome(), loadSavingGoals(),
+        loadPaidLog(), loadIncome(), loadSavingGoals(), loadAccounts(),
       ])
     } catch (err) {
       console.error('Data load error:', err)
@@ -123,6 +124,45 @@ export function BudgetProvider({ children }) {
     if (error) throw error
     setIncomeRecords(data || [])
     return data
+  }
+
+  async function loadAccounts() {
+    const { data, error } = await supabase
+      .from('cycle_accounts')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('sort_order')
+    if (error) throw error
+    setAccounts(data || [])
+    return data
+  }
+
+  async function addAccount(payload) {
+    const { data, error } = await supabase
+      .from('cycle_accounts')
+      .insert({ user_id: user.id, ...payload, sort_order: accounts.length })
+      .select().single()
+    if (error) throw error
+    setAccounts(prev => [...prev, data])
+    return data
+  }
+
+  async function updateAccount(id, payload) {
+    const { data, error } = await supabase
+      .from('cycle_accounts')
+      .update(payload).eq('id', id).eq('user_id', user.id)
+      .select().single()
+    if (error) throw error
+    setAccounts(prev => prev.map(a => a.id === id ? data : a))
+    return data
+  }
+
+  async function deleteAccount(id) {
+    const { error } = await supabase
+      .from('cycle_accounts')
+      .delete().eq('id', id).eq('user_id', user.id)
+    if (error) throw error
+    setAccounts(prev => prev.filter(a => a.id !== id))
   }
 
   // Fetch transactions for any cycle key (used by Reports + Transactions history)
@@ -401,7 +441,7 @@ export function BudgetProvider({ children }) {
   const value = {
     loading, error,
     categories, transactions, recurringExpenses, paidLog,
-    incomeRecords, savingGoals, cycle, totals,
+    incomeRecords, savingGoals, accounts, cycle, totals,
     // helpers
     isRecurringPaid,
     getCategorySpent,
@@ -414,6 +454,7 @@ export function BudgetProvider({ children }) {
     addCategory, updateCategory, deleteCategory,
     updateIncome, addIncome,
     addSavingGoal, updateSavingGoal, contributeSavings,
+    addAccount, updateAccount, deleteAccount,
   }
 
   return <BudgetContext.Provider value={value}>{children}</BudgetContext.Provider>

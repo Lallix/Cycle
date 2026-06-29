@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { useBudget } from '../context/BudgetContext'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../components/ui/Toast'
-import { formatMoney, ACCOUNT_CONFIG } from '../lib/format'
+import { formatMoney } from '../lib/format'
 import { getLastNCycles } from '../lib/cycle'
 import ExpenseItem from '../components/expenses/ExpenseItem'
 import ExpenseFilters from '../components/expenses/ExpenseFilters'
@@ -12,12 +12,8 @@ import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
 import LoadingScreen from '../components/ui/LoadingScreen'
 import { Search } from 'lucide-react'
+import AccountPicker from '../components/ui/AccountPicker'
 import { format } from 'date-fns'
-
-const ACCOUNTS = [
-  'Capitec', 'FNB', 'Absa', 'Standard', 'Nedbank',
-  'Investec', 'TymeBank', 'Discovery', 'African', 'Bidvest', 'Cash'
-]
 
 export default function ExpensesPage() {
   const { loading, transactions, categories, deleteTransaction, updateTransaction, getTransactionsForCycle } = useBudget()
@@ -219,25 +215,7 @@ export default function ExpensesPage() {
 
           <div>
             <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#717179', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 8 }}>Account</label>
-            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
-              {ACCOUNTS.map(acc => {
-                const cfg = ACCOUNT_CONFIG[acc]
-                const selected = editForm.account === acc
-                return (
-                  <button key={acc} onClick={() => setEditForm(f => ({...f, account: acc}))}
-                    style={{
-                      flexShrink: 0, padding: '7px 12px', borderRadius: 10, border: '0.5px solid',
-                      fontSize: 12, fontFamily: 'Inter, sans-serif', whiteSpace: 'nowrap', cursor: 'pointer',
-                      background: selected ? cfg?.bg : 'transparent',
-                      color: selected ? cfg?.color : '#717179',
-                      borderColor: selected ? cfg?.color : '#3A3A3A',
-                    }}
-                  >
-                    {cfg?.label || acc}
-                  </button>
-                )
-              })}
-            </div>
+            <AccountPicker value={editForm.account} onChange={(val) => setEditForm(f => ({...f, account: val}))} />
           </div>
 
           <button

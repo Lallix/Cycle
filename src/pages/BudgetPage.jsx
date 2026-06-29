@@ -2,17 +2,13 @@ import { useState } from 'react'
 import { useBudget } from '../context/BudgetContext'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../components/ui/Toast'
-import { formatMoney, ACCOUNT_CONFIG } from '../lib/format'
+import { formatMoney } from '../lib/format'
 import Button from '../components/ui/Button'
 import BottomSheet from '../components/ui/BottomSheet'
 import FixedExpenseRow from '../components/budget/FixedExpenseRow'
 import VariableBudgetRow from '../components/budget/VariableBudgetRow'
 import { Plus, ArrowLeft } from 'lucide-react'
-
-const ACCOUNTS = [
-  'Capitec', 'FNB', 'Absa', 'Standard', 'Nedbank',
-  'Investec', 'TymeBank', 'Discovery', 'African', 'Bidvest', 'Cash',
-]
+import AccountPicker from '../components/ui/AccountPicker'
 
 const BLANK_FIXED = { name: '', amount: '', account: 'Capitec', due_day: '1' }
 
@@ -192,30 +188,7 @@ export default function BudgetPage() {
 
           <div>
             <label className="text-xs text-muted uppercase tracking-widest block mb-2">Account</label>
-            <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-              {ACCOUNTS.map(acc => {
-                const cfg      = ACCOUNT_CONFIG[acc]
-                const selected = fixedForm.account === acc
-                return (
-                  <button
-                    key={acc}
-                    onClick={() => setFixedForm(f => ({ ...f, account: acc }))}
-                    className="flex-shrink-0 px-3 py-2 rounded-xl text-xs font-medium border transition-all whitespace-nowrap"
-                    style={selected ? {
-                      backgroundColor: cfg?.bg,
-                      color:           cfg?.color,
-                      borderColor:     cfg?.color,
-                    } : {
-                      backgroundColor: 'transparent',
-                      borderColor:     'rgba(255,255,255,0.1)',
-                      color:           'rgba(255,255,255,0.4)',
-                    }}
-                  >
-                    {cfg?.label || acc}
-                  </button>
-                )
-              })}
-            </div>
+            <AccountPicker value={fixedForm.account} onChange={(val) => setFixedForm(f => ({ ...f, account: val }))} />
           </div>
 
           <Button variant="primary" size="lg" onClick={handleAddFixed} disabled={saving} className="w-full">
