@@ -123,7 +123,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent transactions */}
-      <div className="animate-stagger-4">
+      <div className="animate-stagger-4" style={{ marginTop: 8 }}>
         <RecentExpenses />
       </div>
 

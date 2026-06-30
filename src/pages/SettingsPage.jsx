@@ -21,7 +21,7 @@ const BLANK_CAT = { name: '', icon: '🛒', colour: '#D4AF37', budget_amount: ''
 
 export default function SettingsPage() {
   const { user, profile, signOut, updateProfile, biometricAvailable, biometricEnabled, registerBiometric, disableBiometric } = useAuth()
-  const { categories, incomeRecords, accounts, addCategory, updateCategory, deleteCategory, updateIncome, addIncome, addAccount, deleteAccount } = useBudget()
+  const { categories, incomeRecords, accounts, addCategory, updateCategory, deleteCategory, updateIncome, addIncome, addAccount, updateAccount, deleteAccount } = useBudget()
   const toast = useToast()
 
   const [profileOpen, setProfileOpen]   = useState(false)
@@ -36,6 +36,7 @@ export default function SettingsPage() {
   const [accountOpen, setAccountOpen]         = useState(false)
   const [accountForm, setAccountForm]         = useState({ name: '', bank: 'Capitec' })
   const [savingAccount, setSavingAccount]     = useState(false)
+  const [editingAccount, setEditingAccount]   = useState(null)
 
   // ── Profile ────────────────────────────────────────────────
   function openProfile() {
@@ -95,6 +96,23 @@ export default function SettingsPage() {
     finally { setSavingAccount(false) }
   }
 
+  async function handleSetDefault(acc) {
+    try {
+      // Remove default from all, then set on this one
+      for (const a of accounts) {
+        if (a.is_default) await updateAccount(a.id, { is_default: false })
+      }
+      await updateAccount(acc.id, { is_default: true })
+      toast(`${acc.bank || acc.name} set as default ✓`, 'success')
+    } catch (e) { toast(e.message, 'error') }
+  }
+
+  function handleEditAccount(acc) {
+    setEditingAccount(acc)
+    setAccountForm({ name: acc.name !== acc.bank ? acc.name : '', bank: acc.bank || acc.name })
+    setAccountOpen(true)
+  }
+
   async function handleDeleteAccount(acc) {
     try {
       await deleteAccount(acc.id)
@@ -122,7 +140,7 @@ export default function SettingsPage() {
   }
 
   async function saveCat() {
-    if (!catForm.name.trim()) { toast('Name is required', 'error'); return }
+    if (!catForm.name.trim()) { toast('Category name is required', 'error'); return }
     setSaving(true)
     try {
       const payload = {
@@ -218,25 +236,45 @@ export default function SettingsPage() {
               const cfg = getAccountConfig(acc.bank || acc.name)
               return (
                 <div key={acc.id} className="flex items-center gap-3 px-4 py-3 border-b border-border last:border-0">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: cfg.bg }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: cfg.color, fontFamily: 'Inter, sans-serif' }}>
-                      {acc.bank?.slice(0,2) || acc.name?.slice(0,2)}
+                  {/* Bank colour badge */}
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: cfg.bg, border: `0.5px solid ${cfg.color}40` }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: cfg.color, fontFamily: 'Inter, sans-serif' }}>
+                      {(acc.bank || acc.name)?.slice(0,2).toUpperCase()}
                     </span>
                   </div>
+                  {/* Bank name (primary) + descriptor (secondary) */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-fg">{acc.name}</p>
-                    {acc.name !== acc.bank && (
-                      <p className="text-xs text-subtle">{acc.bank}</p>
+                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: '#FFFFFF' }}>
+                      {acc.bank || acc.name}
+                    </p>
+                    {acc.name && acc.name !== acc.bank && (
+                      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#717179', marginTop: 1 }}>
+                        {acc.name}
+                      </p>
                     )}
                   </div>
-                  {acc.is_default && (
-                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 6, background: 'rgba(255,209,102,0.1)', color: '#FFD166', fontFamily: 'Inter, sans-serif' }}>
+                  {/* Default badge or set-default tap */}
+                  {acc.is_default ? (
+                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 6, background: 'rgba(255,209,102,0.1)', color: '#FFD166', fontFamily: 'Inter, sans-serif', flexShrink: 0 }}>
                       Default
                     </span>
+                  ) : (
+                    <button
+                      onClick={() => handleSetDefault(acc)}
+                      style={{ fontSize: 10, padding: '2px 8px', borderRadius: 6, background: 'transparent', border: '0.5px solid #3A3A3A', color: '#717179', fontFamily: 'Inter, sans-serif', flexShrink: 0, cursor: 'pointer' }}
+                    >
+                      Set default
+                    </button>
                   )}
+                  {/* Edit */}
+                  <button onClick={() => handleEditAccount(acc)}
+                    className="p-1.5 rounded-lg hover:bg-surface-2 transition-colors flex-shrink-0">
+                    <Edit2 size={14} className="text-subtle" />
+                  </button>
+                  {/* Delete */}
                   <button onClick={() => handleDeleteAccount(acc)}
-                    className="p-1.5 rounded-lg hover:bg-danger/10 transition-colors">
+                    className="p-1.5 rounded-lg hover:bg-danger/10 transition-colors flex-shrink-0">
                     <Trash2 size={14} className="text-subtle hover:text-danger" />
                   </button>
                 </div>
@@ -331,13 +369,13 @@ export default function SettingsPage() {
       </div>
 
       {/* Add Account Sheet */}
-      <BottomSheet open={accountOpen} onClose={() => setAccountOpen(false)} title="Add Account">
+      <BottomSheet open={accountOpen} onClose={() => { setAccountOpen(false); setEditingAccount(null) }} title={editingAccount ? "Edit Account" : "Add Account"}>
         <div className="px-5 space-y-4 pb-8">
           <div>
-            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Account name</label>
+<label className="text-xs text-muted uppercase tracking-widest block mb-2">Descriptor <span style={{textTransform:'none',color:'#4A4A4A'}}>(optional)</span></label>
             <input
               type="text"
-              placeholder="e.g. Capitec Cheque, FNB Credit"
+              placeholder="e.g. Cheque Account, Credit Card (optional)"
               value={accountForm.name}
               onChange={e => setAccountForm(f => ({ ...f, name: e.target.value }))}
               style={{ width: '100%', padding: '12px 16px', background: '#2E2E2E', border: '0.5px solid #3A3A3A', borderRadius: 12, color: '#FFFFFF', fontFamily: 'Inter, sans-serif', fontSize: 14, outline: 'none' }}
@@ -370,7 +408,7 @@ export default function SettingsPage() {
             onClick={handleAddAccount} disabled={savingAccount}
             style={{ width: '100%', padding: '14px 0', background: savingAccount ? '#B8922E' : '#FFD166', borderRadius: 14, border: 'none', fontFamily: 'Poppins, sans-serif', fontSize: 15, fontWeight: 600, color: '#0D0D0D', cursor: 'pointer' }}
           >
-            {savingAccount ? 'Adding...' : 'Add Account'}
+            {savingAccount ? 'Saving...' : editingAccount ? 'Save Changes' : 'Add Account'}
           </button>
         </div>
       </BottomSheet>
@@ -445,7 +483,7 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Budget Amount / cycle</label>
+            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Budget amount / cycle <span style={{textTransform:'none',color:'#4A4A4A'}}>(optional)</span></label>
             <div className="flex items-center gap-2 bg-surface-1 border border-border rounded-xl px-4 py-3">
               <span className="text-muted font-mono text-sm">R</span>
               <input
@@ -497,6 +535,31 @@ export default function SettingsPage() {
                 />
               </div>
             )}
+          </div>
+
+          <div>
+            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Type</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {[
+                { value: 'variable', label: 'Variable' },
+                { value: 'unbudgeted', label: 'Tracking' },
+              ].map(opt => (
+                <button key={opt.value} onClick={() => setCatForm(f => ({ ...f, type: opt.value }))}
+                  style={{
+                    flex: 1, padding: '8px 0', borderRadius: 10, cursor: 'pointer',
+                    border: `0.5px solid ${catForm.type === opt.value ? 'rgba(255,209,102,0.5)' : '#3A3A3A'}`,
+                    background: catForm.type === opt.value ? 'rgba(255,209,102,0.1)' : 'transparent',
+                    color: catForm.type === opt.value ? '#FFD166' : '#717179',
+                    fontFamily: 'Inter, sans-serif', fontSize: 12,
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#4A4A4A', marginTop: 6 }}>
+              Variable = has a budget cap · Tracking = records spend only
+            </p>
           </div>
 
           <div>

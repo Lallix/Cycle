@@ -21,7 +21,7 @@ export default function BudgetSnapshot() {
   if (!budgeted.length) return null
 
   return (
-    <div className="mt-5 px-4">
+    <div className="mt-5 px-4 pb-4">
       <div className="flex items-center justify-between mb-3">
         <h2 className="section-label">Budget</h2>
         <button
