@@ -60,30 +60,51 @@ export default function SettingsPage() {
     finally { setSaving(false) }
   }
 
-  // ── Income ─────────────────────────────────────────────────
-  function openIncome() {
-    setIncomeAmount(incomeRecords?.[0]?.amount ? String(incomeRecords[0].amount) : '')
-    setIncomeOpen(true)
+  // ── Income (multi-source) ──────────────────────────────────
+  function openAddIncome() {
+    setEditingIncome(null)
+    const defaultAcc = accounts.find(a => a.is_default)
+    setIncomeForm({ label: '', amount: '', account: defaultAcc?.name || '' })
+    setIncomeFormOpen(true)
   }
 
-  async function saveIncome() {
-    if (!incomeAmount || parseFloat(incomeAmount) <= 0) {
-      toast('Enter a valid amount', 'error')
-      return
+  function openEditIncome(inc) {
+    setEditingIncome(inc)
+    setIncomeForm({ label: inc.label || '', amount: String(inc.amount || ''), account: inc.account || '' })
+    setIncomeFormOpen(true)
+  }
+
+  async function saveIncomeSource() {
+    if (!incomeForm.amount || parseFloat(incomeForm.amount) <= 0) {
+      toast('Enter a valid amount', 'error'); return
     }
-    setSaving(true)
+    setSavingIncome(true)
     try {
-      const existing = incomeRecords?.[0]
-      if (existing) {
-        await updateIncome(existing.id, parseFloat(incomeAmount))
+      if (editingIncome) {
+        await updateIncome(editingIncome.id, parseFloat(incomeForm.amount))
+        toast('Income updated ✓', 'success')
       } else {
-        // No seed record yet — insert one directly
-        await addIncome(parseFloat(incomeAmount))
+        await addIncome({
+          label:   incomeForm.label.trim() || 'Income',
+          amount:  parseFloat(incomeForm.amount),
+          account: incomeForm.account || null,
+        })
+        toast('Income source added ✓', 'success')
       }
-      toast('Income updated', 'success')
-      setIncomeOpen(false)
+      setIncomeFormOpen(false)
+      setEditingIncome(null)
     } catch (e) { toast(e.message, 'error') }
-    finally { setSaving(false) }
+    finally { setSavingIncome(false) }
+  }
+
+  async function handleDeleteIncome(inc) {
+    if (incomeRecords.length <= 1) {
+      toast('Keep at least one income source', 'error'); return
+    }
+    try {
+      await deleteIncome(inc.id)
+      toast('Removed', 'success')
+    } catch (e) { toast(e.message, 'error') }
   }
 
   // ── Accounts ──────────────────────────────────────────────

@@ -67,11 +67,13 @@ export default function BottomSheet({ open, onClose, children, title }) {
       <div
         style={{
           position: 'fixed',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          width: '100vw',
+          left: '0px',
+          right: '0px',
+          bottom: '0px',
+          width: '100%',
           maxWidth: '100vw',
+          marginLeft: 0,
+          marginRight: 0,
           boxSizing: 'border-box',
           overflowX: 'hidden',
           zIndex: 201,
