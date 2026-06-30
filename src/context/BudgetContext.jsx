@@ -393,14 +393,26 @@ export function BudgetProvider({ children }) {
     return data
   }
 
-  async function addIncome(amount) {
+  async function addIncome(payload) {
+    // Accept either a plain amount (legacy) or a full payload object
+    const record = typeof payload === 'number'
+      ? { user_id: user.id, amount: payload, label: 'Monthly income', is_active: true }
+      : { user_id: user.id, ...payload, is_active: true }
     const { data, error } = await supabase
       .from('cycle_income')
-      .insert({ user_id: user.id, amount, label: 'Monthly income', is_active: true })
+      .insert(record)
       .select().single()
     if (error) throw error
     setIncomeRecords(prev => [...prev, data])
     return data
+  }
+
+  async function deleteIncome(id) {
+    const { error } = await supabase
+      .from('cycle_income')
+      .delete().eq('id', id).eq('user_id', user.id)
+    if (error) throw error
+    setIncomeRecords(prev => prev.filter(i => i.id !== id))
   }
 
   async function addSavingGoal(payload) {
@@ -452,7 +464,7 @@ export function BudgetProvider({ children }) {
     toggleRecurringPaid,
     addRecurringExpense, updateRecurringExpense, deleteRecurringExpense,
     addCategory, updateCategory, deleteCategory,
-    updateIncome, addIncome,
+    updateIncome, addIncome, deleteIncome,
     addSavingGoal, updateSavingGoal, contributeSavings,
     addAccount, updateAccount, deleteAccount,
   }

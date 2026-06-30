@@ -92,7 +92,7 @@ export default function ExpenseItem({ transaction, onDelete, onEdit }) {
         position: 'absolute', top: 0, right: 0, bottom: 0,
         width: MAX + 16,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(239,68,68,0.12)',
+        background: 'rgba(239,68,68,0.08)',
       }}>
         <button
           onClick={handleDelete}
@@ -140,7 +140,7 @@ export default function ExpenseItem({ transaction, onDelete, onEdit }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{
             fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500,
-            color: '#FFFFFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            color: '#1C1814', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {catName}
           </p>
@@ -158,7 +158,7 @@ export default function ExpenseItem({ transaction, onDelete, onEdit }) {
             </span>
             {transaction.notes && (
               <span style={{
-                fontSize: 11, color: '#717179', fontFamily: 'Inter, sans-serif',
+                fontSize: 11, color: '#6B6460', fontFamily: 'Inter, sans-serif',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 110,
               }}>
                 · {transaction.notes}

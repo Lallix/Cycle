@@ -6,6 +6,7 @@ import { formatMoney, COLOR_OPTIONS, getAccountConfig } from '../lib/format'
 import PageHeader from '../components/ui/PageHeader'
 import Button from '../components/ui/Button'
 import BottomSheet from '../components/ui/BottomSheet'
+import AccountPicker from '../components/ui/AccountPicker'
 import { User, Wallet, LogOut, Plus, Edit2, Trash2, RefreshCw, Smile } from 'lucide-react'
 import Picker from '@emoji-mart/react'
 import data from '@emoji-mart/data'
@@ -21,20 +22,22 @@ const BLANK_CAT = { name: '', icon: '🛒', colour: '#D4AF37', budget_amount: ''
 
 export default function SettingsPage() {
   const { user, profile, signOut, updateProfile, biometricAvailable, biometricEnabled, registerBiometric, disableBiometric } = useAuth()
-  const { categories, incomeRecords, accounts, addCategory, updateCategory, deleteCategory, updateIncome, addIncome, addAccount, updateAccount, deleteAccount } = useBudget()
+  const { categories, incomeRecords, accounts, addCategory, updateCategory, deleteCategory, updateIncome, addIncome, deleteIncome, addAccount, updateAccount, deleteAccount } = useBudget()
   const toast = useToast()
 
   const [profileOpen, setProfileOpen]   = useState(false)
   const [catOpen, setCatOpen]           = useState(false)
-  const [incomeOpen, setIncomeOpen]     = useState(false)
   const [editingCat, setEditingCat]     = useState(null)
   const [catForm, setCatForm]           = useState(BLANK_CAT)
   const [profileForm, setProfileForm]   = useState({ full_name: '', cycle_start_day: 25 })
-  const [incomeAmount, setIncomeAmount] = useState('')
   const [saving, setSaving]             = useState(false)
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
   const [accountOpen, setAccountOpen]         = useState(false)
   const [accountForm, setAccountForm]         = useState({ name: '', bank: 'Capitec' })
+  const [incomeFormOpen, setIncomeFormOpen]   = useState(false)
+  const [editingIncome, setEditingIncome]     = useState(null)
+  const [incomeForm, setIncomeForm]           = useState({ label: '', amount: '', account: '' })
+  const [savingIncome, setSavingIncome]       = useState(false)
   const [savingAccount, setSavingAccount]     = useState(false)
   const [editingAccount, setEditingAccount]   = useState(null)
 
@@ -173,8 +176,6 @@ export default function SettingsPage() {
     try { await signOut() } catch (e) { toast(e.message, 'error') }
   }
 
-  const income = incomeRecords?.[0]?.amount || 0
-
   return (
     <div className="pb-28" style={{ minHeight: '100vh' }}>
       <PageHeader title="Settings" />
@@ -204,19 +205,53 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Income */}
+        {/* Income — multiple sources */}
         <section>
-          <p className="text-xs text-muted uppercase tracking-widest mb-2">Income</p>
-          <div className="bg-surface-1 border border-border rounded-2xl overflow-hidden">
-            <div className="flex items-center justify-between p-4">
-              <div>
-                <p className="text-sm text-muted">Monthly take-home</p>
-                <p className="text-xl font-mono font-semibold text-success mt-0.5">{formatMoney(income)}</p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs text-muted uppercase tracking-widest">Income</p>
+            <button onClick={openAddIncome} className="flex items-center gap-1 text-xs text-gold hover:opacity-80">
+              <Plus size={13} /> Add
+            </button>
+          </div>
+          <div className="border border-border rounded-2xl overflow-hidden" style={{ background: '#1B1B1B' }}>
+            {incomeRecords.map((inc, i) => {
+              const cfg = inc.account ? getAccountConfig(inc.account) : null
+              const totalIncome = incomeRecords.reduce((s, r) => s + parseFloat(r.amount || 0), 0)
+              return (
+                <div key={inc.id} className="flex items-center gap-3 px-4 py-3 border-b border-border last:border-0">
+                  <div className="flex-1 min-w-0">
+                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: '#FFFFFF' }}>
+                      {inc.label || 'Income'}
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                      <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: '#22C55E' }}>
+                        {formatMoney(inc.amount)}
+                      </p>
+                      {inc.account && cfg && (
+                        <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: cfg.bg, color: cfg.color, fontFamily: 'Inter, sans-serif' }}>
+                          {inc.account}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <button onClick={() => openEditIncome(inc)} className="p-1.5 rounded-lg hover:bg-surface-2 transition-colors">
+                    <Edit2 size={14} className="text-muted" />
+                  </button>
+                  <button onClick={() => handleDeleteIncome(inc)} className="p-1.5 rounded-lg hover:bg-danger/10 transition-colors">
+                    <Trash2 size={14} className="text-muted" />
+                  </button>
+                </div>
+              )
+            })}
+            {/* Total */}
+            {incomeRecords.length > 1 && (
+              <div className="flex items-center justify-between px-4 py-3 border-t border-border" style={{ background: '#252220' }}>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#717179' }}>Total income</p>
+                <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 14, fontWeight: 600, color: '#22C55E' }}>
+                  {formatMoney(incomeRecords.reduce((s, r) => s + parseFloat(r.amount || 0), 0))}
+                </p>
               </div>
-              <button onClick={openIncome} className="p-2 rounded-lg hover:bg-surface-2 transition-colors">
-                <Edit2 size={16} className="text-muted" />
-              </button>
-            </div>
+            )}
           </div>
         </section>
 
@@ -413,6 +448,44 @@ export default function SettingsPage() {
         </div>
       </BottomSheet>
 
+      {/* Income Source Sheet — add or edit */}
+      <BottomSheet open={incomeFormOpen} onClose={() => { setIncomeFormOpen(false); setEditingIncome(null) }}
+        title={editingIncome ? 'Edit Income Source' : 'Add Income Source'}>
+        <div className="px-5 space-y-4 pb-8">
+          <div>
+            <label className="text-xs text-muted uppercase tracking-widest block mb-2">
+              Label <span style={{textTransform:'none',color:'#4A4A4A'}}>(e.g. Salary, Rental, Freelance)</span>
+            </label>
+            <input type="text" placeholder="e.g. Monthly Salary"
+              value={incomeForm.label}
+              onChange={e => setIncomeForm(f => ({ ...f, label: e.target.value }))}
+              style={{ width: '100%', padding: '12px 16px', background: '#2E2E2E', border: '0.5px solid #3A3A3A', borderRadius: 12, color: '#FFFFFF', fontFamily: 'Inter, sans-serif', fontSize: 14, outline: 'none' }}
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Amount</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#2E2E2E', border: '0.5px solid #3A3A3A', borderRadius: 12, padding: '12px 16px' }}>
+              <span style={{ fontFamily: 'Poppins, sans-serif', color: '#717179' }}>R</span>
+              <input type="number" inputMode="decimal" placeholder="0.00"
+                value={incomeForm.amount}
+                onChange={e => setIncomeForm(f => ({ ...f, amount: e.target.value }))}
+                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontFamily: 'Poppins, sans-serif', fontSize: 18, color: '#FFFFFF' }}
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs text-muted uppercase tracking-widest block mb-2">
+              Paid into account <span style={{textTransform:'none',color:'#4A4A4A'}}>(optional)</span>
+            </label>
+            <AccountPicker value={incomeForm.account} onChange={(val) => setIncomeForm(f => ({ ...f, account: val }))} />
+          </div>
+          <button onClick={saveIncomeSource} disabled={savingIncome}
+            style={{ width: '100%', padding: '14px 0', background: savingIncome ? '#B8922E' : '#FFD166', borderRadius: 14, border: 'none', fontFamily: 'Poppins, sans-serif', fontSize: 15, fontWeight: 600, color: '#0D0D0D', cursor: 'pointer' }}>
+            {savingIncome ? 'Saving...' : editingIncome ? 'Save Changes' : 'Add Income Source'}
+          </button>
+        </div>
+      </BottomSheet>
+
       {/* Edit Profile Sheet */}
       <BottomSheet open={profileOpen} onClose={() => setProfileOpen(false)} title="Edit Profile">
         <div className="px-5 space-y-4 pb-8">
@@ -441,29 +514,6 @@ export default function SettingsPage() {
           </div>
           <Button variant="primary" size="lg" onClick={saveProfile} disabled={saving} className="w-full">
             {saving ? 'Saving…' : 'Save'}
-          </Button>
-        </div>
-      </BottomSheet>
-
-      {/* Edit Income Sheet */}
-      <BottomSheet open={incomeOpen} onClose={() => setIncomeOpen(false)} title="Monthly Income">
-        <div className="px-5 space-y-4 pb-8">
-          <div>
-            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Take-home amount</label>
-            <div className="flex items-center gap-2 bg-surface-1 border border-border rounded-xl px-4 py-3">
-              <span className="text-muted font-mono">R</span>
-              <input
-                type="number"
-                inputMode="decimal"
-                value={incomeAmount}
-                onChange={e => setIncomeAmount(e.target.value)}
-                placeholder="0.00"
-                className="flex-1 bg-transparent font-mono text-lg outline-none"
-              />
-            </div>
-          </div>
-          <Button variant="primary" size="lg" onClick={saveIncome} disabled={saving} className="w-full">
-            {saving ? 'Saving…' : 'Update Income'}
           </Button>
         </div>
       </BottomSheet>

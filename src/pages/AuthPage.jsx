@@ -38,7 +38,7 @@ function AuthRing() {
 
 export default function AuthPage() {
   const navigate = useNavigate()
-  const { signIn, signUp, resetPassword } = useAuth()
+  const { signIn, signUp, resetPassword, biometricAvailable, biometricEnabled, registerBiometric } = useAuth()
   const toast = useToast()
 
   const [mode, setMode]           = useState(MODES.SIGNIN)
@@ -72,7 +72,12 @@ export default function AuthPage() {
     try {
       if (mode === MODES.SIGNIN) {
         await signIn(form.email, form.password)
-        navigate('/')
+        // Show biometric prompt if available and not yet enrolled
+        if (biometricAvailable && !biometricEnabled) {
+          setShowBioPrompt(true)
+        } else {
+          navigate('/')
+        }
       } else if (mode === MODES.SIGNUP) {
         await signUp(form.email, form.password, form.fullName)
         toast('Account created! Check your email to confirm.', 'success')
@@ -310,6 +315,65 @@ export default function AuthPage() {
           )}
         </form>
       </div>
+
+      {/* Biometric enrolment prompt — shown after first successful login */}
+      {showBioPrompt && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
+          zIndex: 500, display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+        }}>
+          <div style={{
+            width: '100%', maxWidth: 480,
+            background: '#1B1B1B', borderRadius: '24px 24px 0 0',
+            border: '0.5px solid #2A2A2A', padding: '28px 28px 48px',
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+          }}>
+            {/* Icon */}
+            <div style={{
+              width: 64, height: 64, borderRadius: 20,
+              background: 'rgba(255,209,102,0.1)',
+              border: '0.5px solid rgba(255,209,102,0.2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 30, marginBottom: 16,
+            }}>
+              🔒
+            </div>
+            <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 18, fontWeight: 600, color: '#FFFFFF', marginBottom: 8, textAlign: 'center' }}>
+              Enable quick unlock?
+            </p>
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#717179', textAlign: 'center', lineHeight: 1.6, marginBottom: 28 }}>
+              Use Face ID or your fingerprint to unlock Cycle instantly next time — no password needed.
+            </p>
+            {/* Enable button */}
+            <button
+              onClick={async () => {
+                const ok = await registerBiometric()
+                if (ok) toast('Biometric unlock enabled ✓', 'success')
+                navigate('/')
+              }}
+              style={{
+                width: '100%', padding: '14px 0', marginBottom: 10,
+                background: '#FFD166', borderRadius: 14, border: 'none',
+                fontFamily: 'Poppins, sans-serif', fontSize: 15, fontWeight: 600,
+                color: '#0D0D0D', cursor: 'pointer',
+                boxShadow: '0 0 20px rgba(255,209,102,0.25)',
+              }}
+            >
+              Enable Face ID / Touch ID
+            </button>
+            {/* Skip */}
+            <button
+              onClick={() => navigate('/')}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#717179',
+              }}
+            >
+              Maybe later
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <div style={{ marginTop: 32, textAlign: 'center' }}>

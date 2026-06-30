@@ -41,12 +41,12 @@ function StatCard({ label, amount, color, delay = 0 }) {
   return (
     <div
       className="flex-1 flex flex-col items-center justify-center py-4"
-      style={{ borderRight: '0.5px solid #2A2A2A' }}
+      style={{ borderRight: '0.5px solid #E8E0D0' }}
     >
       <span style={{
         fontSize: 10,
         fontFamily: 'Inter, sans-serif',
-        color: '#717179',
+        color: '#9A9080',
         textTransform: 'uppercase',
         letterSpacing: '0.08em',
         marginBottom: 4,
@@ -57,7 +57,7 @@ function StatCard({ label, amount, color, delay = 0 }) {
         fontFamily: 'Poppins, sans-serif',
         fontSize: 14,
         fontWeight: 500,
-        color,
+        color: color === '#FFFFFF' ? '#1C1814' : color,
         letterSpacing: '-0.01em',
       }}>
         {formatMoney(animated, true)}
@@ -78,9 +78,9 @@ export default function HeroCard() {
     <div
       className="mx-4 mb-4 overflow-hidden"
       style={{
-        background: '#1B1B1B',
+        background: '#FAF7F0',
         borderRadius: 24,
-        border: '0.5px solid #2A2A2A',
+        border: '0.5px solid #E8E0D0',
       }}
     >
       {/* Ring + daily safe spend */}
@@ -113,7 +113,7 @@ export default function HeroCard() {
             fontFamily: 'Poppins, sans-serif',
             fontSize: 30,
             fontWeight: 300,
-            color: isOver ? '#EF4444' : '#FFD166',
+            color: isOver ? '#C0544A' : '#C9A84C',
             lineHeight: 1,
             letterSpacing: '-0.02em',
           }}>

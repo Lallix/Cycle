@@ -44,7 +44,7 @@ export default function RecentExpenses() {
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '12px 16px',
-                  borderBottom: i < recent.length - 1 ? '0.5px solid #2A2A2A' : 'none',
+                  borderBottom: i < recent.length - 1 ? '0.5px solid #E8E0D0' : 'none',
                   cursor: 'pointer',
                 }}
               >
@@ -61,17 +61,17 @@ export default function RecentExpenses() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{
                     fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500,
-                    color: '#FFFFFF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    color: '#1C1814', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
                     {name}
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
                     {tx.transaction_date && (
-                      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#717179' }}>
+                      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#6B6460' }}>
                         {format(new Date(tx.transaction_date), 'd MMM')}
                       </span>
                     )}
-                    <span style={{ color: '#4A4A4A', fontSize: 11 }}>·</span>
+                    <span style={{ color: '#9A9080', fontSize: 11 }}>·</span>
                     {tx.account && (
                       <span style={{
                         fontSize: 10, padding: '2px 7px', borderRadius: 5, fontWeight: 500,
@@ -82,7 +82,7 @@ export default function RecentExpenses() {
                     )}
                     {tx.notes && (
                       <span style={{
-                        fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#717179',
+                        fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#6B6460',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80,
                       }}>
                         {tx.notes}
