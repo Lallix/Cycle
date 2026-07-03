@@ -6,14 +6,18 @@ export default defineConfig({
   base: '/Cycle/',
   define: {
     // Bake build timestamp into the app as a global — visible in Settings
-    __APP_VERSION__: JSON.stringify(new Date().toISOString().slice(0, 16).replace('T', ' ')),
+    __APP_VERSION__: JSON.stringify((() => {
+      // SAST = UTC+2
+      const now = new Date()
+      const sast = new Date(now.getTime() + 2 * 60 * 60 * 1000)
+      return sast.toISOString().slice(0, 16).replace('T', ' ')
+    })()),
   },
   plugins: [
     react(),
     VitePWA({
-      // prompt: we control when to reload, not autoUpdate
-      // This lets us show a toast instead of silently reloading mid-session
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
+      injectRegister: 'auto',
       includeAssets: ['icons/icon-192.png', 'icons/icon-512.png'],
       manifest: {
         name: 'Cycle — Budget App',
