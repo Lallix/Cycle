@@ -46,6 +46,7 @@ export default function AuthPage() {
   const [showPassword, setShowPw] = useState(false)
   const [form, setForm]           = useState({ email: '', password: '', fullName: '' })
   const [errors, setErrors]       = useState({})
+  const [showBioPrompt, setShowBioPrompt] = useState(false)
 
   function setField(field, value) {
     setForm(p => ({ ...p, [field]: value }))
