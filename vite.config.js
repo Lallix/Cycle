@@ -26,6 +26,7 @@ export default defineConfig({
         theme_color: '#0E0E0E',
         background_color: '#0E0E0E',
         display: 'standalone',
+        display_override: ['window-controls-overlay', 'standalone'],
         orientation: 'portrait',
         scope: '/Cycle/',
         start_url: '/Cycle/',
