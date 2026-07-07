@@ -172,12 +172,12 @@ export default function ExpensesPage() {
         <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {grouped.map(([date, txs]) => (
             <div key={date}>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#717179', fontWeight: 500, marginBottom: 8 }}>
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#717179', fontWeight: 600, marginBottom: 8 }}>
                 {format(new Date(date), 'EEEE, d MMMM')}
               </p>
-              <div style={{ background: '#1B1B1B', borderRadius: 16, border: '0.5px solid #2A2A2A', overflow: 'hidden' }}>
+              <div style={{ background: '#FAF7F0', borderRadius: 16, border: '0.5px solid #E8E0D0', overflow: 'hidden' }}>
                 {txs.map((tx, i) => (
-                  <div key={tx.id} style={{ borderBottom: i < txs.length - 1 ? '0.5px solid #2A2A2A' : 'none' }}>
+                  <div key={tx.id} style={{ borderBottom: i < txs.length - 1 ? '0.5px solid #E8E0D0' : 'none' }}>
                     <ExpenseItem
                       transaction={tx}
                       onDelete={handleDelete}

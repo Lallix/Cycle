@@ -50,13 +50,14 @@ export default defineConfig({
         ]
       },
       workbox: {
+        // Force new SW to activate immediately without waiting
+        skipWaiting: true,
+        clientsClaim: true,
         // Each build gets a unique precache manifest — stale SW auto-expires
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         // Clean up old caches from previous versions on activation
         cleanupOutdatedCaches: true,
         // Skip waiting — new SW takes over immediately on next load
-        skipWaiting: true,
-        clientsClaim: true,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

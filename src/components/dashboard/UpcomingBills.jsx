@@ -1,6 +1,6 @@
 import { useBudget } from '../../context/BudgetContext'
 import { getUpcomingDays } from '../../lib/cycle'
-import { formatMoney, formatOrdinal, getAccountConfig } from '../../lib/format'
+import { formatMoney, getAccountConfig } from '../../lib/format'
 import { useToast } from '../ui/Toast'
 import { CheckCircle, Clock } from 'lucide-react'
 import { format } from 'date-fns'
@@ -10,67 +10,76 @@ export default function UpcomingBills() {
   const toast = useToast()
 
   const upcoming = getUpcomingDays(recurringExpenses, cycle, 7)
-
   if (!upcoming.length) return null
 
   async function handleToggle(expense) {
     try {
       await toggleRecurringPaid(expense.id)
       toast(isRecurringPaid(expense.id) ? 'Marked as unpaid' : 'Marked as paid ✓', 'success')
-    } catch (err) {
+    } catch {
       toast('Failed to update', 'error')
     }
   }
 
   return (
-    <div className="mt-5">
-      <div className="px-4 mb-3">
-        <h2 className="section-label">Due Soon</h2>
-      </div>
+    <div style={{ marginBottom: 8 }}>
+      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, color: '#717179', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '0 16px', marginBottom: 10 }}>
+        Due Soon
+      </p>
 
-      <div className="flex gap-3 px-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
+      <div style={{ display: 'flex', gap: 10, padding: '0 16px', overflowX: 'auto', scrollbarWidth: 'none' }}>
         {upcoming.map(exp => {
-          const acc = getAccountConfig(exp.account)
-          const isToday = exp.daysUntil === 0
+          const acc       = getAccountConfig(exp.account)
+          const paid      = isRecurringPaid(exp.id)
+          const isToday   = exp.daysUntil === 0
           const isTomorrow = exp.daysUntil === 1
 
           return (
             <button
               key={exp.id}
               onClick={() => handleToggle(exp)}
-              className={`
-                flex-shrink-0 flex flex-col gap-2.5 p-3.5 rounded-2xl border min-w-[130px]
-                transition-all duration-150 active:scale-95 text-left
-                ${isRecurringPaid(exp.id)
-                  ? 'bg-bg-elevated border-success/30 opacity-60'
-                  : 'bg-bg-card border-border'
-                }
-              `}
+              style={{
+                flexShrink: 0, minWidth: 130,
+                display: 'flex', flexDirection: 'column', gap: 8,
+                padding: '12px 14px',
+                borderRadius: 14,
+                border: `0.5px solid ${paid ? 'rgba(34,197,94,0.25)' : '#E8E0D0'}`,
+                background: paid ? 'rgba(34,197,94,0.05)' : '#FAF7F0',
+                opacity: paid ? 0.7 : 1,
+                cursor: 'pointer',
+                textAlign: 'left',
+                transition: 'all 0.15s ease',
+              }}
             >
-              {/* Due label */}
-              <div className="flex items-center justify-between gap-1">
-                <span className={`text-2xs font-medium ${
-                  isToday ? 'text-danger' : isTomorrow ? 'text-warning' : 'text-muted'
-                }`}>
+              {/* Due label + icon */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
+                <span style={{
+                  fontFamily: 'Inter, sans-serif', fontSize: 10, fontWeight: 600,
+                  color: isToday ? '#C05050' : isTomorrow ? '#C9803A' : '#9A9080',
+                }}>
                   {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : format(exp.dueDate, 'd MMM')}
                 </span>
-                {isRecurringPaid(exp.id)
-                  ? <CheckCircle size={14} className="text-success" />
-                  : <Clock size={14} className="text-muted" />
+                {paid
+                  ? <CheckCircle size={13} color="#22C55E" />
+                  : <Clock size={13} color="#9A9080" />
                 }
               </div>
 
               {/* Name */}
-              <p className="text-xs font-medium text-text-primary leading-tight">{exp.name}</p>
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 500, color: '#1C1814', lineHeight: 1.3 }}>
+                {exp.name}
+              </p>
 
               {/* Amount + account */}
               <div>
-                <p className="font-mono text-sm font-medium text-text-primary">
+                <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 14, fontWeight: 600, color: '#1C1814', marginBottom: 4 }}>
                   {formatMoney(exp.amount)}
                 </p>
-                <span className="text-2xs px-1.5 py-0.5 rounded-md font-medium"
-                  style={{ color: acc.color, backgroundColor: acc.bg }}
-                >
+                <span style={{
+                  fontFamily: 'Inter, sans-serif', fontSize: 10, fontWeight: 500,
+                  padding: '2px 6px', borderRadius: 4,
+                  color: acc.color, background: acc.bg,
+                }}>
                   {exp.account}
                 </span>
               </div>

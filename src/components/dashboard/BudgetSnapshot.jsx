@@ -7,12 +7,11 @@ export default function BudgetSnapshot() {
   const { categories, getCategorySpent } = useBudget()
   const navigate = useNavigate()
 
-  // Get top budgeted variable categories, sorted by spend %
   const budgeted = categories
     .filter(c => c.budget_amount != null && c.type === 'variable')
     .map(c => {
       const spent = getCategorySpent(c.id)
-      const pct = (spent / parseFloat(c.budget_amount)) * 100
+      const pct   = (spent / parseFloat(c.budget_amount)) * 100
       return { ...c, spent, pct }
     })
     .sort((a, b) => b.pct - a.pct)
@@ -21,38 +20,49 @@ export default function BudgetSnapshot() {
   if (!budgeted.length) return null
 
   return (
-    <div className="mt-5 px-4 pb-4">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="section-label">Budget</h2>
+    <div style={{ margin: '0 16px', paddingBottom: 16 }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, color: '#717179', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          Budget
+        </p>
         <button
           onClick={() => navigate('/budget')}
-          className="text-xs text-gold active:opacity-70 transition-opacity"
+          style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#FFD166', background: 'none', border: 'none', cursor: 'pointer' }}
         >
           View all →
         </button>
       </div>
 
-      <div className="bg-bg-card rounded-2xl border border-border divide-y divide-border overflow-hidden">
-        {budgeted.map((cat, idx) => (
-          <div key={cat.id} className="px-4 py-3.5">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <span className="text-base">{cat.icon}</span>
-                <span className="text-sm font-medium text-text-primary">{cat.name}</span>
+      {/* Ivory card */}
+      <div style={{ background: '#FAF7F0', borderRadius: 16, border: '0.5px solid #E8E0D0', overflow: 'hidden' }}>
+        {budgeted.map((cat, i) => {
+          const isOver = cat.pct >= 100
+          return (
+            <div
+              key={cat.id}
+              style={{ padding: '13px 16px', borderBottom: i < budgeted.length - 1 ? '0.5px solid #E8E0D0' : 'none' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 18 }}>{cat.icon}</span>
+                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: '#1C1814' }}>
+                    {cat.name}
+                  </span>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 12, color: isOver ? '#C05050' : '#6B6460' }}>
+                    {formatMoney(cat.spent, true)}
+                  </span>
+                  <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 12, color: '#9A9080' }}>
+                    {' '}/ {formatMoney(cat.budget_amount, true)}
+                  </span>
+                </div>
               </div>
-              <div className="text-right">
-                <span className="font-mono text-xs text-muted">
-                  {formatMoney(cat.spent, true)}&nbsp;
-                </span>
-                <span className="font-mono text-xs text-muted">/</span>
-                <span className="font-mono text-xs text-text-secondary">
-                  &nbsp;{formatMoney(cat.budget_amount, true)}
-                </span>
-              </div>
+              <ProgressBar value={cat.spent} max={parseFloat(cat.budget_amount)} size="sm" />
             </div>
-            <ProgressBar value={cat.spent} max={parseFloat(cat.budget_amount)} size="sm" />
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

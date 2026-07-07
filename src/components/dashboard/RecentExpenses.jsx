@@ -29,7 +29,7 @@ export default function RecentExpenses() {
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#4A4A4A', marginTop: 4 }}>Tap + to record your first expense</p>
         </div>
       ) : (
-        <div style={{ background: '#1B1B1B', borderRadius: 16, border: '0.5px solid #2A2A2A', overflow: 'hidden' }}>
+        <div style={{ background: '#FAF7F0', borderRadius: 16, border: '0.5px solid #E8E0D0', overflow: 'hidden' }}>
           {recent.map((tx, i) => {
             const cat    = tx.cycle_categories || tx.categories || null
             const acc    = getAccountConfig(tx.account)
