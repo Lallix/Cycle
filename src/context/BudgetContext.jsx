@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './AuthContext'
-import { getCurrentCycle, getCycleKey } from '../lib/cycle'
-import { isSpend, isLimitType } from '../lib/spend'
+import { cyclesFromPaydays } from '../lib/cycle'
+import { computeCycleTotals, spendByCategory } from '../lib/totals'
 
 const BudgetContext = createContext(null)
 
@@ -18,20 +18,24 @@ export function BudgetProvider({ children }) {
   const [incomeRecords, setIncomeRecords]     = useState([])
   const [savingGoals, setSavingGoals]         = useState([])
   const [accounts, setAccounts]               = useState([])
+  const [paydays, setPaydays]                 = useState(null)  // null = not loaded yet
+  const [plannedItems, setPlannedItems]       = useState([])
 
+  const [cycles, setCycles] = useState([])     // newest first; cycles[0] is the current one
   const [cycle, setCycle]   = useState(null)
-  const [totals, setTotals] = useState({
-    income: 0, spent: 0, fixedTotal: 0, fixedPaid: 0,
-    variableSpent: 0, variableBudget: 0, unbudgetedSpent: 0,
-    remaining: 0, savingsTotal: 0,
-  })
+  const [totals, setTotals] = useState(computeCycleTotals({ transactions: [], categories: [], incomeRecords: [] }))
 
-  // ── Derive cycle from profile ────────────────────────────────
+  // ── Cycles come from your paydays (cycle_paydays) ────────────
   useEffect(() => {
-    if (profile) {
-      setCycle(getCurrentCycle(profile.cycle_start_day || 25))
-    }
-  }, [profile])
+    if (user) loadPaydays().catch(err => { console.error(err); setPaydays([]) })
+  }, [user])
+
+  useEffect(() => {
+    if (!profile || paydays === null) return
+    const list = cyclesFromPaydays(paydays, profile.cycle_start_day || 25)
+    setCycles(list)
+    setCycle(list[0])
+  }, [profile, paydays])
 
   useEffect(() => {
     if (user && cycle) loadAll()
@@ -39,14 +43,14 @@ export function BudgetProvider({ children }) {
   }, [user, cycle?.key])
 
   useEffect(() => {
-    if (cycle) computeTotals()
-  }, [transactions, recurringExpenses, paidLog, categories, incomeRecords, cycle])
+    if (cycle) setTotals(computeCycleTotals({ transactions, categories, incomeRecords, savingGoals }))
+  }, [transactions, categories, incomeRecords, savingGoals, cycle])
 
   function resetData() {
     setCategories([]); setTransactions([]); setRecurringExpenses([])
     setPaidLog([]); setIncomeRecords([]); setSavingGoals([]); setAccounts([])
-    setTotals({ income:0, spent:0, fixedTotal:0, fixedPaid:0,
-      variableSpent:0, variableBudget:0, unbudgetedSpent:0, remaining:0, savingsTotal:0 })
+    setPaydays(null); setPlannedItems([]); setCycles([]); setCycle(null)
+    setTotals(computeCycleTotals({ transactions: [], categories: [], incomeRecords: [] }))
   }
 
   async function loadAll() {
@@ -54,7 +58,7 @@ export function BudgetProvider({ children }) {
     try {
       await Promise.all([
         loadCategories(), loadTransactions(), loadRecurringExpenses(),
-        loadPaidLog(), loadIncome(), loadSavingGoals(), loadAccounts(),
+        loadPaidLog(), loadIncome(), loadSavingGoals(), loadAccounts(), loadPlannedItems(),
       ])
     } catch (err) {
       console.error('Data load error:', err)
@@ -127,6 +131,37 @@ export function BudgetProvider({ children }) {
     return data
   }
 
+  async function loadPaydays() {
+    const { data, error } = await supabase
+      .from('cycle_paydays')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('pay_date')
+    if (error) throw error
+    setPaydays(data || [])
+    return data
+  }
+
+  async function loadPlannedItems() {
+    const { data, error } = await supabase
+      .from('cycle_planned_items')
+      .select('*, cycle_categories(id, name, icon, type)')
+      .eq('user_id', user.id)
+      .eq('status', 'planned')
+      .order('expected_date')
+    if (error) throw error
+    setPlannedItems(data || [])
+    return data
+  }
+
+  async function updatePlannedItem(id, payload) {
+    const { error } = await supabase
+      .from('cycle_planned_items')
+      .update(payload).eq('id', id).eq('user_id', user.id)
+    if (error) throw error
+    await loadPlannedItems()
+  }
+
   async function loadAccounts() {
     const { data, error } = await supabase
       .from('cycle_accounts')
@@ -190,41 +225,6 @@ export function BudgetProvider({ children }) {
     return data
   }
 
-  // ── Computed totals ──────────────────────────────────────────
-
-  function computeTotals() {
-    const income = incomeRecords.reduce((s, i) => s + parseFloat(i.amount || 0), 0)
-    const paidSet = new Set(paidLog.map(p => p.recurring_id))
-
-    const fixedTotal = recurringExpenses.reduce((s, e) => s + parseFloat(e.amount || 0), 0)
-    const fixedPaid  = recurringExpenses
-      .filter(e => paidSet.has(e.id))
-      .reduce((s, e) => s + parseFloat(e.amount || 0), 0)
-
-    let variableSpent = 0, variableBudget = 0, unbudgetedSpent = 0
-
-    const catMap = Object.fromEntries(categories.map(c => [c.id, c]))
-
-    transactions.forEach(t => {
-      if (!isSpend(t)) return   // money in and own-account transfers are not spending
-      const amt = parseFloat(t.amount || 0)
-      const cat = catMap[t.category_id]
-      if (isLimitType(cat?.type)) variableSpent += amt
-      else unbudgetedSpent += amt
-    })
-
-    categories.filter(c => isLimitType(c.type)).forEach(c => {
-      variableBudget += parseFloat(c.budget_amount || 0)
-    })
-
-    const savingsTotal = savingGoals.reduce((s, g) => s + parseFloat(g.current_amount || 0), 0)
-    const spent = variableSpent + unbudgetedSpent
-    const remaining = income - fixedTotal - spent
-
-    setTotals({ income, spent, fixedTotal, fixedPaid, variableSpent,
-      variableBudget, unbudgetedSpent, remaining, savingsTotal })
-  }
-
   // ── Mutations ────────────────────────────────────────────────
 
   async function addTransaction(payload) {
@@ -237,12 +237,12 @@ export function BudgetProvider({ children }) {
         account:          payload.account || null,
         notes:            payload.notes || null,
         transaction_date: payload.date || new Date().toISOString().split('T')[0],
-        cycle_key:        cycle.key,
+        cycle_key:        null,   // filled by the database from your paydays
       })
       .select(`*, cycle_categories(id, name, icon, colour, budget_amount, type)`)
       .single()
     if (error) throw error
-    setTransactions(prev => [data, ...prev])
+    if (data.cycle_key === cycle.key) setTransactions(prev => [data, ...prev])
     return data
   }
 
@@ -255,13 +255,16 @@ export function BudgetProvider({ children }) {
         account:          payload.account || null,
         notes:            payload.notes || null,
         transaction_date: payload.date,
+        cycle_key:        null,   // re-derived from the (possibly new) date
       })
       .eq('id', id)
       .eq('user_id', user.id)
       .select(`*, cycle_categories(id, name, icon, colour, budget_amount, type)`)
       .single()
     if (error) throw error
-    setTransactions(prev => prev.map(t => t.id === id ? data : t))
+    setTransactions(prev => data.cycle_key === cycle.key
+      ? prev.map(t => t.id === id ? data : t)
+      : prev.filter(t => t.id !== id))
     return data
   }
 
@@ -302,10 +305,10 @@ export function BudgetProvider({ children }) {
     return paidLog.some(p => p.recurring_id === expenseId)
   }
 
+  // Net spend in a category this cycle (refunds reduce it)
   function getCategorySpent(categoryId) {
-    return transactions
-      .filter(t => t.category_id === categoryId && isSpend(t))
-      .reduce((sum, t) => sum + parseFloat(t.amount || 0), 0)
+    const catMap = Object.fromEntries(categories.map(c => [c.id, c]))
+    return spendByCategory(transactions, catMap)[categoryId] || 0
   }
 
   async function addRecurringExpense(payload) {
@@ -455,7 +458,7 @@ export function BudgetProvider({ children }) {
   const value = {
     loading, error,
     categories, transactions, recurringExpenses, paidLog,
-    incomeRecords, savingGoals, accounts, cycle, totals,
+    incomeRecords, savingGoals, accounts, cycle, cycles, paydays, plannedItems, totals,
     // helpers
     isRecurringPaid,
     getCategorySpent,
@@ -469,6 +472,7 @@ export function BudgetProvider({ children }) {
     updateIncome, addIncome, deleteIncome,
     addSavingGoal, updateSavingGoal, contributeSavings,
     addAccount, updateAccount, deleteAccount,
+    updatePlannedItem,
   }
 
   return <BudgetContext.Provider value={value}>{children}</BudgetContext.Provider>

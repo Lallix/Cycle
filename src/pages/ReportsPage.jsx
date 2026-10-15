@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useBudget } from '../context/BudgetContext'
-import { useAuth } from '../context/AuthContext'
 import { formatMoney } from '../lib/format'
-import { isSpend, spendAmount } from '../lib/spend'
-import { getLastNCycles } from '../lib/cycle'
+import { isSpend } from '../lib/spend'
+import { computeCycleTotals } from '../lib/totals'
 import CycleSelector from '../components/ui/CycleSelector'
 import LoadingScreen from '../components/ui/LoadingScreen'
 import { format } from 'date-fns'
@@ -150,8 +149,7 @@ function Spinner() {
 
 // ── Main page ──────────────────────────────────────────────────────────────
 export default function ReportsPage() {
-  const { loading, categories, incomeRecords, transactions, getTransactionsForCycle } = useBudget()
-  const { profile } = useAuth()
+  const { loading, categories, incomeRecords, transactions, cycles, getTransactionsForCycle } = useBudget()
 
   const [cycleIndex, setCycleIndex]       = useState(0)
   const [cycleTx, setCycleTx]             = useState(null)
@@ -159,25 +157,24 @@ export default function ReportsPage() {
   const [trendData, setTrendData]         = useState([])
   const [loadingTrend, setLoadingTrend]   = useState(true)
 
-  const startDay = profile?.cycle_start_day || 25
-  const income   = incomeRecords.reduce((s, i) => s + parseFloat(i.amount || 0), 0)
+  const totalsFor = txs => computeCycleTotals({ transactions: txs, categories, incomeRecords })
 
   // Build 6-cycle trend on mount
   useEffect(() => {
-    if (loading) return
+    if (loading || !cycles.length) return
     buildTrend()
-  }, [loading])
+  }, [loading, cycles.length])
 
   async function buildTrend() {
     setLoadingTrend(true)
     try {
-      const cycles  = getLastNCycles(6, startDay).reverse()
-      const current = getLastNCycles(1, startDay)[0]?.key
+      const recent  = cycles.slice(0, 6).reverse()
+      const current = cycles[0]?.key
       const results = await Promise.all(
-        cycles.map(async (c) => {
+        recent.map(async (c) => {
           const txs  = c.key === current ? transactions : await getTransactionsForCycle(c.key)
-          const spent = txs.reduce((s, t) => s + spendAmount(t), 0)
-          return { label: format(c.start, 'MMM'), income, spent }
+          const t    = totalsFor(txs)
+          return { label: format(c.start, 'MMM'), income: t.income, spent: t.spent }
         })
       )
       setTrendData(results)
@@ -189,7 +186,6 @@ export default function ReportsPage() {
   useEffect(() => {
     if (loading) return
     if (cycleIndex === 0) { setCycleTx(null); return }
-    const cycles   = getLastNCycles(12, startDay)
     const selected = cycles[cycleIndex]
     if (!selected) return
     setLoadingCycle(true)
@@ -202,7 +198,7 @@ export default function ReportsPage() {
   if (loading) return <LoadingScreen />
 
   const activeTx  = cycleIndex === 0 ? transactions : (cycleTx || [])
-  const spent     = activeTx.reduce((s, t) => s + spendAmount(t), 0)
+  const { income, spent } = totalsFor(activeTx)
   const remaining = income - spent
   const spentPct  = income > 0 ? Math.min(Math.round((spent / income) * 100), 100) : 0
   const isOver    = remaining < 0

@@ -94,9 +94,9 @@ export default function RecentExpenses() {
                 {/* Amount */}
                 <span style={{
                   fontFamily: 'Poppins, sans-serif', fontSize: 14, fontWeight: 500,
-                  color: '#EF4444', flexShrink: 0, letterSpacing: '-0.01em',
+                  color: tx.direction === 'in' ? '#22C55E' : '#EF4444', flexShrink: 0, letterSpacing: '-0.01em',
                 }}>
-                  -{formatMoney(tx.amount)}
+                  {tx.direction === 'in' ? '+' : '-'}{formatMoney(tx.amount)}
                 </span>
               </div>
             )

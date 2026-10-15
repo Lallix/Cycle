@@ -156,12 +156,12 @@ export default function ExpenseItem({ transaction, onDelete, onEdit }) {
             <span style={{ fontSize: 11, color: '#717179', fontFamily: 'Inter, sans-serif' }}>
               {format(new Date(transaction.transaction_date), 'd MMM')}
             </span>
-            {transaction.notes && (
+            {(transaction.notes || transaction.description) && (
               <span style={{
                 fontSize: 11, color: '#6B6460', fontFamily: 'Inter, sans-serif',
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 110,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160,
               }}>
-                · {transaction.notes}
+                · {transaction.notes || transaction.description}
               </span>
             )}
           </div>
@@ -170,9 +170,9 @@ export default function ExpenseItem({ transaction, onDelete, onEdit }) {
         {/* Amount */}
         <span style={{
           fontFamily: 'Poppins, sans-serif', fontSize: 14, fontWeight: 500,
-          color: '#EF4444', flexShrink: 0, letterSpacing: '-0.01em',
+          color: transaction.direction === 'in' ? '#22C55E' : '#EF4444', flexShrink: 0, letterSpacing: '-0.01em',
         }}>
-          -{formatMoney(transaction.amount)}
+          {transaction.direction === 'in' ? '+' : '-'}{formatMoney(transaction.amount)}
         </span>
       </div>
     </div>

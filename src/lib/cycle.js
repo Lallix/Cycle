@@ -83,3 +83,40 @@ export function calcDailySafeSpend(remaining, daysRemaining) {
 export function getCycleKey(date = new Date(), cycleStartDay = 25) {
   return getCurrentCycle(cycleStartDay, date).key
 }
+
+// ── Cycles from real paydays ─────────────────────────────────────
+// A cycle runs from one payday to the day before the next, matching the
+// database rule (cycle_key_for): a date belongs to the latest payday on or
+// before it. With no payday on record we fall back to cycle_start_day.
+function describeCycle(start, end, today) {
+  const totalDays     = differenceInDays(end, start) + 1
+  const dayOfCycle    = Math.min(totalDays, Math.max(1, differenceInDays(today, start) + 1))
+  const daysRemaining = Math.max(0, differenceInDays(end, today))
+  return {
+    start, end, totalDays, dayOfCycle, daysRemaining,
+    label:      `${format(start, 'd MMM')} → ${format(end, 'd MMM')} · Day ${dayOfCycle} of ${totalDays}`,
+    shortLabel: `${format(start, 'd MMM')} – ${format(end, 'd MMM')}`,
+    key: format(start, 'yyyy-MM-dd'),
+  }
+}
+
+/**
+ * Cycles newest first, up to and including the current one.
+ * paydays: rows from cycle_paydays ({ pay_date, is_expected }).
+ */
+export function cyclesFromPaydays(paydays, cycleStartDay = 25, referenceDate = new Date(), max = 24) {
+  const today = startOfDay(referenceDate)
+  const dates = [...new Set((paydays || []).map(p => p.pay_date))]
+    .sort()
+    .map(d => startOfDay(parseISO(d)))
+  const past = dates.filter(d => !isBefore(today, d))
+  if (past.length === 0) return getLastNCycles(Math.min(max, 12), cycleStartDay)
+
+  return past.slice(-max).reverse().map(start => {
+    const next = dates.find(d => isBefore(start, d))
+    const end  = next
+      ? startOfDay(new Date(next.getTime() - 86400000))
+      : getCurrentCycle(cycleStartDay, start).end
+    return describeCycle(start, end, today)
+  })
+}

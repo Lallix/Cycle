@@ -3,7 +3,6 @@ import { useBudget } from '../context/BudgetContext'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../components/ui/Toast'
 import { formatMoney } from '../lib/format'
-import { getLastNCycles } from '../lib/cycle'
 import ExpenseItem from '../components/expenses/ExpenseItem'
 import ExpenseFilters from '../components/expenses/ExpenseFilters'
 import CycleSelector from '../components/ui/CycleSelector'
@@ -19,7 +18,7 @@ import { FileUp } from 'lucide-react'
 import { spendAmount } from '../lib/spend'
 
 export default function ExpensesPage() {
-  const { loading, transactions, categories, deleteTransaction, updateTransaction, getTransactionsForCycle } = useBudget()
+  const { loading, transactions, categories, cycles, deleteTransaction, updateTransaction, getTransactionsForCycle } = useBudget()
   const { profile } = useAuth()
   const toast = useToast()
   const navigate = useNavigate()
@@ -37,7 +36,6 @@ export default function ExpensesPage() {
   // Load transactions when navigating to a past cycle
   useEffect(() => {
     if (cycleIndex === 0) { setHistoryTx(null); return }
-    const cycles = getLastNCycles(12, profile?.cycle_start_day || 25)
     const selected = cycles[cycleIndex]
     if (!selected) return
     setLoadingHistory(true)
@@ -59,6 +57,7 @@ export default function ExpensesPage() {
       const matchSearch = !search ||
         (cat?.name || '').toLowerCase().includes(search.toLowerCase()) ||
         (tx.notes || '').toLowerCase().includes(search.toLowerCase()) ||
+        (tx.description || '').toLowerCase().includes(search.toLowerCase()) ||
         (tx.account || '').toLowerCase().includes(search.toLowerCase())
       const matchFilter = !activeFilter ||
         (activeFilter.type === 'category' && tx.category_id === activeFilter.id) ||

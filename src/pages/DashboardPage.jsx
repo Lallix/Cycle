@@ -7,6 +7,8 @@ import HeroCard from '../components/dashboard/HeroCard'
 import UpcomingBills from '../components/dashboard/UpcomingBills'
 import BudgetSnapshot from '../components/dashboard/BudgetSnapshot'
 import RecentExpenses from '../components/dashboard/RecentExpenses'
+import TypeBreakdown from '../components/dashboard/TypeBreakdown'
+import PlannedItems from '../components/dashboard/PlannedItems'
 import SavingsModal from '../components/savings/SavingsModal'
 import LoadingScreen from '../components/ui/LoadingScreen'
 import BrandLogo from '../components/branding/BrandLogo'
@@ -83,6 +85,16 @@ export default function DashboardPage() {
         <HeroCard />
       </div>
 
+      {/* Where the money is going, by spend type */}
+      <div className="animate-stagger-2">
+        <TypeBreakdown />
+      </div>
+
+      {/* Planned once-offs (rebate plan) */}
+      <div className="animate-stagger-2">
+        <PlannedItems />
+      </div>
+
       {/* Manage Budget entry point */}
       <div className="px-4 mb-4 animate-stagger-2">
         <button
@@ -104,7 +116,7 @@ export default function DashboardPage() {
               </p>
               <p className="text-xs text-subtle"
                 style={{ fontFamily: 'Inter, sans-serif' }}>
-                Fixed expenses · Variable categories
+                Fixed · Predicted · Unplanned
               </p>
             </div>
           </div>

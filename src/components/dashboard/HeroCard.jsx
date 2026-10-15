@@ -69,8 +69,10 @@ function StatCard({ label, amount, color, delay = 0 }) {
 export default function HeroCard() {
   const { cycle, totals } = useBudget()
 
+  // "Left" already sets aside the fixed costs still due this cycle
   const dailySafe  = calcDailySafeSpend(totals.remaining, cycle?.daysRemaining || 1)
-  const spentPct   = totals.income > 0 ? (totals.spent / totals.income) * 100 : 0
+  const committed  = totals.spent + totals.fixedDue
+  const spentPct   = totals.income > 0 ? (committed / totals.income) * 100 : 0
   const isOver     = totals.remaining < 0
   const animatedDS = useCountUp(Math.abs(dailySafe), 900, 300)
 
@@ -139,14 +141,20 @@ export default function HeroCard() {
             </span>
           )}
 
+          {totals.fixedDue > 0 && (
+            <p style={{ fontSize: 11, fontFamily: 'Inter, sans-serif', color: '#6B6460', marginTop: 8 }}>
+              {formatMoney(totals.fixedDue, true)} fixed still to go off
+            </p>
+          )}
+
           {cycle && (
             <p style={{
               fontSize: 11,
               fontFamily: 'Inter, sans-serif',
               color: '#717179',
-              marginTop: 8,
+              marginTop: 4,
             }}>
-              {cycle.shortLabel}
+              {cycle.shortLabel} · payday to payday
             </p>
           )}
         </div>
@@ -167,16 +175,16 @@ export default function HeroCard() {
             letterSpacing: '0.08em',
             marginBottom: 4,
           }}>
-            Remaining
+            Left
           </span>
           <span style={{
             fontFamily: 'Poppins, sans-serif',
             fontSize: 14,
             fontWeight: 500,
-            color: isOver ? '#EF4444' : '#FFD166',
+            color: isOver ? '#EF4444' : '#C9A84C',
             letterSpacing: '-0.01em',
           }}>
-            {formatMoney(Math.abs(totals.remaining), true)}
+            {isOver ? '−' : ''}{formatMoney(Math.abs(totals.remaining), true)}
           </span>
         </div>
       </div>

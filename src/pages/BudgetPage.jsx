@@ -72,7 +72,7 @@ export default function BudgetPage() {
         {/* Fixed Expenses */}
         <section>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs text-muted uppercase tracking-widest">Fixed Expenses</p>
+            <p className="text-xs text-muted uppercase tracking-widest">Fixed bills</p>
             <button
               onClick={() => { setFixedForm(BLANK_FIXED); setFixedOpen(true) }}
               className="flex items-center gap-1 text-xs text-gold hover:opacity-80"
@@ -91,14 +91,14 @@ export default function BudgetPage() {
           </div>
 
           <div className="flex justify-between text-sm mt-2 px-1">
-            <span className="text-muted">Fixed total</span>
+            <span className="text-muted">Fixed this cycle (paid + still due)</span>
             <span className="font-mono font-medium">{formatMoney(totals.fixedTotal)}</span>
           </div>
         </section>
 
         {/* Variable Budget */}
         <section>
-          <p className="text-xs text-muted uppercase tracking-widest mb-2">Variable Budget</p>
+          <p className="text-xs text-muted uppercase tracking-widest mb-2">Predicted — monthly limits</p>
           <div className="bg-surface-1 border border-border rounded-2xl overflow-hidden divide-y divide-border">
             {variableCategories.length === 0 && (
               <p className="text-sm text-muted px-4 py-4">Add categories in Settings</p>
@@ -109,7 +109,7 @@ export default function BudgetPage() {
           </div>
 
           <div className="flex justify-between text-sm mt-2 px-1">
-            <span className="text-muted">Variable total</span>
+            <span className="text-muted">Predicted total</span>
             <span className="font-mono font-medium">{formatMoney(totals.variableSpent)} / {formatMoney(totals.variableBudget)}</span>
           </div>
         </section>
@@ -117,9 +117,9 @@ export default function BudgetPage() {
         {/* Unbudgeted */}
         {unbudgetedSpent > 0 && (
           <section>
-            <p className="text-xs text-muted uppercase tracking-widest mb-2">Unbudgeted</p>
+            <p className="text-xs text-muted uppercase tracking-widest mb-2">Unplanned</p>
             <div className="bg-surface-1 border border-border rounded-2xl px-4 py-3 flex justify-between">
-              <span className="text-sm text-muted">Untracked spend</span>
+              <span className="text-sm text-muted">Unplanned spend this cycle</span>
               <span className="font-mono text-sm text-warning">{formatMoney(unbudgetedSpent)}</span>
             </div>
           </section>
@@ -131,9 +131,10 @@ export default function BudgetPage() {
           <div className="bg-surface-1 border border-border rounded-2xl overflow-hidden divide-y divide-border">
             {[
               { label: 'Income', value: totals.income, color: 'text-success' },
-              { label: 'Fixed expenses', value: -totals.fixedTotal, color: 'text-fg' },
-              { label: 'Variable spend', value: -totals.variableSpent, color: 'text-fg' },
-              { label: 'Remaining', value: totals.remaining, color: totals.remaining >= 0 ? 'text-success' : 'text-danger' },
+              { label: 'Fixed (paid + still due)', value: -totals.fixedTotal, color: 'text-fg' },
+              { label: 'Predicted spend', value: -totals.variableSpent, color: 'text-fg' },
+              { label: 'Unplanned spend', value: -totals.unbudgetedSpent, color: 'text-fg' },
+              { label: 'Left', value: totals.remaining, color: totals.remaining >= 0 ? 'text-success' : 'text-danger' },
             ].map(row => (
               <div key={row.label} className="flex justify-between px-4 py-3 text-sm">
                 <span className="text-muted">{row.label}</span>

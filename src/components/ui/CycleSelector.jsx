@@ -1,15 +1,13 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { format } from 'date-fns'
-import { getLastNCycles } from '../../lib/cycle'
-import { useAuth } from '../../context/AuthContext'
+import { useBudget } from '../../context/BudgetContext'
 
-// Shows "25 Jun – 24 Jul" with prev/next arrows
+// Shows "25 Sep – 22 Oct" with prev/next arrows — cycles run payday to payday
 // index 0 = current cycle, 1 = previous, etc.
 export default function CycleSelector({ cycleIndex, onChange }) {
-  const { profile } = useAuth()
-  const startDay = profile?.cycle_start_day || 25
-  const cycles   = getLastNCycles(12, startDay)
+  const { cycles } = useBudget()
   const cycle    = cycles[cycleIndex] || cycles[0]
+  if (!cycle) return null
   const isLatest = cycleIndex === 0
 
   return (

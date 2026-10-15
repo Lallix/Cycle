@@ -1,7 +1,7 @@
-// Which transactions count as spending.
-// Imported statements bring in money received and transfers between your own
-// accounts; neither is spending, so totals must skip them.
-const NON_SPEND_TYPES = new Set(['income', 'transfer'])
+// Which transactions count as spending: money out in fixed, predicted or
+// unplanned categories. Money in, transfers between your own accounts,
+// once-offs (tax rebate, car purchase) and debt moves are reported separately.
+const NON_SPEND_TYPES = new Set(['income', 'transfer', 'once_off', 'debt'])
 
 export function isSpend(tx) {
   if (tx.direction === 'in') return false

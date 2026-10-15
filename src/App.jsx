@@ -137,7 +137,7 @@ export default function App() {
           height: '100%',
         }}
       >
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <AppRoutes />
         </BrowserRouter>
       </div>
