@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FileUp, CheckCircle2, AlertTriangle, Copy, ArrowDownLeft, ArrowUpRight } from 'lucide-react'
+import { FileUp, CheckCircle2, AlertTriangle, Copy, ArrowDownLeft, ArrowUpRight, Lock } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useBudget } from '../context/BudgetContext'
@@ -11,9 +11,13 @@ import { formatMoney } from '../lib/format'
 import { parseCapitecCsv, guessAccountKind } from '../lib/import/capitec'
 import { hashLines } from '../lib/import/fingerprint'
 import { buildCategoriser, payeeKey, escapeRegex } from '../lib/import/categorise'
+import { parseGoTyme, isGoTymeStatement } from '../lib/import/gotyme'
+import { readPdfItems, PdfPasswordError } from '../lib/import/pdfText'
 
-// Import a bank statement (Capitec CSV: main account or credit card).
-// pick file → match it to an account → review categories → import.
+// Import a bank statement: Capitec CSV (main account or credit card) or a
+// GoTyme / TymeBank PDF statement (password-protected PDFs ask for the
+// password, which only opens the file in memory and is never kept).
+// pick file → (password) → match it to an account → review categories → import.
 
 const PAGE = 150
 const INSERT_CHUNK = 300
@@ -54,10 +58,13 @@ export default function ImportPage() {
   const { categories, accounts, addAccount, updateAccount, refresh } = useBudget()
   const fileRef = useRef(null)
 
-  const [step, setStep] = useState('pick')        // pick · account · review · done
+  const [step, setStep] = useState('pick')        // pick · password · account · review · done
+  const [pdfBuffer, setPdfBuffer] = useState(null) // a protected PDF waiting for its password
+  const [password, setPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
   const [busy, setBusy] = useState(false)
   const [fileName, setFileName] = useState('')
-  const [parsed, setParsed] = useState(null)      // { lines, pending, accountNumber, kind }
+  const [parsed, setParsed] = useState(null)      // { lines, pending, accountNumber, kind, bank, format }
   const [account, setAccount] = useState(null)
   const [accountChoice, setAccountChoice] = useState('new')
   const [newAccount, setNewAccount] = useState({ name: '', kind: 'bank' })
@@ -73,28 +80,66 @@ export default function ImportPage() {
     e.target.value = ''
     if (!file) return
     setBusy(true)
+    setFileName(file.name)
     try {
-      const { lines, pending } = parseCapitecCsv(await file.text())
-      if (lines.length === 0) throw new Error('No transactions found in this file.')
-      const numbers = [...new Set(lines.map(l => l.accountNumber))]
-      if (numbers.length > 1) throw new Error('This file has more than one account in it — export each account separately.')
-      const accountNumber = numbers[0]
-      const kind = guessAccountKind(lines)
-      setFileName(file.name)
-      setParsed({ lines, pending, accountNumber, kind })
-
-      const match = accounts.find(a => a.account_number === accountNumber)
-      if (match) {
-        await prepareReview(lines, match)
+      if (/\.pdf$/i.test(file.name) || file.type === 'application/pdf') {
+        const buffer = await file.arrayBuffer()
+        try {
+          await openPdf(buffer, '')
+        } catch (err) {
+          if (!(err instanceof PdfPasswordError)) throw err
+          setPdfBuffer(buffer); setPassword(''); setPasswordError(''); setStep('password')
+        }
       } else {
-        setNewAccount({ name: kind === 'credit_card' ? 'Capitec credit card' : 'Capitec', kind })
-        setAccountChoice(accounts.find(a => !a.account_number)?.id || 'new')
-        setStep('account')
+        const { lines, pending } = parseCapitecCsv(await file.text())
+        await loadStatement({ lines, pending, kind: guessAccountKind(lines), bank: 'Capitec', format: 'capitec_csv' })
       }
     } catch (err) {
-      toast(err.message, 'error', 5000)
+      toast(err.message, 'error', 6000)
     } finally {
       setBusy(false)
+    }
+  }
+
+  async function openPdf(buffer, pwd) {
+    // pdf.js takes ownership of the buffer it is given, so hand it a copy
+    const pages = await readPdfItems(buffer.slice(0), pwd)
+    if (!isGoTymeStatement(pages)) throw new Error('This PDF is not a GoTyme / TymeBank statement.')
+    const { lines, pending } = parseGoTyme(pages)
+    await loadStatement({ lines, pending, kind: 'bank', bank: 'TymeBank', format: 'gotyme_pdf' })
+  }
+
+  async function submitPassword(e) {
+    e?.preventDefault()
+    if (!password) { setPasswordError('Enter the statement password'); return }
+    setBusy(true)
+    try {
+      await openPdf(pdfBuffer, password)
+      setPdfBuffer(null)
+    } catch (err) {
+      if (err instanceof PdfPasswordError) setPasswordError(err.message)
+      else { toast(err.message, 'error', 6000); setStep('pick') }
+    } finally {
+      setPassword('')                                 // never kept
+      setBusy(false)
+    }
+  }
+
+  async function loadStatement({ lines, pending, kind, bank, format }) {
+    if (lines.length === 0) throw new Error('No transactions found in this file.')
+    const numbers = [...new Set(lines.map(l => l.accountNumber))]
+    if (numbers.length > 1) throw new Error('This file has more than one account in it — export each account separately.')
+    const accountNumber = numbers[0]
+    setParsed({ lines, pending, accountNumber, kind, bank, format })
+
+    const match = accounts.find(a => a.account_number === accountNumber)
+    if (match) {
+      await prepareReview(lines, match)
+    } else {
+      setNewAccount({ name: kind === 'credit_card' ? `${bank} credit card` : bank, kind })
+      setAccountChoice(accounts.find(a => !a.account_number && (a.bank || a.name) === bank)?.id
+        || accounts.find(a => !a.account_number)?.id || 'new')
+      setStep('account')
     }
   }
 
@@ -106,7 +151,7 @@ export default function ImportPage() {
       if (accountChoice === 'new') {
         if (!newAccount.name.trim()) throw new Error('Give the account a name')
         acc = await addAccount({
-          name: newAccount.name.trim(), bank: 'Capitec', kind: newAccount.kind,
+          name: newAccount.name.trim(), bank: parsed.bank, kind: newAccount.kind,
           account_number: parsed.accountNumber,
         })
       } else {
@@ -199,7 +244,7 @@ export default function ImportPage() {
       const { data: batch, error: bErr } = await supabase
         .from('cycle_import_batches')
         .insert({
-          user_id: user.id, account_id: account.id, file_name: fileName, file_format: 'capitec_csv',
+          user_id: user.id, account_id: account.id, file_name: fileName, file_format: parsed.format,
           statement_from: stats.from, statement_to: stats.to, row_count: rows.length,
           duplicate_count: stats.duplicates,
         })
@@ -264,17 +309,18 @@ export default function ImportPage() {
 
   function reset() {
     setStep('pick'); setParsed(null); setRows([]); setAccount(null); setResult(null)
+    setPdfBuffer(null); setPassword(''); setPasswordError('')
   }
 
   // ── Render ───────────────────────────────────────────────────
   return (
     <div style={{ minHeight: '100%', background: '#0E0E10', paddingBottom: step === 'review' ? 180 : 120 }}>
-      <PageHeader title="Import statement" subtitle="Capitec CSV — main account or credit card" back />
+      <PageHeader title="Import statement" subtitle="Capitec CSV or TymeBank PDF" back />
 
       <div className="px-4 space-y-4">
         {step === 'pick' && (
           <>
-            <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={onFile} hidden />
+            <input ref={fileRef} type="file" accept=".csv,text/csv,.pdf,application/pdf" onChange={onFile} hidden />
             <button
               onClick={() => fileRef.current?.click()}
               disabled={busy}
@@ -283,9 +329,10 @@ export default function ImportPage() {
             >
               <FileUp size={32} color="#E8C36A" />
               <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: '#F4F4F5' }}>
-                {busy ? 'Reading…' : 'Choose a CSV file'}
+                {busy ? 'Reading…' : 'Choose a statement'}
               </span>
-              <span style={label}>Capitec app → Account → Statements → Download → CSV</span>
+              <span style={label}>Capitec: Account → Statements → Download → CSV</span>
+              <span style={label}>TymeBank: Account → Statements → PDF (any period)</span>
             </button>
             <div style={{ ...card, padding: 16 }} className="space-y-2">
               <p style={{ ...label, color: '#A1A1AA' }}>How it works</p>
@@ -293,8 +340,32 @@ export default function ImportPage() {
               <p style={label}>• Categories come from your payee rules first, then from Capitec's own category.</p>
               <p style={label}>• Choosing a category for a payee applies it to that payee's other lines and is remembered next time.</p>
               <p style={label}>• Pending card lines are skipped until they clear.</p>
+              <p style={label}>• PDF statements are checked line by line against the running balance before anything is saved.</p>
             </div>
           </>
+        )}
+
+        {step === 'password' && (
+          <form onSubmit={submitPassword} style={{ ...card, padding: 16 }} className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Lock size={16} color="#E8C36A" />
+              <p style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, color: '#F4F4F5' }}>Statement password</p>
+            </div>
+            <p style={label}>
+              {fileName} is protected. Enter the password TymeBank gave you for it. It only opens the file here on
+              your device and isn't saved or sent anywhere.
+            </p>
+            <input
+              type="password" autoComplete="off" autoFocus value={password}
+              onChange={e => { setPassword(e.target.value); setPasswordError('') }}
+              style={inputStyle} aria-label="Statement password"
+            />
+            {passwordError && <p style={{ ...label, color: '#F07A6A' }}>{passwordError}</p>}
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={reset}>Cancel</Button>
+              <Button type="submit" fullWidth loading={busy}>Open statement</Button>
+            </div>
+          </form>
         )}
 
         {step === 'account' && parsed && (
