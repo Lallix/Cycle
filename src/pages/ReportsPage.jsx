@@ -6,7 +6,8 @@ import { computeCycleTotals } from '../lib/totals'
 import CycleSelector from '../components/ui/CycleSelector'
 import LoadingScreen from '../components/ui/LoadingScreen'
 import { format } from 'date-fns'
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, CalendarRange } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 // ── Bar chart ──────────────────────────────────────────────────────────────
 function BarChart({ data }) {
@@ -157,6 +158,7 @@ export default function ReportsPage() {
   const [trendData, setTrendData]         = useState([])
   const [loadingTrend, setLoadingTrend]   = useState(true)
 
+  const navigate  = useNavigate()
   const totalsFor = txs => computeCycleTotals({ transactions: txs, categories, incomeRecords })
 
   // Build 6-cycle trend on mount
@@ -224,9 +226,19 @@ export default function ReportsPage() {
 
       {/* Header */}
       <div style={{ padding: 'max(env(safe-area-inset-top), 16px) 16px 12px' }}>
-        <h1 style={{ fontFamily: 'Poppins, sans-serif', fontSize: 22, fontWeight: 600, color: '#FFFFFF' }}>
-          Reports
-        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h1 style={{ fontFamily: 'Poppins, sans-serif', fontSize: 22, fontWeight: 600, color: '#FFFFFF' }}>
+            Reports
+          </h1>
+          <button
+            onClick={() => navigate('/year')}
+            className="flex items-center gap-1.5 tappable"
+            style={{ padding: '6px 12px', borderRadius: 10, background: 'rgba(255,209,102,0.1)',
+              border: '0.5px solid rgba(255,209,102,0.3)', color: '#FFD166', fontSize: 12, fontFamily: 'Inter, sans-serif' }}
+          >
+            <CalendarRange size={14} /> Year view
+          </button>
+        </div>
       </div>
 
       {/* Cycle selector */}

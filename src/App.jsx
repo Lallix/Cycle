@@ -13,6 +13,7 @@ import ReportsPage from './pages/ReportsPage'
 import SettingsPage from './pages/SettingsPage'
 import AdminPage from './pages/AdminPage'
 import ImportPage from './pages/ImportPage'
+import YearPage from './pages/YearPage'
 import { useServiceWorker } from './hooks/useServiceWorker'
 
 // ─── Entry sequence states ────────────────────────────────────────────────────
@@ -75,6 +76,7 @@ function AppRoutes() {
         <Route path="settings" element={<SettingsPage />} />
         <Route path="admin"   element={<AdminPage />} />
         <Route path="import"  element={<ImportPage />} />
+        <Route path="year"    element={<YearPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
