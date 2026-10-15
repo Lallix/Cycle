@@ -8,7 +8,7 @@ export default function LoadingScreen({ message = 'Loading...' }) {
       top: 0, left: 0, right: 0, bottom: 0,   // explicit for older WebKit
       width: '100%',
       height: '100%',
-      background: '#0D0D0D',
+      background: '#0E0E10',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -20,7 +20,7 @@ export default function LoadingScreen({ message = 'Loading...' }) {
         marginTop: 24,
         fontFamily: 'Inter, sans-serif',
         fontSize: 13,
-        color: '#717179',
+        color: '#8B8B93',
         animation: 'pulse 2s ease-in-out infinite',
       }}>
         {message}

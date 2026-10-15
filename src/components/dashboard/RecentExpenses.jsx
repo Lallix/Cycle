@@ -11,12 +11,12 @@ export default function RecentExpenses() {
   return (
     <div style={{ padding: '0 16px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, color: '#717179', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, color: '#8B8B93', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           Recent
         </p>
         <button
           onClick={() => navigate('/expenses')}
-          style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#FFD166', background: 'none', border: 'none', cursor: 'pointer' }}
+          style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#E8C36A', background: 'none', border: 'none', cursor: 'pointer' }}
         >
           See all →
         </button>
@@ -25,11 +25,11 @@ export default function RecentExpenses() {
       {recent.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '24px 0' }}>
           <p style={{ fontSize: 28, marginBottom: 8 }}>💳</p>
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#717179' }}>No expenses yet</p>
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#4A4A4A', marginTop: 4 }}>Tap + to record your first expense</p>
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#8B8B93' }}>No expenses yet</p>
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#5A5A62', marginTop: 4 }}>Tap + to record your first expense</p>
         </div>
       ) : (
-        <div style={{ background: '#FAF7F0', borderRadius: 16, border: '0.5px solid #E8E0D0', overflow: 'hidden' }}>
+        <div style={{ background: '#17171A', borderRadius: 16, border: '0.5px solid #26262B', overflow: 'hidden' }}>
           {recent.map((tx, i) => {
             const cat    = tx.cycle_categories || tx.categories || null
             const acc    = getAccountConfig(tx.account)
@@ -44,7 +44,7 @@ export default function RecentExpenses() {
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '12px 16px',
-                  borderBottom: i < recent.length - 1 ? '0.5px solid #E8E0D0' : 'none',
+                  borderBottom: i < recent.length - 1 ? '0.5px solid #26262B' : 'none',
                   cursor: 'pointer',
                 }}
               >
@@ -61,17 +61,17 @@ export default function RecentExpenses() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{
                     fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500,
-                    color: '#1C1814', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    color: '#F4F4F5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
                     {name}
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
                     {tx.transaction_date && (
-                      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#6B6460' }}>
+                      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#A1A1AA' }}>
                         {format(new Date(tx.transaction_date), 'd MMM')}
                       </span>
                     )}
-                    <span style={{ color: '#9A9080', fontSize: 11 }}>·</span>
+                    <span style={{ color: '#8B8B93', fontSize: 11 }}>·</span>
                     {tx.account && (
                       <span style={{
                         fontSize: 10, padding: '2px 7px', borderRadius: 5, fontWeight: 500,
@@ -82,7 +82,7 @@ export default function RecentExpenses() {
                     )}
                     {tx.notes && (
                       <span style={{
-                        fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#6B6460',
+                        fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#A1A1AA',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80,
                       }}>
                         {tx.notes}
@@ -94,7 +94,7 @@ export default function RecentExpenses() {
                 {/* Amount */}
                 <span style={{
                   fontFamily: 'Poppins, sans-serif', fontSize: 14, fontWeight: 500,
-                  color: tx.direction === 'in' ? '#22C55E' : '#EF4444', flexShrink: 0, letterSpacing: '-0.01em',
+                  color: tx.direction === 'in' ? '#5BC98B' : '#F07A6A', flexShrink: 0, letterSpacing: '-0.01em',
                 }}>
                   {tx.direction === 'in' ? '+' : '-'}{formatMoney(tx.amount)}
                 </span>

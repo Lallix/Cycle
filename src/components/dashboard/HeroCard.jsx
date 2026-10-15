@@ -41,12 +41,12 @@ function StatCard({ label, amount, color, delay = 0 }) {
   return (
     <div
       className="flex-1 flex flex-col items-center justify-center py-4"
-      style={{ borderRight: '0.5px solid #E8E0D0' }}
+      style={{ borderRight: '0.5px solid #26262B' }}
     >
       <span style={{
         fontSize: 10,
         fontFamily: 'Inter, sans-serif',
-        color: '#9A9080',
+        color: '#8B8B93',
         textTransform: 'uppercase',
         letterSpacing: '0.08em',
         marginBottom: 4,
@@ -57,7 +57,7 @@ function StatCard({ label, amount, color, delay = 0 }) {
         fontFamily: 'Poppins, sans-serif',
         fontSize: 14,
         fontWeight: 500,
-        color: color === '#FFFFFF' ? '#1C1814' : color,
+        color: color === '#F4F4F5' ? '#F4F4F5' : color,
         letterSpacing: '-0.01em',
       }}>
         {formatMoney(animated, true)}
@@ -80,9 +80,9 @@ export default function HeroCard() {
     <div
       className="mx-4 mb-4 overflow-hidden"
       style={{
-        background: '#FAF7F0',
+        background: '#17171A',
         borderRadius: 24,
-        border: '0.5px solid #E8E0D0',
+        border: '0.5px solid #26262B',
       }}
     >
       {/* Ring + daily safe spend */}
@@ -103,7 +103,7 @@ export default function HeroCard() {
           <p style={{
             fontSize: 10,
             fontFamily: 'Inter, sans-serif',
-            color: '#717179',
+            color: '#8B8B93',
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
             marginBottom: 4,
@@ -115,7 +115,7 @@ export default function HeroCard() {
             fontFamily: 'Poppins, sans-serif',
             fontSize: 30,
             fontWeight: 300,
-            color: isOver ? '#C0544A' : '#C9A84C',
+            color: isOver ? '#F07A6A' : '#E8C36A',
             lineHeight: 1,
             letterSpacing: '-0.02em',
           }}>
@@ -132,8 +132,8 @@ export default function HeroCard() {
               marginTop: 4,
               fontSize: 10,
               fontFamily: 'Inter, sans-serif',
-              color: '#EF4444',
-              background: 'rgba(239,68,68,0.1)',
+              color: '#F07A6A',
+              background: 'rgba(240,122,106,0.1)',
               padding: '2px 8px',
               borderRadius: 6,
             }}>
@@ -142,7 +142,7 @@ export default function HeroCard() {
           )}
 
           {totals.fixedDue > 0 && (
-            <p style={{ fontSize: 11, fontFamily: 'Inter, sans-serif', color: '#6B6460', marginTop: 8 }}>
+            <p style={{ fontSize: 11, fontFamily: 'Inter, sans-serif', color: '#A1A1AA', marginTop: 8 }}>
               {formatMoney(totals.fixedDue, true)} fixed still to go off
             </p>
           )}
@@ -151,7 +151,7 @@ export default function HeroCard() {
             <p style={{
               fontSize: 11,
               fontFamily: 'Inter, sans-serif',
-              color: '#717179',
+              color: '#8B8B93',
               marginTop: 4,
             }}>
               {cycle.shortLabel} · payday to payday
@@ -162,15 +162,15 @@ export default function HeroCard() {
 
       {/* 3-column stat strip */}
       <div
-        style={{ borderTop: '0.5px solid #2A2A2A', display: 'flex' }}
+        style={{ borderTop: '0.5px solid #26262B', display: 'flex' }}
       >
-        <StatCard label="Income"  amount={totals.income}    color="#22C55E" delay={100} />
-        <StatCard label="Spent"   amount={totals.spent}     color="#EF4444" delay={200} />
+        <StatCard label="Income"  amount={totals.income}    color="#5BC98B" delay={100} />
+        <StatCard label="Spent"   amount={totals.spent}     color="#F07A6A" delay={200} />
         <div className="flex-1 flex flex-col items-center justify-center py-4">
           <span style={{
             fontSize: 10,
             fontFamily: 'Inter, sans-serif',
-            color: '#717179',
+            color: '#8B8B93',
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
             marginBottom: 4,
@@ -181,7 +181,7 @@ export default function HeroCard() {
             fontFamily: 'Poppins, sans-serif',
             fontSize: 14,
             fontWeight: 500,
-            color: isOver ? '#EF4444' : '#C9A84C',
+            color: isOver ? '#F07A6A' : '#E8C36A',
             letterSpacing: '-0.01em',
           }}>
             {isOver ? '−' : ''}{formatMoney(Math.abs(totals.remaining), true)}

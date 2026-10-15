@@ -20,7 +20,7 @@ const BANK_OPTIONS = [
 
 const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev'
 
-const BLANK_CAT = { name: '', icon: '🛒', colour: '#D4AF37', budget_amount: '', type: 'predicted' }
+const BLANK_CAT = { name: '', icon: '🛒', colour: '#E8C36A', budget_amount: '', type: 'predicted' }
 
 export default function SettingsPage() {
   const { user, profile, signOut, updateProfile, biometricAvailable, biometricEnabled, registerBiometric, disableBiometric } = useAuth()
@@ -159,7 +159,7 @@ export default function SettingsPage() {
     setCatForm({
       name:          cat.name,
       icon:          cat.icon || '💳',
-      colour:        cat.colour || '#D4AF37',
+      colour:        cat.colour || '#E8C36A',
       budget_amount: cat.budget_amount ? String(cat.budget_amount) : '',
       type:          cat.type || 'predicted',
     })
@@ -237,18 +237,18 @@ export default function SettingsPage() {
               <Plus size={13} /> Add
             </button>
           </div>
-          <div className="border border-border rounded-2xl overflow-hidden" style={{ background: '#1B1B1B' }}>
+          <div className="border border-border rounded-2xl overflow-hidden" style={{ background: '#17171A' }}>
             {incomeRecords.map((inc, i) => {
               const cfg = inc.account ? getAccountConfig(inc.account) : null
               const totalIncome = incomeRecords.reduce((s, r) => s + parseFloat(r.amount || 0), 0)
               return (
                 <div key={inc.id} className="flex items-center gap-3 px-4 py-3 border-b border-border last:border-0">
                   <div className="flex-1 min-w-0">
-                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: '#FFFFFF' }}>
+                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: '#F4F4F5' }}>
                       {inc.label || 'Income'}
                     </p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                      <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: '#22C55E' }}>
+                      <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: '#5BC98B' }}>
                         {formatMoney(inc.amount)}
                       </p>
                       {inc.account && cfg && (
@@ -270,8 +270,8 @@ export default function SettingsPage() {
             {/* Total */}
             {incomeRecords.length > 1 && (
               <div className="flex items-center justify-between px-4 py-3 border-t border-border" style={{ background: '#252220' }}>
-                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#717179' }}>Total income</p>
-                <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 14, fontWeight: 600, color: '#22C55E' }}>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#8B8B93' }}>Total income</p>
+                <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 14, fontWeight: 600, color: '#5BC98B' }}>
                   {formatMoney(incomeRecords.reduce((s, r) => s + parseFloat(r.amount || 0), 0))}
                 </p>
               </div>
@@ -284,12 +284,12 @@ export default function SettingsPage() {
           <button
             onClick={() => navigate('/import')}
             className="w-full flex items-center gap-3 px-4 py-3 border border-border rounded-2xl tappable"
-            style={{ background: '#1B1B1B' }}
+            style={{ background: '#17171A' }}
           >
             <FileUp size={18} className="text-gold" />
             <div className="flex-1 text-left">
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: '#FFFFFF' }}>Import bank statement</p>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#717179' }}>Capitec CSV — main account or credit card</p>
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: '#F4F4F5' }}>Import bank statement</p>
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#8B8B93' }}>Capitec CSV — main account or credit card</p>
             </div>
           </button>
         </section>
@@ -302,7 +302,7 @@ export default function SettingsPage() {
               <Plus size={13} /> Add
             </button>
           </div>
-          <div className="border border-border rounded-2xl overflow-hidden" style={{ background: '#1B1B1B' }}>
+          <div className="border border-border rounded-2xl overflow-hidden" style={{ background: '#17171A' }}>
             {accounts.length === 0 && (
               <p className="text-sm text-muted px-4 py-4">No accounts yet — add one above</p>
             )}
@@ -319,24 +319,24 @@ export default function SettingsPage() {
                   </div>
                   {/* Bank name (primary) + descriptor (secondary) */}
                   <div className="flex-1 min-w-0">
-                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: '#FFFFFF' }}>
+                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: '#F4F4F5' }}>
                       {acc.bank || acc.name}
                     </p>
                     {acc.name && acc.name !== acc.bank && (
-                      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#717179', marginTop: 1 }}>
+                      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#8B8B93', marginTop: 1 }}>
                         {acc.name}
                       </p>
                     )}
                   </div>
                   {/* Default badge or set-default tap */}
                   {acc.is_default ? (
-                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 6, background: 'rgba(255,209,102,0.1)', color: '#FFD166', fontFamily: 'Inter, sans-serif', flexShrink: 0 }}>
+                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 6, background: 'rgba(232,195,106,0.1)', color: '#E8C36A', fontFamily: 'Inter, sans-serif', flexShrink: 0 }}>
                       Default
                     </span>
                   ) : (
                     <button
                       onClick={() => handleSetDefault(acc)}
-                      style={{ fontSize: 10, padding: '2px 8px', borderRadius: 6, background: 'transparent', border: '0.5px solid #3A3A3A', color: '#717179', fontFamily: 'Inter, sans-serif', flexShrink: 0, cursor: 'pointer' }}
+                      style={{ fontSize: 10, padding: '2px 8px', borderRadius: 6, background: 'transparent', border: '0.5px solid #34343A', color: '#8B8B93', fontFamily: 'Inter, sans-serif', flexShrink: 0, cursor: 'pointer' }}
                     >
                       Set default
                     </button>
@@ -395,7 +395,7 @@ export default function SettingsPage() {
         {biometricAvailable && (
           <section>
             <p className="text-xs text-muted uppercase tracking-widest mb-2">Security</p>
-            <div className="border border-border rounded-2xl overflow-hidden" style={{ background: '#1B1B1B' }}>
+            <div className="border border-border rounded-2xl overflow-hidden" style={{ background: '#17171A' }}>
               <div className="flex items-center justify-between p-4">
                 <div>
                   <p className="text-sm font-medium text-fg" style={{ fontFamily: 'Inter, sans-serif' }}>
@@ -413,9 +413,9 @@ export default function SettingsPage() {
                   }}
                   className="px-4 py-2 rounded-xl text-xs font-medium transition-all"
                   style={{
-                    background: biometricEnabled ? 'rgba(239,68,68,0.1)' : 'rgba(255,209,102,0.1)',
-                    color: biometricEnabled ? '#EF4444' : '#FFD166',
-                    border: `0.5px solid ${biometricEnabled ? 'rgba(239,68,68,0.2)' : 'rgba(255,209,102,0.2)'}`,
+                    background: biometricEnabled ? 'rgba(240,122,106,0.1)' : 'rgba(232,195,106,0.1)',
+                    color: biometricEnabled ? '#F07A6A' : '#E8C36A',
+                    border: `0.5px solid ${biometricEnabled ? 'rgba(240,122,106,0.2)' : 'rgba(232,195,106,0.2)'}`,
                     fontFamily: 'Inter, sans-serif',
                   }}
                 >
@@ -438,7 +438,7 @@ export default function SettingsPage() {
 
         <div className="flex flex-col items-center gap-1 pb-4 pt-2">
           <p className="text-xs text-muted">Cycle · {APP_VERSION}</p>
-          <p className="text-xs" style={{ color: '#3A3530', letterSpacing: '0.08em' }}>Crafted by PGV</p>
+          <p className="text-xs" style={{ color: '#5A5A62', letterSpacing: '0.08em' }}>Crafted by PGV</p>
         </div>
       </div>
 
@@ -446,13 +446,13 @@ export default function SettingsPage() {
       <BottomSheet open={accountOpen} onClose={() => { setAccountOpen(false); setEditingAccount(null) }} title={editingAccount ? "Edit Account" : "Add Account"}>
         <div className="px-5 space-y-4 pb-8">
           <div>
-<label className="text-xs text-muted uppercase tracking-widest block mb-2">Descriptor <span style={{textTransform:'none',color:'#4A4A4A'}}>(optional)</span></label>
+<label className="text-xs text-muted uppercase tracking-widest block mb-2">Descriptor <span style={{textTransform:'none',color:'#5A5A62'}}>(optional)</span></label>
             <input
               type="text"
               placeholder="e.g. Cheque Account, Credit Card (optional)"
               value={accountForm.name}
               onChange={e => setAccountForm(f => ({ ...f, name: e.target.value }))}
-              style={{ width: '100%', padding: '12px 16px', background: '#2E2E2E', border: '0.5px solid #3A3A3A', borderRadius: 12, color: '#FFFFFF', fontFamily: 'Inter, sans-serif', fontSize: 14, outline: 'none' }}
+              style={{ width: '100%', padding: '12px 16px', background: '#1F1F23', border: '0.5px solid #34343A', borderRadius: 12, color: '#F4F4F5', fontFamily: 'Inter, sans-serif', fontSize: 14, outline: 'none' }}
             />
           </div>
           <div>
@@ -465,9 +465,9 @@ export default function SettingsPage() {
                   <button key={bank} onClick={() => setAccountForm(f => ({ ...f, bank }))}
                     style={{
                       padding: '7px 12px', borderRadius: 10, cursor: 'pointer',
-                      border: `0.5px solid ${sel ? cfg.color : '#3A3A3A'}`,
+                      border: `0.5px solid ${sel ? cfg.color : '#34343A'}`,
                       background: sel ? cfg.bg : 'transparent',
-                      color: sel ? cfg.color : '#717179',
+                      color: sel ? cfg.color : '#8B8B93',
                       fontFamily: 'Inter, sans-serif', fontSize: 12,
                       transition: 'all 0.15s ease',
                     }}
@@ -480,7 +480,7 @@ export default function SettingsPage() {
           </div>
           <button
             onClick={handleAddAccount} disabled={savingAccount}
-            style={{ width: '100%', padding: '14px 0', background: savingAccount ? '#B8922E' : '#FFD166', borderRadius: 14, border: 'none', fontFamily: 'Poppins, sans-serif', fontSize: 15, fontWeight: 600, color: '#0D0D0D', cursor: 'pointer' }}
+            style={{ width: '100%', padding: '14px 0', background: savingAccount ? '#C9A24E' : '#E8C36A', borderRadius: 14, border: 'none', fontFamily: 'Poppins, sans-serif', fontSize: 15, fontWeight: 600, color: '#0E0E10', cursor: 'pointer' }}
           >
             {savingAccount ? 'Saving...' : editingAccount ? 'Save Changes' : 'Add Account'}
           </button>
@@ -493,33 +493,33 @@ export default function SettingsPage() {
         <div className="px-5 space-y-4 pb-8">
           <div>
             <label className="text-xs text-muted uppercase tracking-widest block mb-2">
-              Label <span style={{textTransform:'none',color:'#4A4A4A'}}>(e.g. Salary, Rental, Freelance)</span>
+              Label <span style={{textTransform:'none',color:'#5A5A62'}}>(e.g. Salary, Rental, Freelance)</span>
             </label>
             <input type="text" placeholder="e.g. Monthly Salary"
               value={incomeForm.label}
               onChange={e => setIncomeForm(f => ({ ...f, label: e.target.value }))}
-              style={{ width: '100%', padding: '12px 16px', background: '#2E2E2E', border: '0.5px solid #3A3A3A', borderRadius: 12, color: '#FFFFFF', fontFamily: 'Inter, sans-serif', fontSize: 14, outline: 'none' }}
+              style={{ width: '100%', padding: '12px 16px', background: '#1F1F23', border: '0.5px solid #34343A', borderRadius: 12, color: '#F4F4F5', fontFamily: 'Inter, sans-serif', fontSize: 14, outline: 'none' }}
             />
           </div>
           <div>
             <label className="text-xs text-muted uppercase tracking-widest block mb-2">Amount</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#2E2E2E', border: '0.5px solid #3A3A3A', borderRadius: 12, padding: '12px 16px' }}>
-              <span style={{ fontFamily: 'Poppins, sans-serif', color: '#717179' }}>R</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#1F1F23', border: '0.5px solid #34343A', borderRadius: 12, padding: '12px 16px' }}>
+              <span style={{ fontFamily: 'Poppins, sans-serif', color: '#8B8B93' }}>R</span>
               <input type="number" inputMode="decimal" placeholder="0.00"
                 value={incomeForm.amount}
                 onChange={e => setIncomeForm(f => ({ ...f, amount: e.target.value }))}
-                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontFamily: 'Poppins, sans-serif', fontSize: 18, color: '#FFFFFF' }}
+                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontFamily: 'Poppins, sans-serif', fontSize: 18, color: '#F4F4F5' }}
               />
             </div>
           </div>
           <div>
             <label className="text-xs text-muted uppercase tracking-widest block mb-2">
-              Paid into account <span style={{textTransform:'none',color:'#4A4A4A'}}>(optional)</span>
+              Paid into account <span style={{textTransform:'none',color:'#5A5A62'}}>(optional)</span>
             </label>
             <AccountPicker value={incomeForm.account} onChange={(val) => setIncomeForm(f => ({ ...f, account: val }))} />
           </div>
           <button onClick={saveIncomeSource} disabled={savingIncome}
-            style={{ width: '100%', padding: '14px 0', background: savingIncome ? '#B8922E' : '#FFD166', borderRadius: 14, border: 'none', fontFamily: 'Poppins, sans-serif', fontSize: 15, fontWeight: 600, color: '#0D0D0D', cursor: 'pointer' }}>
+            style={{ width: '100%', padding: '14px 0', background: savingIncome ? '#C9A24E' : '#E8C36A', borderRadius: 14, border: 'none', fontFamily: 'Poppins, sans-serif', fontSize: 15, fontWeight: 600, color: '#0E0E10', cursor: 'pointer' }}>
             {savingIncome ? 'Saving...' : editingIncome ? 'Save Changes' : 'Add Income Source'}
           </button>
         </div>
@@ -572,7 +572,7 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Budget amount / cycle <span style={{textTransform:'none',color:'#4A4A4A'}}>(optional)</span></label>
+            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Budget amount / cycle <span style={{textTransform:'none',color:'#5A5A62'}}>(optional)</span></label>
             <div className="flex items-center gap-2 bg-surface-1 border border-border rounded-xl px-4 py-3">
               <span className="text-muted font-mono text-sm">R</span>
               <input
@@ -591,7 +591,7 @@ export default function SettingsPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{
                 width: 52, height: 52, borderRadius: 14,
-                background: '#2E2E2E', border: '0.5px solid #3A3A3A',
+                background: '#1F1F23', border: '0.5px solid #34343A',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26,
               }}>
                 {catForm.icon || '💳'}
@@ -601,8 +601,8 @@ export default function SettingsPage() {
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6,
                   padding: '8px 14px', borderRadius: 10,
-                  background: '#2E2E2E', border: '0.5px solid #3A3A3A',
-                  color: '#FFD166', fontFamily: 'Inter, sans-serif', fontSize: 13, cursor: 'pointer',
+                  background: '#1F1F23', border: '0.5px solid #34343A',
+                  color: '#E8C36A', fontFamily: 'Inter, sans-serif', fontSize: 13, cursor: 'pointer',
                 }}
               >
                 <Smile size={15} />
@@ -610,7 +610,7 @@ export default function SettingsPage() {
               </button>
             </div>
             {emojiPickerOpen && (
-              <div style={{ marginTop: 10, borderRadius: 16, overflow: 'hidden', border: '0.5px solid #2A2A2A' }}>
+              <div style={{ marginTop: 10, borderRadius: 16, overflow: 'hidden', border: '0.5px solid #26262B' }}>
                 <Picker
                   data={data}
                   theme="dark"
@@ -633,9 +633,9 @@ export default function SettingsPage() {
                 <button key={opt.value} onClick={() => setCatForm(f => ({ ...f, type: opt.value }))}
                   style={{
                     flex: '1 0 30%', padding: '8px 0', borderRadius: 10, cursor: 'pointer',
-                    border: `0.5px solid ${catForm.type === opt.value ? 'rgba(255,209,102,0.5)' : '#3A3A3A'}`,
-                    background: catForm.type === opt.value ? 'rgba(255,209,102,0.1)' : 'transparent',
-                    color: catForm.type === opt.value ? '#FFD166' : '#717179',
+                    border: `0.5px solid ${catForm.type === opt.value ? 'rgba(232,195,106,0.5)' : '#34343A'}`,
+                    background: catForm.type === opt.value ? 'rgba(232,195,106,0.1)' : 'transparent',
+                    color: catForm.type === opt.value ? '#E8C36A' : '#8B8B93',
                     fontFamily: 'Inter, sans-serif', fontSize: 12,
                   }}
                 >
@@ -643,7 +643,7 @@ export default function SettingsPage() {
                 </button>
               ))}
             </div>
-            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#4A4A4A', marginTop: 6 }}>
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#5A5A62', marginTop: 6 }}>
               Variable = has a budget cap · Tracking = records spend only
             </p>
           </div>

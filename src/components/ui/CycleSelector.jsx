@@ -14,9 +14,9 @@ export default function CycleSelector({ cycleIndex, onChange }) {
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '8px 16px',
-      background: '#1B1B1B',
+      background: '#17171A',
       borderRadius: 14,
-      border: '0.5px solid #2A2A2A',
+      border: '0.5px solid #26262B',
       margin: '0 16px 12px',
     }}>
       {/* Prev cycle */}
@@ -25,8 +25,8 @@ export default function CycleSelector({ cycleIndex, onChange }) {
         disabled={cycleIndex >= cycles.length - 1}
         style={{
           width: 32, height: 32, borderRadius: 8,
-          background: cycleIndex >= cycles.length - 1 ? 'transparent' : '#2E2E2E',
-          border: '0.5px solid #3A3A3A',
+          background: cycleIndex >= cycles.length - 1 ? 'transparent' : '#1F1F23',
+          border: '0.5px solid #34343A',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: cycleIndex >= cycles.length - 1 ? 'default' : 'pointer',
           opacity: cycleIndex >= cycles.length - 1 ? 0.3 : 1,
@@ -39,14 +39,14 @@ export default function CycleSelector({ cycleIndex, onChange }) {
       <div style={{ textAlign: 'center' }}>
         <p style={{
           fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 500,
-          color: '#FFFFFF',
+          color: '#F4F4F5',
         }}>
           {format(cycle.start, 'd MMM')} – {format(cycle.end, 'd MMM')}
         </p>
         {isLatest && (
           <p style={{
             fontFamily: 'Inter, sans-serif', fontSize: 10,
-            color: '#FFD166', marginTop: 1,
+            color: '#E8C36A', marginTop: 1,
           }}>
             Current cycle · Day {cycle.dayOfCycle} of {cycle.totalDays}
           </p>
@@ -54,7 +54,7 @@ export default function CycleSelector({ cycleIndex, onChange }) {
         {!isLatest && (
           <p style={{
             fontFamily: 'Inter, sans-serif', fontSize: 10,
-            color: '#717179', marginTop: 1,
+            color: '#8B8B93', marginTop: 1,
           }}>
             {cycleIndex} cycle{cycleIndex !== 1 ? 's' : ''} ago
           </p>
@@ -67,8 +67,8 @@ export default function CycleSelector({ cycleIndex, onChange }) {
         disabled={isLatest}
         style={{
           width: 32, height: 32, borderRadius: 8,
-          background: isLatest ? 'transparent' : '#2E2E2E',
-          border: '0.5px solid #3A3A3A',
+          background: isLatest ? 'transparent' : '#1F1F23',
+          border: '0.5px solid #34343A',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: isLatest ? 'default' : 'pointer',
           opacity: isLatest ? 0.3 : 1,

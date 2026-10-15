@@ -10,15 +10,15 @@
     --header-height:    56px;
 
     /* Design bible gold scale */
-    --gold:       #FFD166;
-    --gold-dark:  #E6BB45;
-    --gold-light: #FFE8A3;
-    --gold-glow:  rgba(255,209,102,0.25);
+    --gold:       #E8C36A;
+    --gold-dark:  #D4AE55;
+    --gold-light: #F3DDA0;
+    --gold-glow:  rgba(232,195,106,0.25);
 
     /* Surface scale */
-    --bg:          #0D0D0D;
-    --bg-surface:  #1B1B1B;
-    --bg-elevated: #2E2E2E;
+    --bg:          #0E0E10;
+    --bg-surface:  #17171A;
+    --bg-elevated: #1F1F23;
   }
 
   * {
@@ -32,8 +32,8 @@
   }
 
   body {
-    background-color: #0D0D0D;
-    color: #FFFFFF;
+    background-color: #0E0E10;
+    color: #F4F4F5;
     font-family: 'Inter', system-ui, sans-serif;
     font-size: 16px;
     line-height: 1.5;
@@ -43,25 +43,26 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Headings use Poppins SemiBold */
+  /* Headings use Poppins Medium — lighter reads more modern on dark */
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Poppins', system-ui, sans-serif;
-    font-weight: 600;
-    color: #FFFFFF;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: #F4F4F5;
   }
 
   /* All inputs use Inter */
   input, textarea, select {
     outline: none;
     font-family: 'Inter', system-ui, sans-serif;
-    color: #FFFFFF;
+    color: #F4F4F5;
     background: transparent;
   }
 
   /* Inputs on dark backgrounds */
   input::placeholder,
   textarea::placeholder {
-    color: #717179;
+    color: #8B8B93;
   }
 
   /* Dark colour scheme for native pickers */
@@ -90,27 +91,28 @@
   /* ── Heading utility ─────────────────────────────────────── */
   .heading {
     font-family: 'Poppins', system-ui, sans-serif;
-    font-weight: 600;
+    font-weight: 500;
+    letter-spacing: -0.01em;
   }
 
   /* ── Card ────────────────────────────────────────────────── */
   .card {
-    background: #1B1B1B;
+    background: #17171A;
     border-radius: 1.25rem;       /* 20px — design bible rule 12 */
-    border: 0.5px solid #2A2A2A;
+    border: 0.5px solid #26262B;
     padding: 1rem;
   }
 
   .card-elevated {
-    background: #2E2E2E;
+    background: #1F1F23;
     border-radius: 1.25rem;
-    border: 0.5px solid #3A3A3A;
+    border: 0.5px solid #34343A;
     padding: 1rem;
   }
 
   /* ── Gold gradient text ──────────────────────────────────── */
   .text-gold-gradient {
-    background: linear-gradient(135deg, #FFD166 0%, #FFE8A3 100%);
+    background: linear-gradient(135deg, #E8C36A 0%, #F3DDA0 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -119,23 +121,23 @@
   /* ── Input base ──────────────────────────────────────────── */
   .input-base {
     width: 100%;
-    background: #1B1B1B;
-    border: 0.5px solid #2A2A2A;
+    background: #17171A;
+    border: 0.5px solid #26262B;
     border-radius: 0.75rem;
     padding: 0.75rem 1rem;
-    color: #FFFFFF;
+    color: #F4F4F5;
     font-family: 'Inter', system-ui, sans-serif;
     font-size: 0.875rem;
     transition: border-color 0.2s ease;
   }
 
   .input-base:focus {
-    border-color: rgba(255,209,102,0.5);
-    box-shadow: 0 0 0 3px rgba(255,209,102,0.08);
+    border-color: rgba(232,195,106,0.5);
+    box-shadow: 0 0 0 0 0 transparent;
   }
 
   .input-base::placeholder {
-    color: #717179;
+    color: #8B8B93;
   }
 
   /* ── Navigation safe area ────────────────────────────────── */
@@ -150,7 +152,7 @@
 
   /* ── Shimmer skeleton ────────────────────────────────────── */
   .shimmer {
-    background: linear-gradient(90deg, #1B1B1B 25%, #2E2E2E 50%, #1B1B1B 75%);
+    background: linear-gradient(90deg, #17171A 25%, #1F1F23 50%, #17171A 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
   }
@@ -172,8 +174,8 @@
     width: 3.5rem;
     height: 3.5rem;
     border-radius: 50%;
-    background: #FFD166;
-    box-shadow: 0 0 24px rgba(255,209,102,0.3);
+    background: #E8C36A;
+    box-shadow: 0 0 0 0 transparent;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -184,7 +186,7 @@
 
   .fab:active {
     transform: scale(0.93);
-    box-shadow: 0 0 12px rgba(255,209,102,0.2);
+    box-shadow: 0 0 0 0 transparent;
   }
 
   /* ── Bottom sheet ────────────────────────────────────────── */
@@ -201,9 +203,9 @@
     left: 0;
     right: 0;
     width: 100%;
-    background: #1B1B1B;
+    background: #17171A;
     border-radius: 1.5rem 1.5rem 0 0;
-    border-top: 0.5px solid #2A2A2A;
+    border-top: 0.5px solid #26262B;
     z-index: 51;
     box-shadow: 0 -8px 32px rgba(0,0,0,0.7);
     max-height: 92svh;
@@ -221,15 +223,15 @@
     font-weight: 500;
   }
 
-  .badge-paid   { background: rgba(34,197,94,0.15);  color: #22C55E; }
-  .badge-unpaid { background: rgba(255,179,71,0.15);  color: #FFB347; }
-  .badge-over   { background: rgba(239,68,68,0.15);   color: #EF4444; }
+  .badge-paid   { background: rgba(91,201,139,0.15);  color: #5BC98B; }
+  .badge-unpaid { background: rgba(233,162,90,0.15);  color: #E9A25A; }
+  .badge-over   { background: rgba(240,122,106,0.15);   color: #F07A6A; }
 
   /* ── Quick amount ────────────────────────────────────────── */
   .quick-amount {
     flex: 1;
-    background: #2E2E2E;
-    border: 0.5px solid #3A3A3A;
+    background: #1F1F23;
+    border: 0.5px solid #34343A;
     border-radius: 0.75rem;
     padding: 0.625rem 0;
     text-align: center;
@@ -242,8 +244,8 @@
 
   .quick-amount:active {
     transform: scale(0.95);
-    border-color: rgba(255,209,102,0.4);
-    color: #FFD166;
+    border-color: rgba(232,195,106,0.4);
+    color: #E8C36A;
   }
 
   /* ── Category button ─────────────────────────────────────── */
@@ -254,16 +256,16 @@
     gap: 0.375rem;
     padding: 0.625rem 0.25rem;
     border-radius: 0.875rem;
-    border: 0.5px solid #2A2A2A;
-    background: #1B1B1B;
+    border: 0.5px solid #26262B;
+    background: #17171A;
     transition: all 0.15s ease;
   }
 
   .category-btn:active { transform: scale(0.94); }
 
   .category-btn.selected {
-    border-color: rgba(255,209,102,0.5);
-    background: rgba(255,209,102,0.08);
+    border-color: rgba(232,195,106,0.5);
+    background: rgba(232,195,106,0.08);
   }
 
   /* ── Tappable ────────────────────────────────────────────── */
@@ -278,37 +280,37 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: #717179;
+    color: #8B8B93;
     margin-bottom: 0.75rem;
     font-family: 'Inter', system-ui, sans-serif;
   }
 
   /* ── Divider ─────────────────────────────────────────────── */
-  .divider { border-top: 0.5px solid #2A2A2A; }
+  .divider { border-top: 0.5px solid #26262B; }
 
   /* ── Gold ring glow (used on splash + hero) ──────────────── */
   .ring-glow {
-    filter: drop-shadow(0 0 8px rgba(255,209,102,0.4))
-            drop-shadow(0 0 20px rgba(255,209,102,0.15));
+    filter: drop-shadow(0 0 0 0 transparent)
+            drop-shadow(0 0 0 0 transparent);
   }
 
   /* ── Primary button (design bible style) ────────────────── */
   .btn-primary {
     width: 100%;
     padding: 0.875rem;
-    background: #FFD166;
+    background: #E8C36A;
     border-radius: 0.875rem;
     font-family: 'Poppins', system-ui, sans-serif;
     font-size: 0.9375rem;
     font-weight: 600;
-    color: #0D0D0D;
+    color: #0E0E10;
     text-align: center;
     transition: all 0.2s ease;
     border: none;
   }
   .btn-primary:active {
     transform: scale(0.97);
-    background: #E6BB45;
+    background: #D4AE55;
   }
 
   /* ── Secondary button ────────────────────────────────────── */
@@ -317,17 +319,17 @@
     padding: 0.875rem;
     background: transparent;
     border-radius: 0.875rem;
-    border: 0.5px solid #3A3A3A;
+    border: 0.5px solid #34343A;
     font-family: 'Inter', system-ui, sans-serif;
     font-size: 0.9375rem;
     font-weight: 500;
-    color: #FFFFFF;
+    color: #F4F4F5;
     text-align: center;
     transition: all 0.2s ease;
   }
   .btn-secondary:active {
     transform: scale(0.97);
-    border-color: rgba(255,209,102,0.3);
+    border-color: rgba(232,195,106,0.3);
   }
 }
 

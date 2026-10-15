@@ -34,11 +34,11 @@ const TYPE_GROUPS = [
   ['Transfer',  ['transfer']],
 ]
 
-const card = { background: '#1B1B1B', border: '0.5px solid #2A2A2A', borderRadius: 16 }
-const label = { fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#717179' }
+const card = { background: '#17171A', border: '0.5px solid #26262B', borderRadius: 16 }
+const label = { fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#8B8B93' }
 const inputStyle = {
-  width: '100%', padding: '12px 14px', background: '#2E2E2E', border: '0.5px solid #3A3A3A',
-  borderRadius: 12, color: '#FFFFFF', fontFamily: 'Inter, sans-serif', fontSize: 14,
+  width: '100%', padding: '12px 14px', background: '#1F1F23', border: '0.5px solid #34343A',
+  borderRadius: 12, color: '#F4F4F5', fontFamily: 'Inter, sans-serif', fontSize: 14,
 }
 
 function chunk(arr, n) {
@@ -268,7 +268,7 @@ export default function ImportPage() {
 
   // ── Render ───────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: '100%', background: '#0D0D0D', paddingBottom: step === 'review' ? 180 : 120 }}>
+    <div style={{ minHeight: '100%', background: '#0E0E10', paddingBottom: step === 'review' ? 180 : 120 }}>
       <PageHeader title="Import statement" subtitle="Capitec CSV — main account or credit card" back />
 
       <div className="px-4 space-y-4">
@@ -279,10 +279,10 @@ export default function ImportPage() {
               onClick={() => fileRef.current?.click()}
               disabled={busy}
               className="w-full flex flex-col items-center gap-3 py-10 tappable"
-              style={{ ...card, border: '1px dashed rgba(255,209,102,0.4)' }}
+              style={{ ...card, border: '1px dashed rgba(232,195,106,0.4)' }}
             >
-              <FileUp size={32} color="#FFD166" />
-              <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: '#FFFFFF' }}>
+              <FileUp size={32} color="#E8C36A" />
+              <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: '#F4F4F5' }}>
                 {busy ? 'Reading…' : 'Choose a CSV file'}
               </span>
               <span style={label}>Capitec app → Account → Statements → Download → CSV</span>
@@ -300,19 +300,19 @@ export default function ImportPage() {
         {step === 'account' && parsed && (
           <div style={{ ...card, padding: 16 }} className="space-y-4">
             <div>
-              <p style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: '#FFFFFF' }}>
+              <p style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: '#F4F4F5' }}>
                 Which account is {parsed.accountNumber}?
               </p>
               <p style={label}>{parsed.lines.length} lines · looks like a {KIND_LABEL[parsed.kind].toLowerCase()}</p>
             </div>
             <div className="space-y-2">
               {accounts.filter(a => !a.account_number).map(a => (
-                <label key={a.id} className="flex items-center gap-3" style={{ ...label, color: '#FFFFFF', fontSize: 14 }}>
+                <label key={a.id} className="flex items-center gap-3" style={{ ...label, color: '#F4F4F5', fontSize: 14 }}>
                   <input type="radio" checked={accountChoice === a.id} onChange={() => setAccountChoice(a.id)} />
                   Link to {a.name}{a.bank && a.bank !== a.name ? ` (${a.bank})` : ''}
                 </label>
               ))}
-              <label className="flex items-center gap-3" style={{ ...label, color: '#FFFFFF', fontSize: 14 }}>
+              <label className="flex items-center gap-3" style={{ ...label, color: '#F4F4F5', fontSize: 14 }}>
                 <input type="radio" checked={accountChoice === 'new'} onChange={() => setAccountChoice('new')} />
                 Create a new account
               </label>
@@ -339,10 +339,10 @@ export default function ImportPage() {
             <div style={{ ...card, padding: 16 }} className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: '#FFFFFF' }}>{account?.name}</p>
+                  <p style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: '#F4F4F5' }}>{account?.name}</p>
                   <p style={label}>{fileName} · {stats.from} → {stats.to}</p>
                 </div>
-                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: 'rgba(255,209,102,0.1)', color: '#FFD166' }}>
+                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: 'rgba(232,195,106,0.1)', color: '#E8C36A' }}>
                   {KIND_LABEL[account?.kind] || 'Account'}
                 </span>
               </div>
@@ -352,8 +352,8 @@ export default function ImportPage() {
                 <Stat label="No category" value={stats.uncategorised} warn={stats.uncategorised > 0} />
               </div>
               <div className="flex justify-between" style={label}>
-                <span>In <b style={{ color: '#22C55E' }}>{formatMoney(stats.moneyIn)}</b></span>
-                <span>Out <b style={{ color: '#EF4444' }}>{formatMoney(stats.moneyOut)}</b></span>
+                <span>In <b style={{ color: '#5BC98B' }}>{formatMoney(stats.moneyIn)}</b></span>
+                <span>Out <b style={{ color: '#F07A6A' }}>{formatMoney(stats.moneyOut)}</b></span>
               </div>
               {parsed?.pending.length > 0 && (
                 <p style={label}>{parsed.pending.length} pending line{parsed.pending.length > 1 ? 's' : ''} skipped — they will come in with the next statement.</p>
@@ -366,9 +366,9 @@ export default function ImportPage() {
                 <button key={k} onClick={() => { setFilter(k); setShown(PAGE) }}
                   style={{
                     flexShrink: 0, padding: '6px 12px', borderRadius: 999, fontSize: 12, fontFamily: 'Inter, sans-serif',
-                    background: filter === k ? 'rgba(255,209,102,0.15)' : '#1B1B1B',
-                    color: filter === k ? '#FFD166' : '#A1A1AA',
-                    border: `0.5px solid ${filter === k ? 'rgba(255,209,102,0.4)' : '#2A2A2A'}`,
+                    background: filter === k ? 'rgba(232,195,106,0.15)' : '#17171A',
+                    color: filter === k ? '#E8C36A' : '#A1A1AA',
+                    border: `0.5px solid ${filter === k ? 'rgba(232,195,106,0.4)' : '#26262B'}`,
                   }}>
                   {t}
                 </button>
@@ -391,8 +391,8 @@ export default function ImportPage() {
 
         {step === 'done' && result && (
           <div style={{ ...card, padding: 24 }} className="flex flex-col items-center gap-3 text-center">
-            <CheckCircle2 size={40} color="#22C55E" />
-            <p style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: 18, color: '#FFFFFF' }}>
+            <CheckCircle2 size={40} color="#5BC98B" />
+            <p style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: 18, color: '#F4F4F5' }}>
               {result.inserted} transactions imported
             </p>
             <p style={label}>
@@ -421,9 +421,9 @@ export default function ImportPage() {
 
 function Stat({ label: text, value, warn }) {
   return (
-    <div className="flex flex-col items-center py-2" style={{ background: '#0D0D0D', borderRadius: 12 }}>
-      <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: 18, color: warn ? '#FFB347' : '#FFFFFF' }}>{value}</span>
-      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#717179' }}>{text}</span>
+    <div className="flex flex-col items-center py-2" style={{ background: '#0E0E10', borderRadius: 12 }}>
+      <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: 18, color: warn ? '#E9A25A' : '#F4F4F5' }}>{value}</span>
+      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#8B8B93' }}>{text}</span>
     </div>
   )
 }
@@ -434,31 +434,31 @@ function ReviewRow({ row, groups, onChange }) {
   return (
     <div className="px-4 py-3 border-b border-border last:border-0 space-y-2" style={{ opacity: row.duplicate ? 0.45 : 1 }}>
       <div className="flex items-start gap-3">
-        <Arrow size={16} color={isIn ? '#22C55E' : '#A1A1AA'} style={{ marginTop: 2, flexShrink: 0 }} />
+        <Arrow size={16} color={isIn ? '#5BC98B' : '#A1A1AA'} style={{ marginTop: 2, flexShrink: 0 }} />
         <div className="flex-1 min-w-0">
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#FFFFFF', lineHeight: 1.35 }}>{row.description}</p>
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#717179' }}>
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#F4F4F5', lineHeight: 1.35 }}>{row.description}</p>
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#8B8B93' }}>
             {row.date}{row.bankCategory ? ` · ${row.bankCategory}` : ''}
           </p>
         </div>
-        <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 600, color: isIn ? '#22C55E' : '#FFFFFF', flexShrink: 0 }}>
+        <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 600, color: isIn ? '#5BC98B' : '#F4F4F5', flexShrink: 0 }}>
           {isIn ? '+' : '−'}{formatMoney(row.amount)}
         </span>
       </div>
       {row.duplicate ? (
-        <p className="flex items-center gap-1" style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#717179' }}>
+        <p className="flex items-center gap-1" style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#8B8B93' }}>
           <Copy size={12} /> Already imported
         </p>
       ) : (
         <div className="flex items-center gap-2">
-          {!row.categoryId && <AlertTriangle size={14} color="#FFB347" style={{ flexShrink: 0 }} />}
+          {!row.categoryId && <AlertTriangle size={14} color="#E9A25A" style={{ flexShrink: 0 }} />}
           <select
             value={row.categoryId || ''}
             onChange={e => onChange(row.hash, e.target.value || null)}
             style={{
-              flex: 1, padding: '8px 10px', background: '#2E2E2E', borderRadius: 10, fontSize: 12,
-              border: `0.5px solid ${row.categoryId ? '#3A3A3A' : 'rgba(255,179,71,0.5)'}`,
-              color: row.categoryId ? '#FFFFFF' : '#FFB347', fontFamily: 'Inter, sans-serif',
+              flex: 1, padding: '8px 10px', background: '#1F1F23', borderRadius: 10, fontSize: 12,
+              border: `0.5px solid ${row.categoryId ? '#34343A' : 'rgba(233,162,90,0.5)'}`,
+              color: row.categoryId ? '#F4F4F5' : '#E9A25A', fontFamily: 'Inter, sans-serif',
             }}
           >
             <option value="">Choose a category…</option>
@@ -468,7 +468,7 @@ function ReviewRow({ row, groups, onChange }) {
               </optgroup>
             ))}
           </select>
-          {row.via === 'rule' && <span style={{ fontSize: 10, color: '#FFD166', flexShrink: 0 }}>rule</span>}
+          {row.via === 'rule' && <span style={{ fontSize: 10, color: '#E8C36A', flexShrink: 0 }}>rule</span>}
         </div>
       )}
     </div>

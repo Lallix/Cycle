@@ -9,41 +9,51 @@ export default {
       colors: {
         // ── Backgrounds (design bible section 6) ──────────────────
         bg: {
-          DEFAULT:  '#0D0D0D',   // Charcoal — primary background
-          surface:  '#1B1B1B',   // Surface — cards on dark
-          elevated: '#2E2E2E',   // Surface Light — elevated elements
+          DEFAULT:  '#0E0E10',   // Charcoal — primary background
+          surface:  '#17171A',   // Surface — cards on dark
+          elevated: '#1F1F23',   // Surface Light — elevated elements
           soft:     '#A1A1AA',   // Soft grey — disabled/subtle
         },
         // ── Gold scale (design bible section 2) ───────────────────
         gold: {
-          DEFAULT: '#FFD166',    // Primary Gold
-          dark:    '#E6BB45',    // Dark Gold — borders, strokes
-          light:   '#FFE8A3',    // Light Gold — highlights, hover
-          muted:   'rgba(255,209,102,0.12)', // Gold tint for backgrounds
-          glow:    'rgba(255,209,102,0.25)', // Gold glow for shadows
+          DEFAULT: '#E8C36A',    // Primary Gold
+          dark:    '#D4AE55',    // Dark Gold — borders, strokes
+          light:   '#F3DDA0',    // Light Gold — highlights, hover
+          muted:   'rgba(232,195,106,0.12)', // Gold tint for backgrounds
+          glow:    'rgba(232,195,106,0.25)', // Gold glow for shadows
+        },
+        // ── Surfaces the components refer to by role ─────────────
+        surface: {
+          DEFAULT: '#17171A',
+          1: '#17171A',          // cards
+          2: '#1F1F23',          // inputs, hover rows
+        },
+        text: {
+          primary:   '#F4F4F5',
+          secondary: '#A1A1AA',
         },
         // ── Semantic colours ──────────────────────────────────────
-        success: '#22C55E',
-        warning: '#FFB347',
-        danger:  '#EF4444',
+        success: '#5BC98B',
+        warning: '#E9A25A',
+        danger:  '#F07A6A',
         info:    '#38B2F8',
         // ── Text ──────────────────────────────────────────────────
-        fg: '#FFFFFF',           // Text Primary
+        fg: '#F4F4F5',           // Text Primary
         muted: '#A1A1AA',        // Text Secondary / Tertiary
-        subtle: '#717179',       // Text Tertiary
+        subtle: '#8B8B93',       // Text Tertiary
         // ── Ivory (for cards and hero surfaces) ──────────────────
         ivory: {
-          DEFAULT: '#FAF7F0',   // warm ivory — card backgrounds
-          warm:    '#F5F0E8',   // slightly darker ivory
-          border:  '#E8E0D0',   // ivory border
-          muted:   '#9A9080',   // muted text on ivory
-          text:    '#1C1814',   // dark text on ivory
+          DEFAULT: '#17171A',   // warm ivory — card backgrounds
+          warm:    '#1F1F23',   // slightly darker ivory
+          border:  '#26262B',   // ivory border
+          muted:   '#8B8B93',   // muted text on ivory
+          text:    '#F4F4F5',   // dark text on ivory
         },
         // ── Borders ───────────────────────────────────────────────
         border: {
-          DEFAULT: '#2A2A2A',
-          strong:  '#3A3A3A',
-          gold:    'rgba(255,209,102,0.3)',
+          DEFAULT: '#26262B',
+          strong:  '#34343A',
+          gold:    'rgba(232,195,106,0.3)',
         },
       },
       fontFamily: {
@@ -132,14 +142,14 @@ export default {
           '50%':     { opacity: '1',    transform: 'scale(1.04)' },
         },
         goldPulse: {
-          '0%,100%': { opacity: '1',  color: '#FFD166' },
-          '50%':     { opacity: '0.7', color: '#FFE8A3' },
+          '0%,100%': { opacity: '1',  color: '#E8C36A' },
+          '50%':     { opacity: '0.7', color: '#F3DDA0' },
         },
       },
       boxShadow: {
-        'gold':    '0 0 24px rgba(255,209,102,0.2)',
-        'gold-sm': '0 0 12px rgba(255,209,102,0.15)',
-        'gold-lg': '0 0 40px rgba(255,209,102,0.3)',
+        'gold':    '0 0 0 0 transparent',
+        'gold-sm': '0 0 0 0 transparent',
+        'gold-lg': '0 0 0 0 transparent',
         'card':    '0 4px 24px rgba(0,0,0,0.5)',
         'sheet':   '0 -8px 32px rgba(0,0,0,0.7)',
       },

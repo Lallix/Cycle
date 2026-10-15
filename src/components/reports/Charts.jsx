@@ -6,10 +6,10 @@ import { formatMoney } from '../../lib/format'
 
 // Common tooltip styles
 const tooltipStyle = {
-  backgroundColor: '#1C1C1C',
-  border: '1px solid #2A2A2A',
+  backgroundColor: '#17171A',
+  border: '1px solid #26262B',
   borderRadius: '12px',
-  color: '#F5F5F5',
+  color: '#F4F4F5',
   fontFamily: 'DM Mono, monospace',
   fontSize: '12px',
 }
@@ -45,16 +45,16 @@ export function SpendingTrendChart({ data }) {
           type="monotone"
           dataKey="spent"
           name="Spent"
-          stroke="#D4AF37"
+          stroke="#E8C36A"
           strokeWidth={2}
-          dot={{ fill: '#D4AF37', r: 3 }}
+          dot={{ fill: '#E8C36A', r: 3 }}
           activeDot={{ r: 5 }}
         />
         <Line
           type="monotone"
           dataKey="income"
           name="Income"
-          stroke="#3DD598"
+          stroke="#5BC98B"
           strokeWidth={1.5}
           strokeDasharray="4 4"
           dot={false}
@@ -67,7 +67,7 @@ export function SpendingTrendChart({ data }) {
 export function CategoryDonut({ data }) {
   if (!data?.length) return <ChartEmpty />
 
-  const COLORS = ['#D4AF37', '#3DD598', '#FF6B6B', '#FFB347', '#9B59B6', '#00BCD4', '#E91E63', '#4CAF50']
+  const COLORS = ['#E8C36A', '#5BC98B', '#F07A6A', '#E9A25A', '#9B59B6', '#00BCD4', '#E91E63', '#4CAF50']
 
   const total = data.reduce((sum, d) => sum + d.value, 0)
 
@@ -134,8 +134,8 @@ export function IncomeVsExpenses({ data }) {
         />
         <YAxis hide />
         <Tooltip content={<MoneyTooltip />} />
-        <Bar dataKey="income" name="Income" fill="#3DD598" radius={[4, 4, 0, 0]} />
-        <Bar dataKey="spent" name="Spent" fill="#D4AF37" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="income" name="Income" fill="#5BC98B" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="spent" name="Spent" fill="#E8C36A" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   )

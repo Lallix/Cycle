@@ -10,10 +10,10 @@ const RADIUS      = (SIZE - STROKE) / 2
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
 function getRingColor(pct, isOver) {
-  if (isOver)   return { stroke: '#EF4444', glow: 'rgba(239,68,68,0.35)' }
-  if (pct >= 90) return { stroke: '#FFD166', glow: 'rgba(255,209,102,0.5)' }
-  if (pct >= 70) return { stroke: '#E6BB45', glow: 'rgba(230,187,69,0.4)' }
-  return           { stroke: '#FFD166', glow: 'rgba(255,209,102,0.35)' }
+  if (isOver)   return { stroke: '#F07A6A', glow: 'rgba(240,122,106,0.35)' }
+  if (pct >= 90) return { stroke: '#E8C36A', glow: 'rgba(232,195,106,0.5)' }
+  if (pct >= 70) return { stroke: '#D4AE55', glow: 'rgba(230,187,69,0.4)' }
+  return           { stroke: '#E8C36A', glow: 'rgba(232,195,106,0.35)' }
 }
 
 export default function RingProgress({
@@ -96,7 +96,7 @@ export default function RingProgress({
           cy={SIZE / 2}
           r={r}
           fill="none"
-          stroke="#2A2A2A"
+          stroke="#26262B"
           strokeWidth={STROKE}
           strokeLinecap="round"
         />
@@ -140,7 +140,7 @@ export default function RingProgress({
           cy={SIZE / 2}
           r={innerR}
           fill="none"
-          stroke="#2A2A2A"
+          stroke="#26262B"
           strokeWidth={3}
         />
         <circle
@@ -148,7 +148,7 @@ export default function RingProgress({
           cy={SIZE / 2}
           r={innerR}
           fill="none"
-          stroke="rgba(255,209,102,0.25)"
+          stroke="rgba(232,195,106,0.25)"
           strokeWidth={3}
           strokeLinecap="round"
           strokeDasharray={2 * Math.PI * innerR}
@@ -183,7 +183,7 @@ export default function RingProgress({
           style={{
             fontFamily: 'Inter, sans-serif',
             fontSize: 11,
-            color: '#717179',
+            color: '#8B8B93',
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
             marginBottom: 2,
@@ -196,7 +196,7 @@ export default function RingProgress({
             fontFamily: 'Poppins, sans-serif',
             fontSize: 32,
             fontWeight: 300,
-            color: isOver ? '#EF4444' : '#FFD166',
+            color: isOver ? '#F07A6A' : '#E8C36A',
             lineHeight: 1,
             letterSpacing: '-0.02em',
           }}

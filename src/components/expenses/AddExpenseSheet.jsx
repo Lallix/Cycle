@@ -13,13 +13,13 @@ import { isEverydayType } from '../../lib/spend'
 const s = {
   label: {
     fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600,
-    color: '#717179', textTransform: 'uppercase', letterSpacing: '0.08em',
+    color: '#8B8B93', textTransform: 'uppercase', letterSpacing: '0.08em',
     display: 'block', marginBottom: 6,
   },
   input: {
     width: '100%', padding: '12px 16px',
-    background: '#2E2E2E', border: '0.5px solid #3A3A3A',
-    borderRadius: 12, color: '#FFFFFF',
+    background: '#1F1F23', border: '0.5px solid #34343A',
+    borderRadius: 12, color: '#F4F4F5',
     fontFamily: 'Inter, sans-serif', fontSize: 14, outline: 'none',
   },
 }
@@ -78,15 +78,15 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
         style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
           padding: '8px 4px', borderRadius: 14,
-          border: `0.5px solid ${sel ? 'rgba(255,209,102,0.5)' : '#3A3A3A'}`,
-          background: sel ? 'rgba(255,209,102,0.1)' : '#2E2E2E',
+          border: `0.5px solid ${sel ? 'rgba(232,195,106,0.5)' : '#34343A'}`,
+          background: sel ? 'rgba(232,195,106,0.1)' : '#1F1F23',
           cursor: 'pointer', transition: 'all 0.15s ease',
         }}
       >
         <span style={{ fontSize: 20 }}>{cat.icon || '💳'}</span>
         <span style={{
           fontFamily: 'Inter, sans-serif', fontSize: 10,
-          color: sel ? '#FFD166' : '#A1A1AA',
+          color: sel ? '#E8C36A' : '#A1A1AA',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           width: '100%', textAlign: 'center',
         }}>
@@ -101,10 +101,10 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
       <div style={{ padding: '0 20px 32px', display: 'flex', flexDirection: 'column', gap: 18 }}>
 
         {/* Amount */}
-        <div style={{ background: '#FAF7F0', borderRadius: 16, padding: 16 }}>
-          <label style={{ ...s.label, color: '#9A9080' }}>Amount</label>
+        <div style={{ background: '#17171A', borderRadius: 16, padding: 16 }}>
+          <label style={{ ...s.label, color: '#8B8B93' }}>Amount</label>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 28, fontWeight: 300, color: '#9A9080' }}>R</span>
+            <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 28, fontWeight: 300, color: '#8B8B93' }}>R</span>
             <input
               ref={amountRef}
               type="number" inputMode="decimal" placeholder="0.00"
@@ -113,17 +113,17 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
               style={{
                 flex: 1, background: 'transparent', border: 'none', outline: 'none',
                 fontFamily: 'Poppins, sans-serif', fontSize: 32, fontWeight: 300,
-                color: '#1C1814',
+                color: '#F4F4F5',
               }}
             />
           </div>
-          {error && <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#EF4444', marginTop: 4 }}>{error}</p>}
+          {error && <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#F07A6A', marginTop: 4 }}>{error}</p>}
           {/* Quick amounts */}
           <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
             {QUICK_AMOUNTS.map(q => (
               <button key={q} onClick={() => addQuick(q)} style={{
                 flex: 1, padding: '6px 0', textAlign: 'center',
-                background: 'rgba(28,24,20,0.06)', border: '0.5px solid rgba(28,24,20,0.12)',
+                background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)',
                 borderRadius: 8, fontFamily: 'Poppins, sans-serif', fontSize: 11,
                 color: '#6B6058', cursor: 'pointer',
               }}>
@@ -143,7 +143,7 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
             <>
               <button
                 onClick={() => setShowMoreCats(v => !v)}
-                style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8, background: 'none', border: 'none', color: '#717179', fontFamily: 'Inter, sans-serif', fontSize: 12, cursor: 'pointer' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8, background: 'none', border: 'none', color: '#8B8B93', fontFamily: 'Inter, sans-serif', fontSize: 12, cursor: 'pointer' }}
               >
                 <ChevronDown size={12} style={{ transform: showMoreCats ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
                 {showMoreCats ? 'Show less' : `${rest.length} more`}
@@ -172,7 +172,7 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
 
         {/* Notes */}
         <div>
-          <label style={s.label}>Notes <span style={{ textTransform: 'none', color: '#4A4A4A' }}>(optional)</span></label>
+          <label style={s.label}>Notes <span style={{ textTransform: 'none', color: '#5A5A62' }}>(optional)</span></label>
           <input type="text" placeholder="e.g. Checkers weekly shop"
             value={notes} onChange={e => setNotes(e.target.value)}
             style={s.input} />
@@ -183,11 +183,11 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
           onClick={handleSave} disabled={loading}
           style={{
             width: '100%', padding: '15px 0',
-            background: loading ? '#B8922E' : '#FFD166',
+            background: loading ? '#C9A24E' : '#E8C36A',
             borderRadius: 14, border: 'none',
             fontFamily: 'Poppins, sans-serif', fontSize: 15, fontWeight: 600,
-            color: '#0D0D0D', cursor: loading ? 'not-allowed' : 'pointer',
-            boxShadow: loading ? 'none' : '0 0 20px rgba(255,209,102,0.3)',
+            color: '#0E0E10', cursor: loading ? 'not-allowed' : 'pointer',
+            boxShadow: loading ? 'none' : '0 0 0 0 transparent',
             transition: 'all 0.2s ease',
           }}
         >

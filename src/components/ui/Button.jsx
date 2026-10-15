@@ -32,35 +32,35 @@ export default function Button({
 
   const variants = {
     primary: {
-      background: '#FFD166',
-      color: '#0D0D0D',
+      background: '#E8C36A',
+      color: '#0E0E10',
       fontFamily: 'Poppins, sans-serif',
       fontWeight: 600,
-      boxShadow: '0 0 20px rgba(255,209,102,0.25)',
+      boxShadow: '0 0 0 0 transparent',
     },
     secondary: {
-      background: '#2E2E2E',
-      color: '#FFFFFF',
-      border: '0.5px solid #3A3A3A',
+      background: '#1F1F23',
+      color: '#F4F4F5',
+      border: '0.5px solid #34343A',
     },
     ghost: {
       background: 'transparent',
       color: '#A1A1AA',
     },
     danger: {
-      background: 'rgba(239,68,68,0.1)',
-      color: '#EF4444',
-      border: '0.5px solid rgba(239,68,68,0.3)',
+      background: 'rgba(240,122,106,0.1)',
+      color: '#F07A6A',
+      border: '0.5px solid rgba(240,122,106,0.3)',
     },
     success: {
-      background: 'rgba(34,197,94,0.1)',
-      color: '#22C55E',
-      border: '0.5px solid rgba(34,197,94,0.3)',
+      background: 'rgba(91,201,139,0.1)',
+      color: '#5BC98B',
+      border: '0.5px solid rgba(91,201,139,0.3)',
     },
     outline: {
       background: 'transparent',
-      color: '#FFD166',
-      border: '0.5px solid rgba(255,209,102,0.5)',
+      color: '#E8C36A',
+      border: '0.5px solid rgba(232,195,106,0.5)',
     },
   }
 

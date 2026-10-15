@@ -60,14 +60,14 @@ export default function VariableBudgetRow({ category }) {
 
   const inputStyle = {
     width: '100%', padding: '12px 16px',
-    background: '#2E2E2E', border: '0.5px solid #3A3A3A',
-    borderRadius: 12, color: '#FFFFFF',
+    background: '#1F1F23', border: '0.5px solid #34343A',
+    borderRadius: 12, color: '#F4F4F5',
     fontFamily: 'Inter, sans-serif', fontSize: 14, outline: 'none',
   }
 
   const labelStyle = {
     fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600,
-    color: '#717179', textTransform: 'uppercase', letterSpacing: '0.08em',
+    color: '#8B8B93', textTransform: 'uppercase', letterSpacing: '0.08em',
     display: 'block', marginBottom: 6,
   }
 
@@ -87,7 +87,7 @@ export default function VariableBudgetRow({ category }) {
             {category.icon}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: '#FFFFFF' }}>
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: '#F4F4F5' }}>
               {category.name}
             </p>
           </div>
@@ -96,7 +96,7 @@ export default function VariableBudgetRow({ category }) {
               {formatMoney(spent, true)}
             </span>
             {budget > 0 && (
-              <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 11, color: '#717179' }}>
+              <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 11, color: '#8B8B93' }}>
                 {' '}/ {formatMoney(budget, true)}
               </span>
             )}
@@ -109,13 +109,13 @@ export default function VariableBudgetRow({ category }) {
           <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11 }}>
             {budget > 0
               ? isOver
-                ? <span style={{ color: '#EF4444' }}>Over by {formatMoney(Math.abs(remaining), true)}</span>
-                : <span style={{ color: '#717179' }}>{formatMoney(remaining, true)} remaining</span>
-              : <span style={{ color: '#717179' }}>{formatMoney(spent, true)} spent</span>
+                ? <span style={{ color: '#F07A6A' }}>Over by {formatMoney(Math.abs(remaining), true)}</span>
+                : <span style={{ color: '#8B8B93' }}>{formatMoney(remaining, true)} remaining</span>
+              : <span style={{ color: '#8B8B93' }}>{formatMoney(spent, true)} spent</span>
             }
           </span>
           {budget > 0 && (
-            <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 11, color: '#717179' }}>
+            <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 11, color: '#8B8B93' }}>
               {Math.round(pct)}%
             </span>
           )}
@@ -130,16 +130,16 @@ export default function VariableBudgetRow({ category }) {
       >
         <div style={{ paddingBottom: 32 }}>
           {/* Summary */}
-          <div style={{ margin: '0 20px 16px', background: '#2E2E2E', borderRadius: 14, border: '0.5px solid #3A3A3A', padding: 16 }}>
+          <div style={{ margin: '0 20px 16px', background: '#1F1F23', borderRadius: 14, border: '0.5px solid #34343A', padding: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
               <div>
-                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 10, color: '#717179', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Spent</p>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 10, color: '#8B8B93', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Spent</p>
                 <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 22, fontWeight: 500, color: statusColor }}>{formatMoney(spent)}</p>
               </div>
               {budget > 0 && (
                 <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 10, color: '#717179', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Budget</p>
-                  <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 22, fontWeight: 300, color: '#717179' }}>{formatMoney(budget)}</p>
+                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 10, color: '#8B8B93', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Budget</p>
+                  <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 22, fontWeight: 300, color: '#8B8B93' }}>{formatMoney(budget)}</p>
                 </div>
               )}
             </div>
@@ -152,11 +152,11 @@ export default function VariableBudgetRow({ category }) {
               onClick={openAdd}
               style={{
                 width: '100%', padding: '12px 0',
-                borderRadius: 12, border: '0.5px solid rgba(255,209,102,0.3)',
-                background: 'rgba(255,209,102,0.06)',
+                borderRadius: 12, border: '0.5px solid rgba(232,195,106,0.3)',
+                background: 'rgba(232,195,106,0.06)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 500,
-                color: '#FFD166', cursor: 'pointer',
+                color: '#E8C36A', cursor: 'pointer',
               }}
             >
               <Plus size={15} /> Add spend to {category.name}
@@ -167,16 +167,16 @@ export default function VariableBudgetRow({ category }) {
           {catTx.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '24px 0' }}>
               <p style={{ fontSize: 32, marginBottom: 8 }}>{category.icon}</p>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#717179' }}>No expenses yet</p>
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#8B8B93' }}>No expenses yet</p>
             </div>
           ) : (
             <div style={{ margin: '0 20px' }}>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, color: '#717179', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, color: '#8B8B93', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
                 Transactions
               </p>
-              <div style={{ background: '#1B1B1B', borderRadius: 14, border: '0.5px solid #2A2A2A', overflow: 'hidden' }}>
+              <div style={{ background: '#17171A', borderRadius: 14, border: '0.5px solid #26262B', overflow: 'hidden' }}>
                 {catTx.map((tx, i) => (
-                  <div key={tx.id} style={{ borderBottom: i < catTx.length - 1 ? '0.5px solid #2A2A2A' : 'none' }}>
+                  <div key={tx.id} style={{ borderBottom: i < catTx.length - 1 ? '0.5px solid #26262B' : 'none' }}>
                     <ExpenseItem transaction={tx} onDelete={handleDelete} />
                   </div>
                 ))}
@@ -195,10 +195,10 @@ export default function VariableBudgetRow({ category }) {
         <div style={{ padding: '0 20px 32px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
           {/* Amount — ivory card */}
-          <div style={{ background: '#FAF7F0', borderRadius: 16, padding: 16 }}>
-            <label style={{ ...labelStyle, color: '#9A9080' }}>Amount</label>
+          <div style={{ background: '#17171A', borderRadius: 16, padding: 16 }}>
+            <label style={{ ...labelStyle, color: '#8B8B93' }}>Amount</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 28, fontWeight: 300, color: '#9A9080' }}>R</span>
+              <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 28, fontWeight: 300, color: '#8B8B93' }}>R</span>
               <input
                 type="number" inputMode="decimal" placeholder="0.00"
                 value={amount}
@@ -206,7 +206,7 @@ export default function VariableBudgetRow({ category }) {
                 autoFocus
                 style={{
                   flex: 1, background: 'transparent', border: 'none', outline: 'none',
-                  fontFamily: 'Poppins, sans-serif', fontSize: 32, fontWeight: 300, color: '#1C1814',
+                  fontFamily: 'Poppins, sans-serif', fontSize: 32, fontWeight: 300, color: '#F4F4F5',
                 }}
               />
             </div>
@@ -216,7 +216,7 @@ export default function VariableBudgetRow({ category }) {
                 <button key={q} onClick={() => setAmount(String((parseFloat(amount)||0) + q))}
                   style={{
                     flex: 1, padding: '6px 0', textAlign: 'center',
-                    background: 'rgba(28,24,20,0.06)', border: '0.5px solid rgba(28,24,20,0.12)',
+                    background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.08)',
                     borderRadius: 8, fontFamily: 'Poppins, sans-serif', fontSize: 11, color: '#6B6058', cursor: 'pointer',
                   }}>
                   +{formatMoney(q)}
@@ -240,7 +240,7 @@ export default function VariableBudgetRow({ category }) {
 
           {/* Notes */}
           <div>
-            <label style={labelStyle}>Notes <span style={{ textTransform: 'none', color: '#4A4A4A' }}>(optional)</span></label>
+            <label style={labelStyle}>Notes <span style={{ textTransform: 'none', color: '#5A5A62' }}>(optional)</span></label>
             <input type="text" placeholder={`e.g. Checkers, Shell garage...`}
               value={notes} onChange={e => setNotes(e.target.value)}
               style={inputStyle} />
@@ -251,11 +251,11 @@ export default function VariableBudgetRow({ category }) {
             onClick={handleSave} disabled={saving}
             style={{
               width: '100%', padding: '15px 0',
-              background: saving ? '#B8922E' : '#FFD166',
+              background: saving ? '#C9A24E' : '#E8C36A',
               borderRadius: 14, border: 'none',
               fontFamily: 'Poppins, sans-serif', fontSize: 15, fontWeight: 600,
-              color: '#0D0D0D', cursor: saving ? 'not-allowed' : 'pointer',
-              boxShadow: saving ? 'none' : '0 0 20px rgba(255,209,102,0.3)',
+              color: '#0E0E10', cursor: saving ? 'not-allowed' : 'pointer',
+              boxShadow: saving ? 'none' : '0 0 0 0 transparent',
             }}
           >
             {saving ? 'Saving...' : `Add to ${category.name}`}

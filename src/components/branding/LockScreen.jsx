@@ -20,16 +20,16 @@ function MiniRing({ size = 80 }) {
         <div style={{
           position: 'absolute', width: s * 0.94, height: s * 0.94, borderRadius: '50%',
           border: `${Math.max(1.5, s * 0.025)}px solid transparent`,
-          borderTopColor: '#FFD166', borderRightColor: '#FFD166',
+          borderTopColor: '#E8C36A', borderRightColor: '#E8C36A',
           borderBottomColor: '#2A2010', borderLeftColor: '#2A2010',
           animation: 'lsCW 4s linear infinite',
-          filter: 'drop-shadow(0 0 4px rgba(255,209,102,0.5))',
+          filter: 'drop-shadow(0 0 0 0 transparent)',
         }} />
         {/* Inner ring CCW */}
         <div style={{
           position: 'absolute', width: s * 0.66, height: s * 0.66, borderRadius: '50%',
           border: `${Math.max(1, s * 0.02)}px solid transparent`,
-          borderTopColor: '#FFE8A3', borderLeftColor: '#FFE8A3',
+          borderTopColor: '#F3DDA0', borderLeftColor: '#F3DDA0',
           borderBottomColor: '#1A1508', borderRightColor: '#1A1508',
           animation: 'lsCCW 2.5s linear infinite',
         }} />
@@ -50,7 +50,7 @@ function MiniRing({ size = 80 }) {
         {/* Centre */}
         <div style={{
           position: 'absolute', width: s * 0.34, height: s * 0.34, borderRadius: '50%',
-          background: '#0D0D0D', border: '1px solid rgba(255,209,102,0.12)',
+          background: '#0E0E10', border: '1px solid rgba(232,195,106,0.12)',
         }} />
       </div>
     </>
@@ -67,9 +67,9 @@ function BlurredDashboard() {
       {/* Simulated hero card */}
       <div style={{
         margin: '60px 16px 0',
-        background: '#1B1B1B',
+        background: '#17171A',
         borderRadius: 24,
-        border: '0.5px solid #2A2A2A',
+        border: '0.5px solid #26262B',
         padding: 20,
         filter: 'blur(6px)',
         opacity: 0.3,
@@ -78,15 +78,15 @@ function BlurredDashboard() {
           {/* Ring placeholder */}
           <div style={{
             width: 100, height: 100, borderRadius: '50%',
-            border: '10px solid #FFD166', opacity: 0.4, flexShrink: 0,
+            border: '10px solid #E8C36A', opacity: 0.4, flexShrink: 0,
           }} />
           <div>
             <div style={{ width: 80, height: 10, background: '#333', borderRadius: 4, marginBottom: 8 }} />
-            <div style={{ width: 120, height: 28, background: '#FFD166', borderRadius: 6, opacity: 0.3, marginBottom: 8 }} />
+            <div style={{ width: 120, height: 28, background: '#E8C36A', borderRadius: 6, opacity: 0.3, marginBottom: 8 }} />
             <div style={{ width: 100, height: 8, background: '#333', borderRadius: 4 }} />
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 0, marginTop: 16, borderTop: '0.5px solid #2A2A2A', paddingTop: 12 }}>
+        <div style={{ display: 'flex', gap: 0, marginTop: 16, borderTop: '0.5px solid #26262B', paddingTop: 12 }}>
           {['Income', 'Spent', 'Left'].map(l => (
             <div key={l} style={{ flex: 1, textAlign: 'center' }}>
               <div style={{ width: 40, height: 6, background: '#444', borderRadius: 3, margin: '0 auto 6px' }} />
@@ -98,7 +98,7 @@ function BlurredDashboard() {
       {/* Gradient fade */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%',
-        background: 'linear-gradient(to bottom, transparent, #0D0D0D)',
+        background: 'linear-gradient(to bottom, transparent, #0E0E10)',
       }} />
     </div>
   )
@@ -162,7 +162,7 @@ export default function LockScreen({ onUnlocked }) {
   return (
     <div
       style={{
-        position: 'fixed', inset: 0, background: '#0D0D0D',
+        position: 'fixed', inset: 0, background: '#0E0E10',
         zIndex: 100,
         opacity: visible ? 1 : 0,
         transition: 'opacity 0.35s ease',
@@ -178,7 +178,7 @@ export default function LockScreen({ onUnlocked }) {
         padding: '32px 28px',
         paddingBottom: 'max(env(safe-area-inset-bottom), 32px)',
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        background: 'linear-gradient(to top, #0D0D0D 60%, transparent)',
+        background: 'linear-gradient(to top, #0E0E10 60%, transparent)',
       }}>
         {/* Ring mark */}
         <MiniRing size={72} />
@@ -187,13 +187,13 @@ export default function LockScreen({ onUnlocked }) {
         <div style={{ textAlign: 'center', marginTop: 16, marginBottom: 28 }}>
           <p style={{
             fontFamily: 'Poppins, sans-serif', fontSize: 22, fontWeight: 300,
-            color: '#FFFFFF', letterSpacing: '-0.01em',
+            color: '#F4F4F5', letterSpacing: '-0.01em',
           }}>
             Welcome back, {firstName}
           </p>
           <p style={{
             fontFamily: 'Inter, sans-serif', fontSize: 13,
-            color: '#717179', marginTop: 4,
+            color: '#8B8B93', marginTop: 4,
           }}>
             Your dashboard is ready
           </p>
@@ -206,18 +206,18 @@ export default function LockScreen({ onUnlocked }) {
             disabled={loading}
             style={{
               width: '100%', padding: '15px 0',
-              background: loading ? '#B8922E' : '#FFD166',
+              background: loading ? '#C9A24E' : '#E8C36A',
               borderRadius: 16, border: 'none',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
               fontFamily: 'Poppins, sans-serif', fontSize: 15, fontWeight: 600,
-              color: '#0D0D0D',
+              color: '#0E0E10',
               transition: 'all 0.2s ease',
-              boxShadow: loading ? 'none' : '0 0 24px rgba(255,209,102,0.3)',
+              boxShadow: loading ? 'none' : '0 0 0 0 transparent',
               marginBottom: 12,
             }}
           >
             {/* Fingerprint / Face ID icon */}
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0E0E10" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 10a2 2 0 0 0-2 2v4"/>
               <path d="M12 6C8.686 6 6 8.686 6 12"/>
               <path d="M12 6c3.314 0 6 2.686 6 6"/>
@@ -240,7 +240,7 @@ export default function LockScreen({ onUnlocked }) {
               width: '100%', padding: '13px 0',
               background: 'transparent',
               borderRadius: 14,
-              border: '0.5px solid #3A3A3A',
+              border: '0.5px solid #34343A',
               fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 400,
               color: '#A1A1AA',
               marginBottom: 16,
@@ -256,11 +256,11 @@ export default function LockScreen({ onUnlocked }) {
           onClick={() => setShowPassword(v => !v)}
           style={{
             fontFamily: 'Inter, sans-serif', fontSize: 13,
-            color: '#717179',
+            color: '#8B8B93',
             background: 'none', border: 'none',
             marginBottom: showPassword ? 16 : 0,
             textDecoration: 'underline',
-            textDecorationColor: '#3A3A3A',
+            textDecorationColor: '#34343A',
           }}
         >
           {showPassword ? 'Hide password login' : 'Sign in with password instead'}
@@ -276,7 +276,7 @@ export default function LockScreen({ onUnlocked }) {
           onClick={handleSignOut}
           style={{
             fontFamily: 'Inter, sans-serif', fontSize: 11,
-            color: '#3A3A3A', background: 'none', border: 'none',
+            color: '#34343A', background: 'none', border: 'none',
             marginTop: 20,
           }}
         >
@@ -320,8 +320,8 @@ function PasswordFallback({ onSuccess }) {
         autoComplete="email"
         style={{
           width: '100%', padding: '12px 16px',
-          background: '#1B1B1B', border: '0.5px solid #2A2A2A',
-          borderRadius: 12, color: '#FFFFFF',
+          background: '#17171A', border: '0.5px solid #26262B',
+          borderRadius: 12, color: '#F4F4F5',
           fontFamily: 'Inter, sans-serif', fontSize: 14,
         }}
       />
@@ -334,8 +334,8 @@ function PasswordFallback({ onSuccess }) {
           autoComplete="current-password"
           style={{
             width: '100%', padding: '12px 44px 12px 16px',
-            background: '#1B1B1B', border: '0.5px solid #2A2A2A',
-            borderRadius: 12, color: '#FFFFFF',
+            background: '#17171A', border: '0.5px solid #26262B',
+            borderRadius: 12, color: '#F4F4F5',
             fontFamily: 'Inter, sans-serif', fontSize: 14,
           }}
         />
@@ -344,7 +344,7 @@ function PasswordFallback({ onSuccess }) {
           onClick={() => setShowPw(v => !v)}
           style={{
             position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
-            background: 'none', border: 'none', color: '#717179', fontSize: 13,
+            background: 'none', border: 'none', color: '#8B8B93', fontSize: 13,
           }}
         >
           {showPw ? 'Hide' : 'Show'}
@@ -354,9 +354,9 @@ function PasswordFallback({ onSuccess }) {
         type="submit"
         disabled={loading}
         style={{
-          padding: '13px 0', background: '#FFD166', borderRadius: 12,
+          padding: '13px 0', background: '#E8C36A', borderRadius: 12,
           border: 'none', fontFamily: 'Poppins, sans-serif',
-          fontSize: 14, fontWeight: 600, color: '#0D0D0D',
+          fontSize: 14, fontWeight: 600, color: '#0E0E10',
         }}
       >
         {loading ? 'Signing in...' : 'Sign in'}

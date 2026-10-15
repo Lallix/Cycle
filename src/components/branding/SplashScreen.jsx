@@ -281,7 +281,7 @@ export default function SplashScreen({ visible, onDone }) {
             fontWeight: 700,
             letterSpacing: '0.22em',
             paddingRight: '0.22em',
-            background: 'linear-gradient(180deg, #FFFBF0 0%, #FFE680 18%, #FFD166 40%, #E6A817 68%, #B8780A 88%, #8A5500 100%)',
+            background: 'linear-gradient(180deg, #FFFBF0 0%, #FFE680 18%, #E8C36A 40%, #E6A817 68%, #B8780A 88%, #8A5500 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -314,7 +314,7 @@ export default function SplashScreen({ visible, onDone }) {
             {[0, 0.2, 0.4].map((delay, i) => (
               <div key={i} style={{
                 width: 4, height: 4, borderRadius: '50%',
-                background: '#FFD166',
+                background: '#E8C36A',
                 animation: `splashDot 1.4s ${delay}s ease-in-out infinite`,
               }} />
             ))}

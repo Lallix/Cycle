@@ -18,10 +18,10 @@ import { normaliseType } from '../lib/totals'
 
 const PAGE_SIZE = 1000          // Supabase returns at most 1000 rows per request
 const TYPE_META = {
-  fixed:     { label: 'Fixed',     colour: '#6C8EBF' },
-  predicted: { label: 'Predicted', colour: '#C9A84C' },
-  unplanned: { label: 'Unplanned', colour: '#C9803A' },
-  income:    { label: 'Income',    colour: '#2E8B57' },
+  fixed:     { label: 'Fixed',     colour: '#7C8DB5' },
+  predicted: { label: 'Predicted', colour: '#E8C36A' },
+  unplanned: { label: 'Unplanned', colour: '#D98E5A' },
+  income:    { label: 'Income',    colour: '#5BC98B' },
   once_off:  { label: 'Once-off',  colour: '#9B6FB5' },
   debt:      { label: 'Debt',      colour: '#8A8A8A' },
 }
@@ -30,11 +30,11 @@ const KIND_LABEL = {
   loan: 'Loan', home_loan: 'Home loan', cash: 'Cash',
 }
 
-const label = { fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#717179' }
+const label = { fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#8B8B93' }
 const money = (v, compact = true) => `${v < 0 ? '−' : ''}${formatMoney(Math.abs(v), compact)}`
 const inputStyle = {
-  width: '100%', padding: '12px 14px', background: '#2E2E2E', border: '0.5px solid #3A3A3A',
-  borderRadius: 12, color: '#FFFFFF', fontFamily: 'Inter, sans-serif', fontSize: 14,
+  width: '100%', padding: '12px 14px', background: '#1F1F23', border: '0.5px solid #34343A',
+  borderRadius: 12, color: '#F4F4F5', fontFamily: 'Inter, sans-serif', fontSize: 14,
 }
 
 async function fetchAll(build) {
@@ -123,16 +123,16 @@ export default function YearPage() {
   const maxBar = Math.max(1, ...months.map(m => Math.max(summary[m]?.income || 0, summary[m]?.spent || 0)))
 
   return (
-    <div style={{ minHeight: '100%', background: '#0D0D0D', paddingBottom: 120 }}>
+    <div style={{ minHeight: '100%', background: '#0E0E10', paddingBottom: 120 }}>
       <PageHeader title="Year view" subtitle="Calendar months · all accounts" back />
 
       {/* Year switcher */}
       <div className="flex items-center justify-between mx-4 mb-3 px-3 py-2"
-        style={{ background: '#1B1B1B', borderRadius: 14, border: '0.5px solid #2A2A2A' }}>
+        style={{ background: '#17171A', borderRadius: 14, border: '0.5px solid #26262B' }}>
         <button onClick={() => setYear(y => y - 1)} className="p-1.5 rounded-lg tappable" aria-label="Previous year">
           <ChevronLeft size={16} color="#A1A1AA" />
         </button>
-        <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: '#FFFFFF' }}>{year}</span>
+        <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: '#F4F4F5' }}>{year}</span>
         <button onClick={() => setYear(y => y + 1)} disabled={year >= now.getFullYear()}
           className="p-1.5 rounded-lg tappable" style={{ opacity: year >= now.getFullYear() ? 0.3 : 1 }} aria-label="Next year">
           <ChevronRight size={16} color="#A1A1AA" />
@@ -147,26 +147,26 @@ export default function YearPage() {
         <div className="px-4 space-y-4">
 
           {/* Year to date */}
-          <div style={{ background: '#FAF7F0', borderRadius: 16, border: '0.5px solid #E8E0D0', padding: 16 }}>
-            <p style={{ ...label, color: '#9A9080', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, marginBottom: 10 }}>
+          <div style={{ background: '#17171A', borderRadius: 16, border: '0.5px solid #26262B', padding: 16 }}>
+            <p style={{ ...label, color: '#8B8B93', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, marginBottom: 10 }}>
               {year} to date · {months.length} month{months.length > 1 ? 's' : ''}
             </p>
             <div className="grid grid-cols-3 gap-2 text-center">
-              {[['Income', ytd.sum.income, '#2E8B57'], ['Spent', ytd.sum.spent, '#C05050'], ['Left over', ytd.sum.leftOver, ytd.sum.leftOver < 0 ? '#C05050' : '#C9A84C']].map(([t, v, c]) => (
+              {[['Income', ytd.sum.income, '#5BC98B'], ['Spent', ytd.sum.spent, '#F07A6A'], ['Left over', ytd.sum.leftOver, ytd.sum.leftOver < 0 ? '#F07A6A' : '#E8C36A']].map(([t, v, c]) => (
                 <div key={t}>
-                  <p style={{ ...label, color: '#9A9080', fontSize: 10, textTransform: 'uppercase' }}>{t}</p>
+                  <p style={{ ...label, color: '#8B8B93', fontSize: 10, textTransform: 'uppercase' }}>{t}</p>
                   <p style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: 15, color: c }}>{money(v)}</p>
                 </div>
               ))}
             </div>
             {fullMonths.length > 0 && (
-              <p style={{ ...label, color: '#6B6460', marginTop: 10, textAlign: 'center' }}>
+              <p style={{ ...label, color: '#A1A1AA', marginTop: 10, textAlign: 'center' }}>
                 A typical month: in {money(ytd.avg.income)}, out {money(ytd.avg.spent)},
-                {' '}<b style={{ color: ytd.avg.leftOver < 0 ? '#C05050' : '#2E8B57' }}>{ytd.avg.leftOver < 0 ? 'short' : 'over'} {money(Math.abs(ytd.avg.leftOver))}</b>
+                {' '}<b style={{ color: ytd.avg.leftOver < 0 ? '#F07A6A' : '#5BC98B' }}>{ytd.avg.leftOver < 0 ? 'short' : 'over'} {money(Math.abs(ytd.avg.leftOver))}</b>
               </p>
             )}
             {(ytd.sum.onceOff !== 0 || ytd.sum.debt !== 0) && (
-              <p style={{ ...label, color: '#9A9080', marginTop: 4, textAlign: 'center' }}>
+              <p style={{ ...label, color: '#8B8B93', marginTop: 4, textAlign: 'center' }}>
                 Plus once-offs {money(ytd.sum.onceOff)} and loans {money(ytd.sum.debt)} → {money(ytd.sum.afterAll)} after everything
               </p>
             )}
@@ -181,20 +181,20 @@ export default function YearPage() {
                   <div key={m}>
                     <div className="flex justify-between mb-1">
                       <span style={{ ...label, color: '#A1A1AA' }}>{format(parseISO(`${m}-01`), 'MMM')}{m === thisMonth ? ' (so far)' : ''}</span>
-                      <span style={{ ...label, color: r.leftOver < 0 ? '#EF4444' : '#22C55E', fontWeight: 600 }}>{money(r.leftOver)}</span>
+                      <span style={{ ...label, color: r.leftOver < 0 ? '#F07A6A' : '#5BC98B', fontWeight: 600 }}>{money(r.leftOver)}</span>
                     </div>
-                    <div style={{ position: 'relative', height: 10, background: '#2A2A2A', borderRadius: 5, overflow: 'hidden', display: 'flex' }}>
+                    <div style={{ position: 'relative', height: 10, background: '#26262B', borderRadius: 5, overflow: 'hidden', display: 'flex' }}>
                       {SPEND_TYPES.map(t => (
                         <div key={t} style={{ width: `${(Math.max(0, r[t]) / maxBar) * 100}%`, background: TYPE_META[t].colour }} />
                       ))}
-                      <div title="Income" style={{ position: 'absolute', top: 0, bottom: 0, width: 2, background: '#22C55E', left: `${Math.min(100, (r.income / maxBar) * 100)}%` }} />
+                      <div title="Income" style={{ position: 'absolute', top: 0, bottom: 0, width: 2, background: '#5BC98B', left: `${Math.min(100, (r.income / maxBar) * 100)}%` }} />
                     </div>
                   </div>
                 )
               })}
               <div className="flex flex-wrap gap-3 pt-1">
                 {SPEND_TYPES.map(t => <Legend key={t} colour={TYPE_META[t].colour} text={TYPE_META[t].label} />)}
-                <Legend colour="#22C55E" text="Income" line />
+                <Legend colour="#5BC98B" text="Income" line />
               </div>
             </div>
           </Section>
@@ -217,7 +217,7 @@ export default function YearPage() {
                     ['Spent', 'spent', true], ['Plan', 'planned'], ['Under (+) / over (−) plan', 'vsPlan', true],
                     ['Left over', 'leftOver', true], ['Once-off', 'onceOff'], ['Loans', 'debt'], ['After all', 'afterAll', true],
                   ].map(([name, key, strong]) => (
-                    <tr key={key} style={{ borderTop: '0.5px solid #2A2A2A' }}>
+                    <tr key={key} style={{ borderTop: '0.5px solid #26262B' }}>
                       <td style={{ ...td(true), fontWeight: strong ? 600 : 400 }}>{name}</td>
                       {months.map(m => <td key={m} style={td(false, strong, summary[m][key])}>{money(summary[m][key])}</td>)}
                       <td style={td(false, true, ytd.sum[key])}>{money(ytd.sum[key])}</td>
@@ -238,10 +238,10 @@ export default function YearPage() {
                 const total = list.reduce((s, c) => s + c.total, 0)
                 const open = openType === type
                 return (
-                  <div key={type} style={{ border: '0.5px solid #2A2A2A', borderRadius: 12, overflow: 'hidden' }}>
+                  <div key={type} style={{ border: '0.5px solid #26262B', borderRadius: 12, overflow: 'hidden' }}>
                     <button onClick={() => setOpenType(open ? null : type)} className="w-full flex items-center justify-between px-3 py-2.5"
                       style={{ background: '#161616' }}>
-                      <span className="flex items-center gap-2" style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#FFFFFF', fontWeight: 500 }}>
+                      <span className="flex items-center gap-2" style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#F4F4F5', fontWeight: 500 }}>
                         <span style={{ width: 8, height: 8, borderRadius: 4, background: TYPE_META[type].colour }} />
                         {TYPE_META[type].label}
                       </span>
@@ -255,19 +255,19 @@ export default function YearPage() {
                       const limit = plan[months[months.length - 1]]?.byCat[c.id]
                       const expanded = openCat === c.id
                       return (
-                        <div key={c.id} style={{ borderTop: '0.5px solid #2A2A2A' }}>
+                        <div key={c.id} style={{ borderTop: '0.5px solid #26262B' }}>
                           <button onClick={() => setOpenCat(expanded ? null : c.id)} className="w-full flex items-center gap-2 px-3 py-2 text-left">
                             <span style={{ width: 22, textAlign: 'center' }}>{c.icon}</span>
                             <span className="flex-1 min-w-0 truncate" style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#E5E5E5' }}>{c.name}</span>
                             <span style={{ ...label, width: 92, textAlign: 'right', color: limit && avg > limit ? '#F07A6A' : '#8B8B93' }}>
                               {money(avg)}{limit ? ` / ${money(limit)}` : '/mo'}
                             </span>
-                            <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 12, fontWeight: 600, color: '#FFFFFF', width: 72, textAlign: 'right' }}>{money(c.total)}</span>
+                            <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 12, fontWeight: 600, color: '#F4F4F5', width: 72, textAlign: 'right' }}>{money(c.total)}</span>
                           </button>
                           {expanded && (
                             <div className="grid grid-cols-4 gap-1 px-3 pb-3">
                               {months.map(m => (
-                                <div key={m} className="text-center py-1" style={{ background: '#1B1B1B', borderRadius: 8 }}>
+                                <div key={m} className="text-center py-1" style={{ background: '#17171A', borderRadius: 8 }}>
                                   <p style={{ ...label, fontSize: 10 }}>{format(parseISO(`${m}-01`), 'MMM')}</p>
                                   <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 11, color: '#E5E5E5' }}>{money(c.byMonth[m] || 0)}</p>
                                 </div>
@@ -286,7 +286,7 @@ export default function YearPage() {
           {/* Balances */}
           <Section
             title="Balances at month end"
-            action={<button onClick={() => setBalanceOpen(true)} className="flex items-center gap-1" style={{ ...label, color: '#FFD166' }}><Plus size={13} /> Add balance</button>}
+            action={<button onClick={() => setBalanceOpen(true)} className="flex items-center gap-1" style={{ ...label, color: '#E8C36A' }}><Plus size={13} /> Add balance</button>}
           >
             <BalancesTable accounts={accounts} balances={balances} months={balanceMonths} />
             <p style={{ ...label, marginTop: 8 }}>
@@ -310,9 +310,9 @@ export default function YearPage() {
 
 function Section({ title, action, children }) {
   return (
-    <div style={{ background: '#1B1B1B', borderRadius: 16, border: '0.5px solid #2A2A2A', padding: 16 }}>
+    <div style={{ background: '#17171A', borderRadius: 16, border: '0.5px solid #26262B', padding: 16 }}>
       <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
-        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, color: '#717179', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{title}</p>
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, color: '#8B8B93', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{title}</p>
         {action}
       </div>
       {children}
@@ -322,20 +322,20 @@ function Section({ title, action, children }) {
 
 function Legend({ colour, text, line }) {
   return (
-    <span className="flex items-center gap-1.5" style={{ fontFamily: 'Inter, sans-serif', fontSize: 10, color: '#717179' }}>
+    <span className="flex items-center gap-1.5" style={{ fontFamily: 'Inter, sans-serif', fontSize: 10, color: '#8B8B93' }}>
       <span style={{ width: line ? 2 : 8, height: 8, borderRadius: line ? 0 : 2, background: colour }} />{text}
     </span>
   )
 }
 
 const th = (first) => ({
-  position: first ? 'sticky' : undefined, left: first ? 0 : undefined, background: '#1B1B1B',
-  padding: '6px 8px', color: '#717179', fontWeight: 500, textAlign: first ? 'left' : 'right', whiteSpace: 'nowrap',
+  position: first ? 'sticky' : undefined, left: first ? 0 : undefined, background: '#17171A',
+  padding: '6px 8px', color: '#8B8B93', fontWeight: 500, textAlign: first ? 'left' : 'right', whiteSpace: 'nowrap',
 })
 const td = (first, strong, value) => ({
-  position: first ? 'sticky' : undefined, left: first ? 0 : undefined, background: '#1B1B1B',
+  position: first ? 'sticky' : undefined, left: first ? 0 : undefined, background: '#17171A',
   padding: '6px 8px', whiteSpace: 'nowrap', textAlign: first ? 'left' : 'right',
-  color: first ? '#E5E5E5' : value < 0 && strong ? '#EF4444' : strong ? '#FFFFFF' : '#A1A1AA',
+  color: first ? '#E5E5E5' : value < 0 && strong ? '#F07A6A' : strong ? '#F4F4F5' : '#A1A1AA',
   fontWeight: strong ? 600 : 400,
 })
 
@@ -354,15 +354,15 @@ function BalancesTable({ accounts, balances, months }) {
         </thead>
         <tbody>
           {shown.map(a => (
-            <tr key={a.id} style={{ borderTop: '0.5px solid #2A2A2A' }}>
-              <td style={td(true)}>{a.name}<span style={{ color: '#717179' }}> · {KIND_LABEL[a.kind] || 'Account'}</span></td>
+            <tr key={a.id} style={{ borderTop: '0.5px solid #26262B' }}>
+              <td style={td(true)}>{a.name}<span style={{ color: '#8B8B93' }}> · {KIND_LABEL[a.kind] || 'Account'}</span></td>
               {months.map(m => {
                 const v = balances[a.id][m]
                 return <td key={m} style={td(false, false, v)}>{v == null ? '—' : money(v)}</td>
               })}
             </tr>
           ))}
-          <tr style={{ borderTop: '0.5px solid #3A3A3A' }}>
+          <tr style={{ borderTop: '0.5px solid #34343A' }}>
             <td style={{ ...td(true), fontWeight: 600 }}>Net position</td>
             {months.map(m => <td key={m} style={td(false, true, net(m))}>{money(net(m))}</td>)}
           </tr>

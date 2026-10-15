@@ -55,7 +55,7 @@ export default function BudgetPage() {
         <button
           onClick={() => navigate('/')}
           className="w-9 h-9 flex items-center justify-center rounded-2xl border border-border tappable"
-          style={{ background: '#1B1B1B' }}
+          style={{ background: '#17171A' }}
         >
           <ArrowLeft size={18} className="text-subtle" />
         </button>
@@ -73,7 +73,7 @@ export default function BudgetPage() {
         <button
           onClick={() => navigate('/review')}
           className="w-full flex items-center justify-between px-4 py-3 border border-border rounded-2xl tappable"
-          style={{ background: '#1B1B1B' }}
+          style={{ background: '#17171A' }}
         >
           <span className="text-sm text-fg" style={{ fontFamily: 'Inter, sans-serif' }}>Review last cycle and set limits</span>
           <span className="text-xs text-gold">Open →</span>

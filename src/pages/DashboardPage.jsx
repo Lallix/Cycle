@@ -49,12 +49,12 @@ export default function DashboardPage() {
             style={{
               width: 38, height: 38,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              borderRadius: 12, border: '0.5px solid #2A2A2A',
-              background: '#1B1B1B', cursor: 'pointer',
+              borderRadius: 12, border: '0.5px solid #26262B',
+              background: '#17171A', cursor: 'pointer',
               transition: 'all 0.15s ease',
             }}
           >
-            <RefreshCw size={16} color={refreshing ? '#FFD166' : '#717179'}
+            <RefreshCw size={16} color={refreshing ? '#E8C36A' : '#8B8B93'}
               className={refreshing ? 'animate-spin' : ''} />
           </button>
 
@@ -65,13 +65,13 @@ export default function DashboardPage() {
               width: 38, height: 38,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               borderRadius: 12,
-              border: '0.5px solid rgba(255,209,102,0.25)',
-              background: 'rgba(255,209,102,0.08)',
+              border: '0.5px solid rgba(232,195,106,0.25)',
+              background: 'rgba(232,195,106,0.08)',
               cursor: 'pointer',
               transition: 'all 0.15s ease',
             }}
           >
-            <PiggyBank size={18} color="#FFD166" />
+            <PiggyBank size={18} color="#E8C36A" />
           </button>
 
           {/* Brand mark — decorative only */}
@@ -104,12 +104,12 @@ export default function DashboardPage() {
         <button
           onClick={() => navigate('/budget')}
           className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border border-border tappable"
-          style={{ background: '#1B1B1B' }}
+          style={{ background: '#17171A' }}
         >
           <div className="flex items-center gap-3">
             <div
               className="w-8 h-8 rounded-xl flex items-center justify-center"
-              style={{ background: 'rgba(255,209,102,0.1)' }}
+              style={{ background: 'rgba(232,195,106,0.1)' }}
             >
               <LayoutGrid size={16} className="text-gold" />
             </div>

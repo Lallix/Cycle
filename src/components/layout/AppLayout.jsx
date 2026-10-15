@@ -84,18 +84,18 @@ export default function AppLayout() {
               style={{
                 width: 52,
                 height: 52,
-                background: '#FFD166',
-                boxShadow: '0 0 20px rgba(255,209,102,0.35), 0 4px 12px rgba(0,0,0,0.4)',
+                background: '#E8C36A',
+                boxShadow: '0 0 0 0 transparent, 0 4px 12px rgba(0,0,0,0.4)',
                 marginTop: -18,  // lifts above the nav bar
-                border: '3px solid #0D0D0D',
+                border: '3px solid #0E0E10',
               }}
               aria-label="Add transaction"
             >
-              <Plus size={24} strokeWidth={2.5} color="#0D0D0D" />
+              <Plus size={24} strokeWidth={2.5} color="#0E0E10" />
             </button>
             <span style={{
               fontSize: 10,
-              color: '#717179',
+              color: '#8B8B93',
               fontFamily: 'Inter, sans-serif',
               marginTop: 3,
               letterSpacing: '0.02em',

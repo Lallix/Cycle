@@ -19,7 +19,7 @@ export function getCategoryIcon(name) {
 
 export const ACCOUNT_CONFIG = {
   Capitec:   { color: '#007aff', bg: 'rgba(0,122,255,0.15)',    label: 'Capitec' },
-  FNB:       { color: '#D4AF37', bg: 'rgba(212,175,55,0.15)',   label: 'FNB' },
+  FNB:       { color: '#E8C36A', bg: 'rgba(212,175,55,0.15)',   label: 'FNB' },
   Absa:      { color: '#dc0032', bg: 'rgba(220,0,50,0.15)',     label: 'Absa' },
   Standard:  { color: '#0033a0', bg: 'rgba(0,51,160,0.15)',     label: 'Standard Bank' },
   Nedbank:   { color: '#007b40', bg: 'rgba(0,123,64,0.15)',     label: 'Nedbank' },
@@ -36,9 +36,9 @@ export function getAccountConfig(account) {
 }
 
 export function getProgressColor(pct) {
-  if (pct >= 100) return '#FF6B6B'
-  if (pct >= 80)  return '#FFB347'
-  return '#3DD598'
+  if (pct >= 100) return '#F07A6A'
+  if (pct >= 80)  return '#E9A25A'
+  return '#5BC98B'
 }
 
 export function getBudgetStatus(spent, budget) {
@@ -57,7 +57,7 @@ export const EMOJI_OPTIONS = [
 ]
 
 export const COLOR_OPTIONS = [
-  '#D4AF37','#3DD598','#FF6B6B','#FFB347','#9B59B6',
+  '#E8C36A','#5BC98B','#F07A6A','#E9A25A','#9B59B6',
   '#E91E63','#00BCD4','#4CAF50','#FF9800','#607D8B',
 ]
 
