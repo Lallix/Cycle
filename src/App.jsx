@@ -12,6 +12,7 @@ import ExpensesPage from './pages/ExpensesPage'
 import ReportsPage from './pages/ReportsPage'
 import SettingsPage from './pages/SettingsPage'
 import AdminPage from './pages/AdminPage'
+import ImportPage from './pages/ImportPage'
 import { useServiceWorker } from './hooks/useServiceWorker'
 
 // ─── Entry sequence states ────────────────────────────────────────────────────
@@ -73,6 +74,7 @@ function AppRoutes() {
         <Route path="reports" element={<ReportsPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="admin"   element={<AdminPage />} />
+        <Route path="import"  element={<ImportPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

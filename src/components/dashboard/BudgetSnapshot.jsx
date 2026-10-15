@@ -2,13 +2,14 @@ import { useBudget } from '../../context/BudgetContext'
 import { formatMoney } from '../../lib/format'
 import ProgressBar from '../ui/ProgressBar'
 import { useNavigate } from 'react-router-dom'
+import { isLimitType } from '../../lib/spend'
 
 export default function BudgetSnapshot() {
   const { categories, getCategorySpent } = useBudget()
   const navigate = useNavigate()
 
   const budgeted = categories
-    .filter(c => c.budget_amount != null && c.type === 'variable')
+    .filter(c => c.budget_amount != null && isLimitType(c.type))
     .map(c => {
       const spent = getCategorySpent(c.id)
       const pct   = (spent / parseFloat(c.budget_amount)) * 100

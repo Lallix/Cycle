@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useBudget } from '../context/BudgetContext'
 import { useAuth } from '../context/AuthContext'
 import { formatMoney } from '../lib/format'
+import { isSpend, spendAmount } from '../lib/spend'
 import { getLastNCycles } from '../lib/cycle'
 import CycleSelector from '../components/ui/CycleSelector'
 import LoadingScreen from '../components/ui/LoadingScreen'
@@ -175,7 +176,7 @@ export default function ReportsPage() {
       const results = await Promise.all(
         cycles.map(async (c) => {
           const txs  = c.key === current ? transactions : await getTransactionsForCycle(c.key)
-          const spent = txs.reduce((s, t) => s + parseFloat(t.amount || 0), 0)
+          const spent = txs.reduce((s, t) => s + spendAmount(t), 0)
           return { label: format(c.start, 'MMM'), income, spent }
         })
       )
@@ -201,7 +202,7 @@ export default function ReportsPage() {
   if (loading) return <LoadingScreen />
 
   const activeTx  = cycleIndex === 0 ? transactions : (cycleTx || [])
-  const spent     = activeTx.reduce((s, t) => s + parseFloat(t.amount || 0), 0)
+  const spent     = activeTx.reduce((s, t) => s + spendAmount(t), 0)
   const remaining = income - spent
   const spentPct  = income > 0 ? Math.min(Math.round((spent / income) * 100), 100) : 0
   const isOver    = remaining < 0
@@ -210,14 +211,14 @@ export default function ReportsPage() {
   const catMap = {}
   activeTx.forEach(tx => {
     const cat = tx.cycle_categories || tx.categories
-    if (!cat) return
+    if (!cat || !isSpend(tx)) return
     if (!catMap[cat.id]) catMap[cat.id] = { ...cat, value: 0 }
     catMap[cat.id].value += parseFloat(tx.amount || 0)
   })
   const categoryData = Object.values(catMap).filter(c => c.value > 0).sort((a, b) => b.value - a.value)
 
   // Top 5 by amount
-  const topTx = [...activeTx].sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount)).slice(0, 5)
+  const topTx = activeTx.filter(isSpend).sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount)).slice(0, 5)
 
   const TrendIcon  = isOver ? TrendingUp : remaining === 0 ? Minus : TrendingDown
   const trendColor = isOver ? '#EF4444' : '#22C55E'

@@ -1,5 +1,6 @@
 import { useBudget } from '../../context/BudgetContext'
 import { getAccountConfig } from '../../lib/format'
+import { isEverydayType } from '../../lib/spend'
 
 // Single combined scrollable filter row
 // Order: All → categories → accounts
@@ -14,7 +15,7 @@ export default function ExpenseFilters({ activeFilter, onFilterChange }) {
     ...recurringExpenses.map(e => e.account),
   ].filter(Boolean))]
 
-  const varCategories = categories.filter(c => c.type === 'variable' || c.type === 'unbudgeted')
+  const varCategories = categories.filter(c => isEverydayType(c.type))
 
   const pillStyle = (active) => ({
     flexShrink: 0,

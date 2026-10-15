@@ -14,11 +14,15 @@ import LoadingScreen from '../components/ui/LoadingScreen'
 import { Search } from 'lucide-react'
 import AccountPicker from '../components/ui/AccountPicker'
 import { format } from 'date-fns'
+import { useNavigate } from 'react-router-dom'
+import { FileUp } from 'lucide-react'
+import { spendAmount } from '../lib/spend'
 
 export default function ExpensesPage() {
   const { loading, transactions, categories, deleteTransaction, updateTransaction, getTransactionsForCycle } = useBudget()
   const { profile } = useAuth()
   const toast = useToast()
+  const navigate = useNavigate()
 
   const [editOpen, setEditOpen]       = useState(false)
   const [editingTx, setEditingTx]     = useState(null)
@@ -73,7 +77,7 @@ export default function ExpensesPage() {
     return Object.entries(map).sort(([a], [b]) => b.localeCompare(a))
   }, [filtered])
 
-  const totalSpent = filtered.reduce((s, t) => s + parseFloat(t.amount || 0), 0)
+  const totalSpent = filtered.reduce((s, t) => s + spendAmount(t), 0)
 
   async function handleDelete(id) {
     try {
@@ -126,11 +130,21 @@ export default function ExpensesPage() {
 
       {/* Header */}
       <div style={{ padding: 'max(env(safe-area-inset-top), 16px) 16px 12px' }}>
-        <h1 style={{ fontFamily: 'Poppins, sans-serif', fontSize: 22, fontWeight: 600, color: '#FFFFFF' }}>
-          Transactions
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 style={{ fontFamily: 'Poppins, sans-serif', fontSize: 22, fontWeight: 600, color: '#FFFFFF' }}>
+            Transactions
+          </h1>
+          <button
+            onClick={() => navigate('/import')}
+            className="flex items-center gap-1.5 tappable"
+            style={{ padding: '6px 12px', borderRadius: 10, background: 'rgba(255,209,102,0.1)',
+              border: '0.5px solid rgba(255,209,102,0.3)', color: '#FFD166', fontSize: 12, fontFamily: 'Inter, sans-serif' }}
+          >
+            <FileUp size={14} /> Import
+          </button>
+        </div>
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#717179', marginTop: 2 }}>
-          {filtered.length} transaction{filtered.length !== 1 ? 's' : ''} · {formatMoney(totalSpent)} total
+          {filtered.length} transaction{filtered.length !== 1 ? 's' : ''} · {formatMoney(totalSpent)} spent
         </p>
       </div>
 

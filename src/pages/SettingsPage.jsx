@@ -7,9 +7,11 @@ import PageHeader from '../components/ui/PageHeader'
 import Button from '../components/ui/Button'
 import BottomSheet from '../components/ui/BottomSheet'
 import AccountPicker from '../components/ui/AccountPicker'
-import { User, Wallet, LogOut, Plus, Edit2, Trash2, RefreshCw, Smile } from 'lucide-react'
+import { User, Wallet, LogOut, Plus, Edit2, Trash2, RefreshCw, Smile, FileUp } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import Picker from '@emoji-mart/react'
 import data from '@emoji-mart/data'
+import { TYPE_OPTIONS } from '../lib/spend'
 
 const BANK_OPTIONS = [
   'Capitec', 'FNB', 'Absa', 'Standard', 'Nedbank',
@@ -18,12 +20,13 @@ const BANK_OPTIONS = [
 
 const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev'
 
-const BLANK_CAT = { name: '', icon: '🛒', colour: '#D4AF37', budget_amount: '', type: 'variable' }
+const BLANK_CAT = { name: '', icon: '🛒', colour: '#D4AF37', budget_amount: '', type: 'predicted' }
 
 export default function SettingsPage() {
   const { user, profile, signOut, updateProfile, biometricAvailable, biometricEnabled, registerBiometric, disableBiometric } = useAuth()
   const { categories, incomeRecords, accounts, addCategory, updateCategory, deleteCategory, updateIncome, addIncome, deleteIncome, addAccount, updateAccount, deleteAccount } = useBudget()
   const toast = useToast()
+  const navigate = useNavigate()
 
   const [profileOpen, setProfileOpen]   = useState(false)
   const [catOpen, setCatOpen]           = useState(false)
@@ -158,7 +161,7 @@ export default function SettingsPage() {
       icon:          cat.icon || '💳',
       colour:        cat.colour || '#D4AF37',
       budget_amount: cat.budget_amount ? String(cat.budget_amount) : '',
-      type:          cat.type || 'variable',
+      type:          cat.type || 'predicted',
     })
     setCatOpen(true)
   }
@@ -276,6 +279,21 @@ export default function SettingsPage() {
           </div>
         </section>
 
+        {/* Import statement */}
+        <section>
+          <button
+            onClick={() => navigate('/import')}
+            className="w-full flex items-center gap-3 px-4 py-3 border border-border rounded-2xl tappable"
+            style={{ background: '#1B1B1B' }}
+          >
+            <FileUp size={18} className="text-gold" />
+            <div className="flex-1 text-left">
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: '#FFFFFF' }}>Import bank statement</p>
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#717179' }}>Capitec CSV — main account or credit card</p>
+            </div>
+          </button>
+        </section>
+
         {/* My Accounts */}
         <section>
           <div className="flex items-center justify-between mb-2">
@@ -348,7 +366,7 @@ export default function SettingsPage() {
             </button>
           </div>
           <div className="bg-surface-1 border border-border rounded-2xl overflow-hidden divide-y divide-border">
-            {categories.filter(c => c.type === 'variable').map(cat => (
+            {categories.map(cat => (
               <div key={cat.id} className="flex items-center gap-3 px-4 py-3">
                 <span className="text-lg w-7 text-center">{cat.icon || '💳'}</span>
                 <div className="flex-1 min-w-0">
@@ -367,7 +385,7 @@ export default function SettingsPage() {
                 </div>
               </div>
             ))}
-            {categories.filter(c => c.type === 'variable').length === 0 && (
+            {categories.length === 0 && (
               <p className="text-sm text-muted px-4 py-4">No categories yet</p>
             )}
           </div>
@@ -610,14 +628,11 @@ export default function SettingsPage() {
 
           <div>
             <label className="text-xs text-muted uppercase tracking-widest block mb-2">Type</label>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {[
-                { value: 'variable', label: 'Variable' },
-                { value: 'unbudgeted', label: 'Tracking' },
-              ].map(opt => (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {TYPE_OPTIONS.map(opt => (
                 <button key={opt.value} onClick={() => setCatForm(f => ({ ...f, type: opt.value }))}
                   style={{
-                    flex: 1, padding: '8px 0', borderRadius: 10, cursor: 'pointer',
+                    flex: '1 0 30%', padding: '8px 0', borderRadius: 10, cursor: 'pointer',
                     border: `0.5px solid ${catForm.type === opt.value ? 'rgba(255,209,102,0.5)' : '#3A3A3A'}`,
                     background: catForm.type === opt.value ? 'rgba(255,209,102,0.1)' : 'transparent',
                     color: catForm.type === opt.value ? '#FFD166' : '#717179',

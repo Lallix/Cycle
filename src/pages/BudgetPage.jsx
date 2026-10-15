@@ -9,6 +9,7 @@ import FixedExpenseRow from '../components/budget/FixedExpenseRow'
 import VariableBudgetRow from '../components/budget/VariableBudgetRow'
 import { Plus, ArrowLeft } from 'lucide-react'
 import AccountPicker from '../components/ui/AccountPicker'
+import { isLimitType } from '../lib/spend'
 
 const BLANK_FIXED = { name: '', amount: '', account: 'Capitec', due_day: '1' }
 
@@ -21,7 +22,7 @@ export default function BudgetPage() {
   const [fixedForm, setFixedForm]   = useState(BLANK_FIXED)
   const [saving, setSaving]         = useState(false)
 
-  const variableCategories = categories.filter(c => c.type === 'variable')
+  const variableCategories = categories.filter(c => isLimitType(c.type))
   const unbudgetedSpent    = totals.unbudgetedSpent || 0
 
   async function handleAddFixed() {

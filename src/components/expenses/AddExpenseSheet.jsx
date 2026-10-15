@@ -8,6 +8,7 @@ import { format } from 'date-fns'
 import { ChevronDown, Smile } from 'lucide-react'
 import Picker from '@emoji-mart/react'
 import data from '@emoji-mart/data'
+import { isEverydayType } from '../../lib/spend'
 
 const s = {
   label: {
@@ -37,7 +38,7 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
   const [error, setError]           = useState('')
   const amountRef = useRef(null)
 
-  const varCats   = categories.filter(c => c.type === 'variable' || c.type === 'unbudgeted')
+  const varCats   = categories.filter(c => isEverydayType(c.type))
   const firstEight = varCats.slice(0, 8)
   const rest       = varCats.slice(8)
 

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, useRef } f
 import { supabase } from '../lib/supabase'
 import { useAuth } from './AuthContext'
 import { getCurrentCycle, getCycleKey } from '../lib/cycle'
+import { isSpend, isLimitType } from '../lib/spend'
 
 const BudgetContext = createContext(null)
 
@@ -205,13 +206,14 @@ export function BudgetProvider({ children }) {
     const catMap = Object.fromEntries(categories.map(c => [c.id, c]))
 
     transactions.forEach(t => {
+      if (!isSpend(t)) return   // money in and own-account transfers are not spending
       const amt = parseFloat(t.amount || 0)
       const cat = catMap[t.category_id]
-      if (cat?.type === 'variable') variableSpent += amt
+      if (isLimitType(cat?.type)) variableSpent += amt
       else unbudgetedSpent += amt
     })
 
-    categories.filter(c => c.type === 'variable').forEach(c => {
+    categories.filter(c => isLimitType(c.type)).forEach(c => {
       variableBudget += parseFloat(c.budget_amount || 0)
     })
 
@@ -302,7 +304,7 @@ export function BudgetProvider({ children }) {
 
   function getCategorySpent(categoryId) {
     return transactions
-      .filter(t => t.category_id === categoryId)
+      .filter(t => t.category_id === categoryId && isSpend(t))
       .reduce((sum, t) => sum + parseFloat(t.amount || 0), 0)
   }
 
@@ -353,7 +355,7 @@ export function BudgetProvider({ children }) {
       .insert({
         user_id:       user.id,
         name:          payload.name,
-        type:          payload.type || 'variable',
+        type:          payload.type || 'predicted',
         icon:          payload.icon || null,
         colour:        payload.colour || null,
         budget_amount: payload.budget_amount || null,
