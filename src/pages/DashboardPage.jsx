@@ -9,6 +9,7 @@ import BudgetSnapshot from '../components/dashboard/BudgetSnapshot'
 import RecentExpenses from '../components/dashboard/RecentExpenses'
 import TypeBreakdown from '../components/dashboard/TypeBreakdown'
 import PlannedItems from '../components/dashboard/PlannedItems'
+import ReviewPrompt from '../components/dashboard/ReviewPrompt'
 import SavingsModal from '../components/savings/SavingsModal'
 import LoadingScreen from '../components/ui/LoadingScreen'
 import BrandLogo from '../components/branding/BrandLogo'
@@ -84,6 +85,9 @@ export default function DashboardPage() {
       <div className="animate-stagger-1">
         <HeroCard />
       </div>
+
+      {/* First week after payday: review the cycle that ended */}
+      <ReviewPrompt />
 
       {/* Where the money is going, by spend type */}
       <div className="animate-stagger-2">

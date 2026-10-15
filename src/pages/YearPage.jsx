@@ -10,6 +10,8 @@ import BottomSheet from '../components/ui/BottomSheet'
 import Button from '../components/ui/Button'
 import { formatMoney } from '../lib/format'
 import { summariseYear, monthEndBalances, averageOf, SPEND_TYPES } from '../lib/yearData'
+import { effectiveBudgets } from '../lib/budgets'
+import { normaliseType } from '../lib/totals'
 
 // A calendar year at a glance: money in, where it went by type and by
 // category, and where each account stood at the end of every month.
@@ -47,7 +49,7 @@ async function fetchAll(build) {
 
 export default function YearPage() {
   const { user } = useAuth()
-  const { accounts, addAccount } = useBudget()
+  const { accounts, addAccount, categories: allCats, budgetHistory } = useBudget()
   const toast = useToast()
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
@@ -99,12 +101,24 @@ export default function YearPage() {
     () => (rows ? monthEndBalances(rows, snapshots, balanceMonths) : {}),
     [rows, snapshots, balanceMonths])
 
+  // Planned spending per month: the limits in force on the 1st of that month
+  const plan = useMemo(() => Object.fromEntries(months.map(m => {
+    const b = effectiveBudgets(allCats, budgetHistory, `${m}-01`)
+    const spend = allCats
+      .filter(c => SPEND_TYPES.includes(normaliseType(c.type)))
+      .reduce((s, c) => s + (b[c.id] || 0), 0)
+    return [m, { spend, byCat: b }]
+  })), [months, allCats, budgetHistory])
+  months.forEach(m => {
+    if (summary[m]) { summary[m].planned = plan[m].spend; summary[m].vsPlan = plan[m].spend - summary[m].spent }
+  })
+
   const ytd = useMemo(() => {
-    const keys = ['income', 'fixed', 'predicted', 'unplanned', 'spent', 'leftOver', 'onceOff', 'debt', 'afterAll']
+    const keys = ['income', 'fixed', 'predicted', 'unplanned', 'spent', 'planned', 'vsPlan', 'leftOver', 'onceOff', 'debt', 'afterAll']
     const sum = Object.fromEntries(keys.map(k => [k, months.reduce((s, m) => s + (summary[m]?.[k] || 0), 0)]))
     const avg = Object.fromEntries(keys.map(k => [k, averageOf(fullMonths.map(m => summary[m]?.[k] || 0))]))
     return { sum, avg }
-  }, [summary, months, fullMonths])
+  }, [summary, months, fullMonths, plan])
 
   const maxBar = Math.max(1, ...months.map(m => Math.max(summary[m]?.income || 0, summary[m]?.spent || 0)))
 
@@ -200,6 +214,7 @@ export default function YearPage() {
                 <tbody>
                   {[
                     ['Income', 'income'], ['Fixed', 'fixed'], ['Predicted', 'predicted'], ['Unplanned', 'unplanned'],
+                    ['Spent', 'spent', true], ['Plan', 'planned'], ['Under (+) / over (−) plan', 'vsPlan', true],
                     ['Left over', 'leftOver', true], ['Once-off', 'onceOff'], ['Loans', 'debt'], ['After all', 'afterAll', true],
                   ].map(([name, key, strong]) => (
                     <tr key={key} style={{ borderTop: '0.5px solid #2A2A2A' }}>
@@ -237,13 +252,16 @@ export default function YearPage() {
                     </button>
                     {open && list.map(c => {
                       const avg = averageOf(fullMonths.map(m => c.byMonth[m] || 0))
+                      const limit = plan[months[months.length - 1]]?.byCat[c.id]
                       const expanded = openCat === c.id
                       return (
                         <div key={c.id} style={{ borderTop: '0.5px solid #2A2A2A' }}>
                           <button onClick={() => setOpenCat(expanded ? null : c.id)} className="w-full flex items-center gap-2 px-3 py-2 text-left">
                             <span style={{ width: 22, textAlign: 'center' }}>{c.icon}</span>
                             <span className="flex-1 min-w-0 truncate" style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#E5E5E5' }}>{c.name}</span>
-                            <span style={{ ...label, width: 70, textAlign: 'right' }}>{money(avg)}/mo</span>
+                            <span style={{ ...label, width: 92, textAlign: 'right', color: limit && avg > limit ? '#F07A6A' : '#8B8B93' }}>
+                              {money(avg)}{limit ? ` / ${money(limit)}` : '/mo'}
+                            </span>
                             <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 12, fontWeight: 600, color: '#FFFFFF', width: 72, textAlign: 'right' }}>{money(c.total)}</span>
                           </button>
                           {expanded && (

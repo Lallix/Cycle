@@ -20,6 +20,7 @@ export function BudgetProvider({ children }) {
   const [accounts, setAccounts]               = useState([])
   const [paydays, setPaydays]                 = useState(null)  // null = not loaded yet
   const [plannedItems, setPlannedItems]       = useState([])
+  const [budgetHistory, setBudgetHistory]     = useState([])   // cycle_category_budgets
 
   const [cycles, setCycles] = useState([])     // newest first; cycles[0] is the current one
   const [cycle, setCycle]   = useState(null)
@@ -49,7 +50,7 @@ export function BudgetProvider({ children }) {
   function resetData() {
     setCategories([]); setTransactions([]); setRecurringExpenses([])
     setPaidLog([]); setIncomeRecords([]); setSavingGoals([]); setAccounts([])
-    setPaydays(null); setPlannedItems([]); setCycles([]); setCycle(null)
+    setPaydays(null); setPlannedItems([]); setBudgetHistory([]); setCycles([]); setCycle(null)
     setTotals(computeCycleTotals({ transactions: [], categories: [], incomeRecords: [] }))
   }
 
@@ -59,6 +60,7 @@ export function BudgetProvider({ children }) {
       await Promise.all([
         loadCategories(), loadTransactions(), loadRecurringExpenses(),
         loadPaidLog(), loadIncome(), loadSavingGoals(), loadAccounts(), loadPlannedItems(),
+        loadBudgetHistory(),
       ])
     } catch (err) {
       console.error('Data load error:', err)
@@ -152,6 +154,36 @@ export function BudgetProvider({ children }) {
     if (error) throw error
     setPlannedItems(data || [])
     return data
+  }
+
+  async function loadBudgetHistory() {
+    const { data, error } = await supabase
+      .from('cycle_category_budgets')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('effective_from')
+    if (error) throw error
+    setBudgetHistory(data || [])
+    return data
+  }
+
+  // Change a category's monthly limit from a given cycle onwards (default: the
+  // current one). Earlier cycles keep the limit that applied to them.
+  async function setCategoryBudget(categoryId, amount, effectiveFrom = cycle.key) {
+    const { error } = await supabase
+      .from('cycle_category_budgets')
+      .upsert({ user_id: user.id, category_id: categoryId, effective_from: effectiveFrom, amount },
+        { onConflict: 'category_id,effective_from' })
+    if (error) throw error
+    if (effectiveFrom >= cycle.key) {
+      const { data, error: cErr } = await supabase
+        .from('cycle_categories')
+        .update({ budget_amount: amount }).eq('id', categoryId).eq('user_id', user.id)
+        .select().single()
+      if (cErr) throw cErr
+      setCategories(prev => prev.map(c => c.id === categoryId ? data : c))
+    }
+    await loadBudgetHistory()
   }
 
   async function updatePlannedItem(id, payload) {
@@ -371,12 +403,22 @@ export function BudgetProvider({ children }) {
   }
 
   async function updateCategory(id, payload) {
+    const before = categories.find(c => c.id === id)
     const { data, error } = await supabase
       .from('cycle_categories')
       .update(payload).eq('id', id).eq('user_id', user.id)
       .select().single()
     if (error) throw error
     setCategories(prev => prev.map(c => c.id === id ? data : c))
+    // A new limit applies from this cycle on; earlier cycles keep theirs
+    const oldAmt = before?.budget_amount == null ? null : parseFloat(before.budget_amount)
+    const newAmt = data.budget_amount == null ? null : parseFloat(data.budget_amount)
+    if (newAmt != null && newAmt !== oldAmt && cycle) {
+      await supabase.from('cycle_category_budgets').upsert(
+        { user_id: user.id, category_id: id, effective_from: cycle.key, amount: newAmt },
+        { onConflict: 'category_id,effective_from' })
+      await loadBudgetHistory()
+    }
     return data
   }
 
@@ -458,7 +500,7 @@ export function BudgetProvider({ children }) {
   const value = {
     loading, error,
     categories, transactions, recurringExpenses, paidLog,
-    incomeRecords, savingGoals, accounts, cycle, cycles, paydays, plannedItems, totals,
+    incomeRecords, savingGoals, accounts, cycle, cycles, paydays, plannedItems, budgetHistory, totals,
     // helpers
     isRecurringPaid,
     getCategorySpent,
@@ -472,7 +514,7 @@ export function BudgetProvider({ children }) {
     updateIncome, addIncome, deleteIncome,
     addSavingGoal, updateSavingGoal, contributeSavings,
     addAccount, updateAccount, deleteAccount,
-    updatePlannedItem,
+    updatePlannedItem, setCategoryBudget,
   }
 
   return <BudgetContext.Provider value={value}>{children}</BudgetContext.Provider>

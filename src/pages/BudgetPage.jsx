@@ -69,6 +69,16 @@ export default function BudgetPage() {
 
       <div className="px-4 space-y-6">
 
+        {/* Payday review */}
+        <button
+          onClick={() => navigate('/review')}
+          className="w-full flex items-center justify-between px-4 py-3 border border-border rounded-2xl tappable"
+          style={{ background: '#1B1B1B' }}
+        >
+          <span className="text-sm text-fg" style={{ fontFamily: 'Inter, sans-serif' }}>Review last cycle and set limits</span>
+          <span className="text-xs text-gold">Open →</span>
+        </button>
+
         {/* Fixed Expenses */}
         <section>
           <div className="flex items-center justify-between mb-2">
