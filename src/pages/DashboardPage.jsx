@@ -13,6 +13,9 @@ import ReviewPrompt from '../components/dashboard/ReviewPrompt'
 import SavingsModal from '../components/savings/SavingsModal'
 import LoadingScreen from '../components/ui/LoadingScreen'
 import BrandLogo from '../components/branding/BrandLogo'
+import { ThemeToggleButton } from '../components/ui/ThemeSwitch'
+import { useTheme } from '../context/ThemeContext'
+import { VibeHeader, VibeHero, VibeBlocks, VibeTiles } from '../components/vibe/VibeDashboard'
 import { RefreshCw, PiggyBank, ChevronRight, LayoutGrid } from 'lucide-react'
 
 export default function DashboardPage() {
@@ -20,10 +23,43 @@ export default function DashboardPage() {
   const { loading, refreshing, refresh, totals } = useBudget()
   const navigate = useNavigate()
   const [savingsOpen, setSavingsOpen] = useState(false)
+  const { theme } = useTheme()
 
   if (loading) return <LoadingScreen message="Loading your budget..." />
 
   const firstName = profile?.full_name?.split(' ')[0] || 'there'
+
+  // Vibe look: 3D ring hero, candy-block types and the vibe-check tiles,
+  // then the same planned / bills / recent sections as Classic.
+  if (theme === 'vibe') {
+    return (
+      <div className="min-h-full animate-stagger-1">
+        <VibeHeader
+          firstName={firstName.toLowerCase()}
+          right={
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <ThemeToggleButton />
+              <button
+                onClick={() => setSavingsOpen(true)}
+                aria-label="Savings"
+                style={{ width: 46, height: 46, borderRadius: 16, display: 'grid', placeItems: 'center', fontSize: 22, border: 0, cursor: 'pointer',
+                  background: 'linear-gradient(145deg,#FFD6EC,#FF8FC6)', boxShadow: 'inset 0 -4px 8px rgb(0 0 0 / 0.18), 0 8px 18px rgb(255 92 171 / 0.35)' }}
+              >🐷</button>
+            </div>
+          }
+        />
+        <VibeHero />
+        <div className="mt-4"><ReviewPrompt /></div>
+        <VibeBlocks />
+        <VibeTiles />
+        <PlannedItems />
+        <UpcomingBills />
+        <div style={{ marginTop: 8 }}><RecentExpenses /></div>
+        <div className="h-32" />
+        <SavingsModal open={savingsOpen} onClose={() => setSavingsOpen(false)} />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-full bg-bg animate-stagger-1">
@@ -42,6 +78,9 @@ export default function DashboardPage() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Classic ⇄ Vibe */}
+          <ThemeToggleButton />
+
           {/* Refresh */}
           <button
             onClick={refresh}
@@ -49,12 +88,12 @@ export default function DashboardPage() {
             style={{
               width: 38, height: 38,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              borderRadius: 12, border: '0.5px solid #26262B',
-              background: '#17171A', cursor: 'pointer',
+              borderRadius: 12, border: '0.5px solid rgb(var(--c-border))',
+              background: 'rgb(var(--c-surface))', cursor: 'pointer',
               transition: 'all 0.15s ease',
             }}
           >
-            <RefreshCw size={16} color={refreshing ? '#E8C36A' : '#8B8B93'}
+            <RefreshCw size={16} color={refreshing ? 'rgb(var(--c-accent))' : 'rgb(var(--c-text-3))'}
               className={refreshing ? 'animate-spin' : ''} />
           </button>
 
@@ -65,13 +104,13 @@ export default function DashboardPage() {
               width: 38, height: 38,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               borderRadius: 12,
-              border: '0.5px solid rgba(232,195,106,0.25)',
-              background: 'rgba(232,195,106,0.08)',
+              border: '0.5px solid rgb(var(--c-accent) / 0.25)',
+              background: 'rgb(var(--c-accent) / 0.08)',
               cursor: 'pointer',
               transition: 'all 0.15s ease',
             }}
           >
-            <PiggyBank size={18} color="#E8C36A" />
+            <PiggyBank size={18} color="rgb(var(--c-accent))" />
           </button>
 
           {/* Brand mark — decorative only */}
@@ -104,12 +143,12 @@ export default function DashboardPage() {
         <button
           onClick={() => navigate('/budget')}
           className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border border-border tappable"
-          style={{ background: '#17171A' }}
+          style={{ background: 'rgb(var(--c-surface))' }}
         >
           <div className="flex items-center gap-3">
             <div
               className="w-8 h-8 rounded-xl flex items-center justify-center"
-              style={{ background: 'rgba(232,195,106,0.1)' }}
+              style={{ background: 'rgb(var(--c-accent) / 0.1)' }}
             >
               <LayoutGrid size={16} className="text-gold" />
             </div>

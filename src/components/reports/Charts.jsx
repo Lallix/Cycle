@@ -6,10 +6,10 @@ import { formatMoney } from '../../lib/format'
 
 // Common tooltip styles
 const tooltipStyle = {
-  backgroundColor: '#17171A',
-  border: '1px solid #26262B',
+  backgroundColor: 'rgb(var(--c-surface))',
+  border: '1px solid rgb(var(--c-border))',
   borderRadius: '12px',
-  color: '#F4F4F5',
+  color: 'rgb(var(--c-text))',
   fontFamily: 'DM Mono, monospace',
   fontSize: '12px',
 }
@@ -45,16 +45,16 @@ export function SpendingTrendChart({ data }) {
           type="monotone"
           dataKey="spent"
           name="Spent"
-          stroke="#E8C36A"
+          stroke="rgb(var(--c-accent))"
           strokeWidth={2}
-          dot={{ fill: '#E8C36A', r: 3 }}
+          dot={{ fill: 'rgb(var(--c-accent))', r: 3 }}
           activeDot={{ r: 5 }}
         />
         <Line
           type="monotone"
           dataKey="income"
           name="Income"
-          stroke="#5BC98B"
+          stroke="rgb(var(--c-positive))"
           strokeWidth={1.5}
           strokeDasharray="4 4"
           dot={false}
@@ -67,7 +67,7 @@ export function SpendingTrendChart({ data }) {
 export function CategoryDonut({ data }) {
   if (!data?.length) return <ChartEmpty />
 
-  const COLORS = ['#E8C36A', '#5BC98B', '#F07A6A', '#E9A25A', '#9B59B6', '#00BCD4', '#E91E63', '#4CAF50']
+  const COLORS = ['rgb(var(--c-accent))', 'rgb(var(--c-positive))', 'rgb(var(--c-negative))', 'rgb(var(--c-warning))', '#9B59B6', '#00BCD4', '#E91E63', '#4CAF50']
 
   const total = data.reduce((sum, d) => sum + d.value, 0)
 
@@ -134,8 +134,8 @@ export function IncomeVsExpenses({ data }) {
         />
         <YAxis hide />
         <Tooltip content={<MoneyTooltip />} />
-        <Bar dataKey="income" name="Income" fill="#5BC98B" radius={[4, 4, 0, 0]} />
-        <Bar dataKey="spent" name="Spent" fill="#E8C36A" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="income" name="Income" fill="rgb(var(--c-positive))" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="spent" name="Spent" fill="rgb(var(--c-accent))" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   )

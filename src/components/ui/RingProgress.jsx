@@ -10,10 +10,10 @@ const RADIUS      = (SIZE - STROKE) / 2
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
 function getRingColor(pct, isOver) {
-  if (isOver)   return { stroke: '#F07A6A', glow: 'rgba(240,122,106,0.35)' }
-  if (pct >= 90) return { stroke: '#E8C36A', glow: 'rgba(232,195,106,0.5)' }
-  if (pct >= 70) return { stroke: '#D4AE55', glow: 'rgba(230,187,69,0.4)' }
-  return           { stroke: '#E8C36A', glow: 'rgba(232,195,106,0.35)' }
+  if (isOver)   return { stroke: 'rgb(var(--c-negative))', glow: 'rgb(var(--c-negative) / 0.35)' }
+  if (pct >= 90) return { stroke: 'rgb(var(--c-accent))', glow: 'rgb(var(--c-accent) / 0.5)' }
+  if (pct >= 70) return { stroke: 'rgb(var(--c-accent-dark))', glow: 'rgba(230,187,69,0.4)' }
+  return           { stroke: 'rgb(var(--c-accent))', glow: 'rgb(var(--c-accent) / 0.35)' }
 }
 
 export default function RingProgress({
@@ -96,7 +96,7 @@ export default function RingProgress({
           cy={SIZE / 2}
           r={r}
           fill="none"
-          stroke="#26262B"
+          stroke="rgb(var(--c-border))"
           strokeWidth={STROKE}
           strokeLinecap="round"
         />
@@ -140,7 +140,7 @@ export default function RingProgress({
           cy={SIZE / 2}
           r={innerR}
           fill="none"
-          stroke="#26262B"
+          stroke="rgb(var(--c-border))"
           strokeWidth={3}
         />
         <circle
@@ -148,7 +148,7 @@ export default function RingProgress({
           cy={SIZE / 2}
           r={innerR}
           fill="none"
-          stroke="rgba(232,195,106,0.25)"
+          stroke="rgb(var(--c-accent) / 0.25)"
           strokeWidth={3}
           strokeLinecap="round"
           strokeDasharray={2 * Math.PI * innerR}
@@ -183,7 +183,7 @@ export default function RingProgress({
           style={{
             fontFamily: 'Inter, sans-serif',
             fontSize: 11,
-            color: '#8B8B93',
+            color: 'rgb(var(--c-text-3))',
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
             marginBottom: 2,
@@ -193,10 +193,10 @@ export default function RingProgress({
         </span>
         <span
           style={{
-            fontFamily: 'Poppins, sans-serif',
+            fontFamily: 'var(--font-display)',
             fontSize: 32,
             fontWeight: 300,
-            color: isOver ? '#F07A6A' : '#E8C36A',
+            color: isOver ? 'rgb(var(--c-negative))' : 'rgb(var(--c-accent))',
             lineHeight: 1,
             letterSpacing: '-0.02em',
           }}
@@ -207,7 +207,7 @@ export default function RingProgress({
           style={{
             fontFamily: 'Inter, sans-serif',
             fontSize: 11,
-            color: '#A1A1AA',
+            color: 'rgb(var(--c-text-2))',
             marginTop: 4,
           }}
         >

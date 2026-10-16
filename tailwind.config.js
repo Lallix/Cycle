@@ -9,57 +9,57 @@ export default {
       colors: {
         // ── Backgrounds (design bible section 6) ──────────────────
         bg: {
-          DEFAULT:  '#0E0E10',   // Charcoal — primary background
-          surface:  '#17171A',   // Surface — cards on dark
-          elevated: '#1F1F23',   // Surface Light — elevated elements
-          soft:     '#A1A1AA',   // Soft grey — disabled/subtle
+          DEFAULT:  'rgb(var(--c-bg) / <alpha-value>)',   // Charcoal — primary background
+          surface:  'rgb(var(--c-surface) / <alpha-value>)',   // Surface — cards on dark
+          elevated: 'rgb(var(--c-surface-2) / <alpha-value>)',   // Surface Light — elevated elements
+          soft:     'rgb(var(--c-text-2) / <alpha-value>)',   // Soft grey — disabled/subtle
         },
         // ── Gold scale (design bible section 2) ───────────────────
         gold: {
-          DEFAULT: '#E8C36A',    // Primary Gold
-          dark:    '#D4AE55',    // Dark Gold — borders, strokes
-          light:   '#F3DDA0',    // Light Gold — highlights, hover
-          muted:   'rgba(232,195,106,0.12)', // Gold tint for backgrounds
-          glow:    'rgba(232,195,106,0.25)', // Gold glow for shadows
+          DEFAULT: 'rgb(var(--c-accent) / <alpha-value>)',    // Primary Gold
+          dark:    'rgb(var(--c-accent-dark) / <alpha-value>)',    // Dark Gold — borders, strokes
+          light:   'rgb(var(--c-accent-light) / <alpha-value>)',    // Light Gold — highlights, hover
+          muted:   'rgb(var(--c-accent) / 0.12)', // Gold tint for backgrounds
+          glow:    'rgb(var(--c-accent) / 0.25)', // Gold glow for shadows
         },
         // ── Surfaces the components refer to by role ─────────────
         surface: {
-          DEFAULT: '#17171A',
-          1: '#17171A',          // cards
-          2: '#1F1F23',          // inputs, hover rows
+          DEFAULT: 'rgb(var(--c-surface) / <alpha-value>)',
+          1: 'rgb(var(--c-surface) / <alpha-value>)',          // cards
+          2: 'rgb(var(--c-surface-2) / <alpha-value>)',          // inputs, hover rows
         },
         text: {
-          primary:   '#F4F4F5',
-          secondary: '#A1A1AA',
+          primary:   'rgb(var(--c-text) / <alpha-value>)',
+          secondary: 'rgb(var(--c-text-2) / <alpha-value>)',
         },
         // ── Semantic colours ──────────────────────────────────────
-        success: '#5BC98B',
-        warning: '#E9A25A',
-        danger:  '#F07A6A',
+        success: 'rgb(var(--c-positive) / <alpha-value>)',
+        warning: 'rgb(var(--c-warning) / <alpha-value>)',
+        danger:  'rgb(var(--c-negative) / <alpha-value>)',
         info:    '#38B2F8',
         // ── Text ──────────────────────────────────────────────────
-        fg: '#F4F4F5',           // Text Primary
-        muted: '#A1A1AA',        // Text Secondary / Tertiary
-        subtle: '#8B8B93',       // Text Tertiary
+        fg: 'rgb(var(--c-text) / <alpha-value>)',           // Text Primary
+        muted: 'rgb(var(--c-text-2) / <alpha-value>)',        // Text Secondary / Tertiary
+        subtle: 'rgb(var(--c-text-3) / <alpha-value>)',       // Text Tertiary
         // ── Ivory (for cards and hero surfaces) ──────────────────
         ivory: {
-          DEFAULT: '#17171A',   // warm ivory — card backgrounds
-          warm:    '#1F1F23',   // slightly darker ivory
-          border:  '#26262B',   // ivory border
-          muted:   '#8B8B93',   // muted text on ivory
-          text:    '#F4F4F5',   // dark text on ivory
+          DEFAULT: 'rgb(var(--c-surface) / <alpha-value>)',   // warm ivory — card backgrounds
+          warm:    'rgb(var(--c-surface-2) / <alpha-value>)',   // slightly darker ivory
+          border:  'rgb(var(--c-border) / <alpha-value>)',   // ivory border
+          muted:   'rgb(var(--c-text-3) / <alpha-value>)',   // muted text on ivory
+          text:    'rgb(var(--c-text) / <alpha-value>)',   // dark text on ivory
         },
         // ── Borders ───────────────────────────────────────────────
         border: {
-          DEFAULT: '#26262B',
-          strong:  '#34343A',
-          gold:    'rgba(232,195,106,0.3)',
+          DEFAULT: 'rgb(var(--c-border) / <alpha-value>)',
+          strong:  'rgb(var(--c-border-strong) / <alpha-value>)',
+          gold:    'rgb(var(--c-accent) / 0.3)',
         },
       },
       fontFamily: {
         sans:    ['Inter', 'system-ui', 'sans-serif'],     // Body text
-        display: ['Poppins', 'system-ui', 'sans-serif'],   // Headings
-        mono:    ['Poppins', 'system-ui', 'sans-serif'],   // Numbers (tabular)
+        display: ['var(--font-display)'],   // Headings
+        mono:    ['var(--font-display)'],   // Numbers (tabular)
       },
       fontSize: {
         // Design bible type scale
@@ -142,8 +142,8 @@ export default {
           '50%':     { opacity: '1',    transform: 'scale(1.04)' },
         },
         goldPulse: {
-          '0%,100%': { opacity: '1',  color: '#E8C36A' },
-          '50%':     { opacity: '0.7', color: '#F3DDA0' },
+          '0%,100%': { opacity: '1',  color: 'rgb(var(--c-accent))' },
+          '50%':     { opacity: '0.7', color: 'rgb(var(--c-accent-light))' },
         },
       },
       boxShadow: {

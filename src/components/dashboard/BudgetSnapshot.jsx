@@ -24,38 +24,38 @@ export default function BudgetSnapshot() {
     <div style={{ margin: '0 16px', paddingBottom: 16 }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, color: '#8B8B93', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           Budget
         </p>
         <button
           onClick={() => navigate('/budget')}
-          style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#E8C36A', background: 'none', border: 'none', cursor: 'pointer' }}
+          style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: 'rgb(var(--c-accent))', background: 'none', border: 'none', cursor: 'pointer' }}
         >
           View all →
         </button>
       </div>
 
       {/* Ivory card */}
-      <div style={{ background: '#17171A', borderRadius: 16, border: '0.5px solid #26262B', overflow: 'hidden' }}>
+      <div style={{ background: 'rgb(var(--c-surface))', borderRadius: 16, border: '0.5px solid rgb(var(--c-border))', overflow: 'hidden' }}>
         {budgeted.map((cat, i) => {
           const isOver = cat.pct >= 100
           return (
             <div
               key={cat.id}
-              style={{ padding: '13px 16px', borderBottom: i < budgeted.length - 1 ? '0.5px solid #26262B' : 'none' }}
+              style={{ padding: '13px 16px', borderBottom: i < budgeted.length - 1 ? '0.5px solid rgb(var(--c-border))' : 'none' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontSize: 18 }}>{cat.icon}</span>
-                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: '#F4F4F5' }}>
+                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: 'rgb(var(--c-text))' }}>
                     {cat.name}
                   </span>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 12, color: isOver ? '#F07A6A' : '#A1A1AA' }}>
+                  <span style={{ fontFamily: 'var(--font-display)', fontSize: 12, color: isOver ? 'rgb(var(--c-negative))' : 'rgb(var(--c-text-2))' }}>
                     {formatMoney(cat.spent, true)}
                   </span>
-                  <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 12, color: '#8B8B93' }}>
+                  <span style={{ fontFamily: 'var(--font-display)', fontSize: 12, color: 'rgb(var(--c-text-3))' }}>
                     {' '}/ {formatMoney(cat.budget_amount, true)}
                   </span>
                 </div>

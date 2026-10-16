@@ -38,11 +38,11 @@ const TYPE_GROUPS = [
   ['Transfer',  ['transfer']],
 ]
 
-const card = { background: '#17171A', border: '0.5px solid #26262B', borderRadius: 16 }
-const label = { fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#8B8B93' }
+const card = { background: 'rgb(var(--c-surface))', border: '0.5px solid rgb(var(--c-border))', borderRadius: 16 }
+const label = { fontFamily: 'Inter, sans-serif', fontSize: 12, color: 'rgb(var(--c-text-3))' }
 const inputStyle = {
-  width: '100%', padding: '12px 14px', background: '#1F1F23', border: '0.5px solid #34343A',
-  borderRadius: 12, color: '#F4F4F5', fontFamily: 'Inter, sans-serif', fontSize: 14,
+  width: '100%', padding: '12px 14px', background: 'rgb(var(--c-surface-2))', border: '0.5px solid rgb(var(--c-border-strong))',
+  borderRadius: 12, color: 'rgb(var(--c-text))', fontFamily: 'Inter, sans-serif', fontSize: 14,
 }
 
 function chunk(arr, n) {
@@ -327,7 +327,7 @@ export default function ImportPage() {
 
   // ── Render ───────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: '100%', background: '#0E0E10', paddingBottom: step === 'review' ? 180 : 120 }}>
+    <div style={{ minHeight: '100%', background: 'rgb(var(--c-bg))', paddingBottom: step === 'review' ? 180 : 120 }}>
       <PageHeader title="Import statement" subtitle="Capitec CSV or TymeBank PDF" back />
 
       <div className="px-4 space-y-4">
@@ -338,17 +338,17 @@ export default function ImportPage() {
               onClick={() => fileRef.current?.click()}
               disabled={busy}
               className="w-full flex flex-col items-center gap-3 py-10 tappable"
-              style={{ ...card, border: '1px dashed rgba(232,195,106,0.4)' }}
+              style={{ ...card, border: '1px dashed rgb(var(--c-accent) / 0.4)' }}
             >
-              <FileUp size={32} color="#E8C36A" />
-              <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: '#F4F4F5' }}>
+              <FileUp size={32} color="rgb(var(--c-accent))" />
+              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: 'rgb(var(--c-text))' }}>
                 {busy ? 'Reading…' : 'Choose a statement'}
               </span>
               <span style={label}>Capitec: Account → Statements → Download → CSV</span>
               <span style={label}>TymeBank: Account → Statements → PDF (any period)</span>
             </button>
             <div style={{ ...card, padding: 16 }} className="space-y-2">
-              <p style={{ ...label, color: '#A1A1AA' }}>How it works</p>
+              <p style={{ ...label, color: 'rgb(var(--c-text-2))' }}>How it works</p>
               <p style={label}>• Lines already imported are recognised and skipped, so overlapping statements are safe.</p>
               <p style={label}>• Categories come from your payee rules first, then from Capitec's own category.</p>
               <p style={label}>• Choosing a category for a payee applies it to that payee's other lines and is remembered next time.</p>
@@ -361,8 +361,8 @@ export default function ImportPage() {
         {step === 'password' && (
           <form onSubmit={submitPassword} style={{ ...card, padding: 16 }} className="space-y-3">
             <div className="flex items-center gap-2">
-              <Lock size={16} color="#E8C36A" />
-              <p style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 500, color: '#F4F4F5' }}>Statement password</p>
+              <Lock size={16} color="rgb(var(--c-accent))" />
+              <p style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: 'rgb(var(--c-text))' }}>Statement password</p>
             </div>
             <p style={label}>
               {fileName} is protected. Enter the password TymeBank gave you for it. It only opens the file here on
@@ -373,7 +373,7 @@ export default function ImportPage() {
               onChange={e => { setPassword(e.target.value); setPasswordError('') }}
               style={inputStyle} aria-label="Statement password"
             />
-            {passwordError && <p style={{ ...label, color: '#F07A6A' }}>{passwordError}</p>}
+            {passwordError && <p style={{ ...label, color: 'rgb(var(--c-negative))' }}>{passwordError}</p>}
             <div className="flex gap-2">
               <Button variant="secondary" onClick={reset}>Cancel</Button>
               <Button type="submit" fullWidth loading={busy}>Open statement</Button>
@@ -384,19 +384,19 @@ export default function ImportPage() {
         {step === 'account' && parsed && (
           <div style={{ ...card, padding: 16 }} className="space-y-4">
             <div>
-              <p style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: '#F4F4F5' }}>
+              <p style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: 'rgb(var(--c-text))' }}>
                 Which account is {parsed.accountNumber}?
               </p>
               <p style={label}>{parsed.lines.length} lines · looks like a {KIND_LABEL[parsed.kind].toLowerCase()}</p>
             </div>
             <div className="space-y-2">
               {accounts.filter(a => !a.account_number).map(a => (
-                <label key={a.id} className="flex items-center gap-3" style={{ ...label, color: '#F4F4F5', fontSize: 14 }}>
+                <label key={a.id} className="flex items-center gap-3" style={{ ...label, color: 'rgb(var(--c-text))', fontSize: 14 }}>
                   <input type="radio" checked={accountChoice === a.id} onChange={() => setAccountChoice(a.id)} />
                   Link to {a.name}{a.bank && a.bank !== a.name ? ` (${a.bank})` : ''}
                 </label>
               ))}
-              <label className="flex items-center gap-3" style={{ ...label, color: '#F4F4F5', fontSize: 14 }}>
+              <label className="flex items-center gap-3" style={{ ...label, color: 'rgb(var(--c-text))', fontSize: 14 }}>
                 <input type="radio" checked={accountChoice === 'new'} onChange={() => setAccountChoice('new')} />
                 Create a new account
               </label>
@@ -423,10 +423,10 @@ export default function ImportPage() {
             <div style={{ ...card, padding: 16 }} className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, color: '#F4F4F5' }}>{account?.name}</p>
+                  <p style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: 'rgb(var(--c-text))' }}>{account?.name}</p>
                   <p style={label}>{fileName} · {stats.from} → {stats.to}</p>
                 </div>
-                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: 'rgba(232,195,106,0.1)', color: '#E8C36A' }}>
+                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: 'rgb(var(--c-accent) / 0.1)', color: 'rgb(var(--c-accent))' }}>
                   {KIND_LABEL[account?.kind] || 'Account'}
                 </span>
               </div>
@@ -436,8 +436,8 @@ export default function ImportPage() {
                 <Stat label="No category" value={stats.uncategorised} warn={stats.uncategorised > 0} />
               </div>
               <div className="flex justify-between" style={label}>
-                <span>In <b style={{ color: '#5BC98B' }}>{formatMoney(stats.moneyIn)}</b></span>
-                <span>Out <b style={{ color: '#F07A6A' }}>{formatMoney(stats.moneyOut)}</b></span>
+                <span>In <b style={{ color: 'rgb(var(--c-positive))' }}>{formatMoney(stats.moneyIn)}</b></span>
+                <span>Out <b style={{ color: 'rgb(var(--c-negative))' }}>{formatMoney(stats.moneyOut)}</b></span>
               </div>
               {parsed?.pending.length > 0 && (
                 <p style={label}>{parsed.pending.length} pending line{parsed.pending.length > 1 ? 's' : ''} skipped — they will come in with the next statement.</p>
@@ -450,9 +450,9 @@ export default function ImportPage() {
                 <button key={k} onClick={() => { setFilter(k); setShown(PAGE) }}
                   style={{
                     flexShrink: 0, padding: '6px 12px', borderRadius: 999, fontSize: 12, fontFamily: 'Inter, sans-serif',
-                    background: filter === k ? 'rgba(232,195,106,0.15)' : '#17171A',
-                    color: filter === k ? '#E8C36A' : '#A1A1AA',
-                    border: `0.5px solid ${filter === k ? 'rgba(232,195,106,0.4)' : '#26262B'}`,
+                    background: filter === k ? 'rgb(var(--c-accent) / 0.15)' : 'rgb(var(--c-surface))',
+                    color: filter === k ? 'rgb(var(--c-accent))' : 'rgb(var(--c-text-2))',
+                    border: `0.5px solid ${filter === k ? 'rgb(var(--c-accent) / 0.4)' : 'rgb(var(--c-border))'}`,
                   }}>
                   {t}
                 </button>
@@ -475,8 +475,8 @@ export default function ImportPage() {
 
         {step === 'done' && result && (
           <div style={{ ...card, padding: 24 }} className="flex flex-col items-center gap-3 text-center">
-            <CheckCircle2 size={40} color="#5BC98B" />
-            <p style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: 18, color: '#F4F4F5' }}>
+            <CheckCircle2 size={40} color="rgb(var(--c-positive))" />
+            <p style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 18, color: 'rgb(var(--c-text))' }}>
               {result.inserted} transactions imported
             </p>
             <p style={label}>
@@ -505,9 +505,9 @@ export default function ImportPage() {
 
 function Stat({ label: text, value, warn }) {
   return (
-    <div className="flex flex-col items-center py-2" style={{ background: '#0E0E10', borderRadius: 12 }}>
-      <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: 18, color: warn ? '#E9A25A' : '#F4F4F5' }}>{value}</span>
-      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#8B8B93' }}>{text}</span>
+    <div className="flex flex-col items-center py-2" style={{ background: 'rgb(var(--c-bg))', borderRadius: 12 }}>
+      <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 18, color: warn ? 'rgb(var(--c-warning))' : 'rgb(var(--c-text))' }}>{value}</span>
+      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-3))' }}>{text}</span>
     </div>
   )
 }
@@ -518,31 +518,31 @@ function ReviewRow({ row, groups, onChange }) {
   return (
     <div className="px-4 py-3 border-b border-border last:border-0 space-y-2" style={{ opacity: row.duplicate ? 0.45 : 1 }}>
       <div className="flex items-start gap-3">
-        <Arrow size={16} color={isIn ? '#5BC98B' : '#A1A1AA'} style={{ marginTop: 2, flexShrink: 0 }} />
+        <Arrow size={16} color={isIn ? 'rgb(var(--c-positive))' : 'rgb(var(--c-text-2))'} style={{ marginTop: 2, flexShrink: 0 }} />
         <div className="flex-1 min-w-0">
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#F4F4F5', lineHeight: 1.35 }}>{row.description}</p>
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#8B8B93' }}>
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: 'rgb(var(--c-text))', lineHeight: 1.35 }}>{row.description}</p>
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-3))' }}>
             {row.date}{row.bankCategory ? ` · ${row.bankCategory}` : ''}
           </p>
         </div>
-        <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 600, color: isIn ? '#5BC98B' : '#F4F4F5', flexShrink: 0 }}>
+        <span style={{ fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 600, color: isIn ? 'rgb(var(--c-positive))' : 'rgb(var(--c-text))', flexShrink: 0 }}>
           {isIn ? '+' : '−'}{formatMoney(row.amount)}
         </span>
       </div>
       {row.duplicate ? (
-        <p className="flex items-center gap-1" style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#8B8B93' }}>
+        <p className="flex items-center gap-1" style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-3))' }}>
           <Copy size={12} /> Already imported
         </p>
       ) : (
         <div className="flex items-center gap-2">
-          {!row.categoryId && <AlertTriangle size={14} color="#E9A25A" style={{ flexShrink: 0 }} />}
+          {!row.categoryId && <AlertTriangle size={14} color="rgb(var(--c-warning))" style={{ flexShrink: 0 }} />}
           <select
             value={row.categoryId || ''}
             onChange={e => onChange(row.hash, e.target.value || null)}
             style={{
-              flex: 1, padding: '8px 10px', background: '#1F1F23', borderRadius: 10, fontSize: 12,
-              border: `0.5px solid ${row.categoryId ? '#34343A' : 'rgba(233,162,90,0.5)'}`,
-              color: row.categoryId ? '#F4F4F5' : '#E9A25A', fontFamily: 'Inter, sans-serif',
+              flex: 1, padding: '8px 10px', background: 'rgb(var(--c-surface-2))', borderRadius: 10, fontSize: 12,
+              border: `0.5px solid ${row.categoryId ? 'rgb(var(--c-border-strong))' : 'rgb(var(--c-warning) / 0.5)'}`,
+              color: row.categoryId ? 'rgb(var(--c-text))' : 'rgb(var(--c-warning))', fontFamily: 'Inter, sans-serif',
             }}
           >
             <option value="">Choose a category…</option>
@@ -552,7 +552,7 @@ function ReviewRow({ row, groups, onChange }) {
               </optgroup>
             ))}
           </select>
-          {row.via === 'rule' && <span style={{ fontSize: 10, color: '#E8C36A', flexShrink: 0 }}>rule</span>}
+          {row.via === 'rule' && <span style={{ fontSize: 10, color: 'rgb(var(--c-accent))', flexShrink: 0 }}>rule</span>}
         </div>
       )}
     </div>

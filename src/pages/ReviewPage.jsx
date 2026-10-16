@@ -106,7 +106,7 @@ export default function ReviewPage() {
           <div style={card}>
             <p style={label}>Left over</p>
             <div className="flex items-end justify-between mt-1">
-              <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 30, fontWeight: 500, letterSpacing: '-0.02em', color: review.left.actual < 0 ? T.negative : T.gold }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 500, letterSpacing: '-0.02em', color: review.left.actual < 0 ? T.negative : T.gold }}>
                 {money(review.left.actual)}
               </span>
               <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: T.text3, marginBottom: 6 }}>
@@ -163,7 +163,7 @@ export default function ReviewPage() {
                 <div key={r.id} className="flex items-center gap-3 py-1.5">
                   <span style={{ width: 22, textAlign: 'center' }}>{r.icon}</span>
                   <span className="flex-1" style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: T.text }}>{r.name}</span>
-                  <span className="flex items-center gap-1" style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: T.negative }}>
+                  <span className="flex items-center gap-1" style={{ fontFamily: 'var(--font-display)', fontSize: 13, color: T.negative }}>
                     <ArrowUpRight size={13} /> {money(-r.diff)}
                   </span>
                 </div>
@@ -212,7 +212,7 @@ export default function ReviewPage() {
                           aria-label={`Limit for ${r.name}`}
                           style={{
                             width: 92, padding: '8px 10px', textAlign: 'right', borderRadius: 10,
-                            background: T.surface2, color: T.text, fontFamily: 'Poppins, sans-serif', fontSize: 13,
+                            background: T.surface2, color: T.text, fontFamily: 'var(--font-display)', fontSize: 13,
                             border: `0.5px solid ${edits[r.id] != null ? T.goldLine : T.borderStrong}`,
                           }}
                         />
@@ -241,7 +241,7 @@ function Mini({ name, planned, actual, good }) {
   return (
     <div style={{ background: T.surface2, borderRadius: 12, padding: '10px 12px' }}>
       <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: T.text3 }}>{name}</p>
-      <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 16, fontWeight: 500, color: good ? T.text : T.negative }}>{money(actual)}</p>
+      <p style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 500, color: good ? T.text : T.negative }}>{money(actual)}</p>
       <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: T.text3 }}>plan {money(planned)}</p>
     </div>
   )

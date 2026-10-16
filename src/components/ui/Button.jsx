@@ -32,35 +32,35 @@ export default function Button({
 
   const variants = {
     primary: {
-      background: '#E8C36A',
-      color: '#0E0E10',
-      fontFamily: 'Poppins, sans-serif',
+      background: 'rgb(var(--c-accent))',
+      color: 'rgb(var(--c-bg))',
+      fontFamily: 'var(--font-display)',
       fontWeight: 600,
       boxShadow: '0 0 0 0 transparent',
     },
     secondary: {
-      background: '#1F1F23',
-      color: '#F4F4F5',
-      border: '0.5px solid #34343A',
+      background: 'rgb(var(--c-surface-2))',
+      color: 'rgb(var(--c-text))',
+      border: '0.5px solid rgb(var(--c-border-strong))',
     },
     ghost: {
       background: 'transparent',
-      color: '#A1A1AA',
+      color: 'rgb(var(--c-text-2))',
     },
     danger: {
-      background: 'rgba(240,122,106,0.1)',
-      color: '#F07A6A',
-      border: '0.5px solid rgba(240,122,106,0.3)',
+      background: 'rgb(var(--c-negative) / 0.1)',
+      color: 'rgb(var(--c-negative))',
+      border: '0.5px solid rgb(var(--c-negative) / 0.3)',
     },
     success: {
-      background: 'rgba(91,201,139,0.1)',
-      color: '#5BC98B',
-      border: '0.5px solid rgba(91,201,139,0.3)',
+      background: 'rgb(var(--c-positive) / 0.1)',
+      color: 'rgb(var(--c-positive))',
+      border: '0.5px solid rgb(var(--c-positive) / 0.3)',
     },
     outline: {
       background: 'transparent',
-      color: '#E8C36A',
-      border: '0.5px solid rgba(232,195,106,0.5)',
+      color: 'rgb(var(--c-accent))',
+      border: '0.5px solid rgb(var(--c-accent) / 0.5)',
     },
   }
 

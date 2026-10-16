@@ -77,9 +77,9 @@ export default function BottomSheet({ open, onClose, children, title }) {
           boxSizing: 'border-box',
           overflowX: 'hidden',
           zIndex: 201,
-          background: '#17171A',
+          background: 'rgb(var(--c-surface))',
           borderRadius: '20px 20px 0 0',
-          borderTop: '0.5px solid #26262B',
+          borderTop: '0.5px solid rgb(var(--c-border))',
           boxShadow: '0 -8px 40px rgba(0,0,0,0.7)',
           maxHeight: '92svh',
           display: 'flex',
@@ -100,15 +100,15 @@ export default function BottomSheet({ open, onClose, children, title }) {
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
         >
-          <div style={{ width: 36, height: 4, background: '#34343A', borderRadius: 2, display: 'inline-block' }} />
+          <div style={{ width: 36, height: 4, background: 'rgb(var(--c-border-strong))', borderRadius: 2, display: 'inline-block' }} />
         </div>
 
         {/* Title */}
         {title && (
           <div style={{ flexShrink: 0, padding: '12px 20px 8px' }}>
             <h2 style={{
-              fontFamily: 'Poppins, sans-serif', fontSize: 18, fontWeight: 600,
-              color: '#F4F4F5',
+              fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 600,
+              color: 'rgb(var(--c-text))',
             }}>
               {title}
             </h2>

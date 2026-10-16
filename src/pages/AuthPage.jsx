@@ -18,7 +18,7 @@ function AuthRing() {
         <div style={{
           position: 'absolute', width: 60, height: 60, borderRadius: '50%',
           border: '2px solid transparent',
-          borderTopColor: '#E8C36A', borderRightColor: '#E8C36A',
+          borderTopColor: 'rgb(var(--c-accent))', borderRightColor: 'rgb(var(--c-accent))',
           borderBottomColor: '#2A2010', borderLeftColor: '#2A2010',
           animation: 'arCW 4s linear infinite',
           filter: 'drop-shadow(0 0 0 0 transparent)',
@@ -26,11 +26,11 @@ function AuthRing() {
         <div style={{
           position: 'absolute', width: 40, height: 40, borderRadius: '50%',
           border: '1.5px solid transparent',
-          borderTopColor: '#F3DDA0', borderLeftColor: '#F3DDA0',
+          borderTopColor: 'rgb(var(--c-accent-light))', borderLeftColor: 'rgb(var(--c-accent-light))',
           borderBottomColor: '#1A1508', borderRightColor: '#1A1508',
           animation: 'arCCW 2.5s linear infinite',
         }} />
-        <div style={{ position: 'absolute', width: 20, height: 20, borderRadius: '50%', background: '#0E0E10' }} />
+        <div style={{ position: 'absolute', width: 20, height: 20, borderRadius: '50%', background: 'rgb(var(--c-bg))' }} />
       </div>
     </>
   )
@@ -120,9 +120,9 @@ export default function AuthPage() {
 
   const inputStyle = (hasError) => ({
     width: '100%', padding: '13px 16px',
-    background: '#17171A',
-    border: `0.5px solid ${hasError ? '#F07A6A' : '#26262B'}`,
-    borderRadius: 12, color: '#F4F4F5',
+    background: 'rgb(var(--c-surface))',
+    border: `0.5px solid ${hasError ? 'rgb(var(--c-negative))' : 'rgb(var(--c-border))'}`,
+    borderRadius: 12, color: 'rgb(var(--c-text))',
     fontFamily: 'Inter, sans-serif', fontSize: 14,
     outline: 'none',
     transition: 'border-color 0.2s ease',
@@ -130,7 +130,7 @@ export default function AuthPage() {
 
   return (
     <div style={{
-      minHeight: '100svh', background: '#0E0E10',
+      minHeight: '100svh', background: 'rgb(var(--c-bg))',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       padding: '48px 24px',
@@ -140,15 +140,15 @@ export default function AuthPage() {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 36 }}>
         <AuthRing />
         <div style={{
-          fontFamily: 'Poppins, sans-serif', fontSize: 26, fontWeight: 300,
-          color: '#E8C36A', letterSpacing: '0.28em', textTransform: 'uppercase', marginTop: 16,
+          fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 300,
+          color: 'rgb(var(--c-accent))', letterSpacing: '0.28em', textTransform: 'uppercase', marginTop: 16,
         }}>
           CYCLE
         </div>
-        <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#8B8B93', marginTop: 4, letterSpacing: '0.1em' }}>
+        <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: 'rgb(var(--c-text-3))', marginTop: 4, letterSpacing: '0.1em' }}>
           Your budget. Your cycle.
         </div>
-        <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 10, color: '#5A5A62', marginTop: 4, letterSpacing: '0.08em' }}>
+        <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 10, color: 'rgb(var(--c-text-4))', marginTop: 4, letterSpacing: '0.08em' }}>
           Crafted by PGV
         </div>
       </div>
@@ -156,15 +156,15 @@ export default function AuthPage() {
       {/* Card */}
       <div style={{
         width: '100%', maxWidth: 380,
-        background: '#17171A',
-        borderRadius: 24, border: '0.5px solid #26262B',
+        background: 'rgb(var(--c-surface))',
+        borderRadius: 24, border: '0.5px solid rgb(var(--c-border))',
         padding: 24,
       }}>
 
         {/* Mode tabs */}
         {mode !== MODES.RESET && (
           <div style={{
-            display: 'flex', background: '#0E0E10',
+            display: 'flex', background: 'rgb(var(--c-bg))',
             borderRadius: 12, padding: 4, marginBottom: 24,
           }}>
             {[MODES.SIGNIN, MODES.SIGNUP].map(m => (
@@ -174,8 +174,8 @@ export default function AuthPage() {
                 style={{
                   flex: 1, padding: '9px 0',
                   borderRadius: 9, border: 'none',
-                  background: mode === m ? '#1F1F23' : 'transparent',
-                  color: mode === m ? '#F4F4F5' : '#8B8B93',
+                  background: mode === m ? 'rgb(var(--c-surface-2))' : 'transparent',
+                  color: mode === m ? 'rgb(var(--c-text))' : 'rgb(var(--c-text-3))',
                   fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: mode === m ? 500 : 400,
                   transition: 'all 0.2s ease', cursor: 'pointer',
                 }}
@@ -189,10 +189,10 @@ export default function AuthPage() {
         {/* Reset header */}
         {mode === MODES.RESET && (
           <div style={{ marginBottom: 24 }}>
-            <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 18, fontWeight: 500, color: '#F4F4F5' }}>
+            <p style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 500, color: 'rgb(var(--c-text))' }}>
               Reset password
             </p>
-            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#8B8B93', marginTop: 4 }}>
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: 'rgb(var(--c-text-3))', marginTop: 4 }}>
               We'll send a reset link to your email.
             </p>
           </div>
@@ -203,7 +203,7 @@ export default function AuthPage() {
           {/* Full name — signup only */}
           {mode === MODES.SIGNUP && (
             <div>
-              <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#8B8B93', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>
+              <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>
                 Name
               </label>
               <input
@@ -213,13 +213,13 @@ export default function AuthPage() {
                 autoComplete="name"
                 style={inputStyle(errors.fullName)}
               />
-              {errors.fullName && <p style={{ fontSize: 11, color: '#F07A6A', marginTop: 4, fontFamily: 'Inter, sans-serif' }}>{errors.fullName}</p>}
+              {errors.fullName && <p style={{ fontSize: 11, color: 'rgb(var(--c-negative))', marginTop: 4, fontFamily: 'Inter, sans-serif' }}>{errors.fullName}</p>}
             </div>
           )}
 
           {/* Email */}
           <div>
-            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#8B8B93', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>
+            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>
               Email
             </label>
             <input
@@ -229,13 +229,13 @@ export default function AuthPage() {
               autoComplete="email" inputMode="email"
               style={inputStyle(errors.email)}
             />
-            {errors.email && <p style={{ fontSize: 11, color: '#F07A6A', marginTop: 4, fontFamily: 'Inter, sans-serif' }}>{errors.email}</p>}
+            {errors.email && <p style={{ fontSize: 11, color: 'rgb(var(--c-negative))', marginTop: 4, fontFamily: 'Inter, sans-serif' }}>{errors.email}</p>}
           </div>
 
           {/* Password */}
           {mode !== MODES.RESET && (
             <div>
-              <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#8B8B93', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>
+              <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>
                 Password
               </label>
               <div style={{ position: 'relative' }}>
@@ -252,13 +252,13 @@ export default function AuthPage() {
                   onClick={() => setShowPw(v => !v)}
                   style={{
                     position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
-                    background: 'none', border: 'none', color: '#8B8B93', cursor: 'pointer',
+                    background: 'none', border: 'none', color: 'rgb(var(--c-text-3))', cursor: 'pointer',
                   }}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              {errors.password && <p style={{ fontSize: 11, color: '#F07A6A', marginTop: 4, fontFamily: 'Inter, sans-serif' }}>{errors.password}</p>}
+              {errors.password && <p style={{ fontSize: 11, color: 'rgb(var(--c-negative))', marginTop: 4, fontFamily: 'Inter, sans-serif' }}>{errors.password}</p>}
             </div>
           )}
 
@@ -269,7 +269,7 @@ export default function AuthPage() {
               onClick={() => setMode(MODES.RESET)}
               style={{
                 fontFamily: 'Inter, sans-serif', fontSize: 12,
-                color: '#8B8B93', background: 'none', border: 'none',
+                color: 'rgb(var(--c-text-3))', background: 'none', border: 'none',
                 textAlign: 'right', cursor: 'pointer',
                 alignSelf: 'flex-end',
               }}
@@ -284,10 +284,10 @@ export default function AuthPage() {
             disabled={loading}
             style={{
               width: '100%', padding: '14px 0', marginTop: 4,
-              background: loading ? '#C9A24E' : '#E8C36A',
+              background: loading ? 'rgb(var(--c-accent-dark))' : 'rgb(var(--c-accent))',
               borderRadius: 14, border: 'none',
-              fontFamily: 'Poppins, sans-serif', fontSize: 15, fontWeight: 600,
-              color: '#0E0E10', cursor: loading ? 'not-allowed' : 'pointer',
+              fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 600,
+              color: 'rgb(var(--c-bg))', cursor: loading ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s ease',
               boxShadow: loading ? 'none' : '0 0 0 0 transparent',
             }}
@@ -307,7 +307,7 @@ export default function AuthPage() {
               onClick={() => setMode(MODES.SIGNIN)}
               style={{
                 fontFamily: 'Inter, sans-serif', fontSize: 13,
-                color: '#8B8B93', background: 'none', border: 'none',
+                color: 'rgb(var(--c-text-3))', background: 'none', border: 'none',
                 cursor: 'pointer', textAlign: 'center', marginTop: 4,
               }}
             >
@@ -325,24 +325,24 @@ export default function AuthPage() {
         }}>
           <div style={{
             width: '100%', maxWidth: 480,
-            background: '#17171A', borderRadius: '24px 24px 0 0',
-            border: '0.5px solid #26262B', padding: '28px 28px 48px',
+            background: 'rgb(var(--c-surface))', borderRadius: '24px 24px 0 0',
+            border: '0.5px solid rgb(var(--c-border))', padding: '28px 28px 48px',
             display: 'flex', flexDirection: 'column', alignItems: 'center',
           }}>
             {/* Icon */}
             <div style={{
               width: 64, height: 64, borderRadius: 20,
-              background: 'rgba(232,195,106,0.1)',
-              border: '0.5px solid rgba(232,195,106,0.2)',
+              background: 'rgb(var(--c-accent) / 0.1)',
+              border: '0.5px solid rgb(var(--c-accent) / 0.2)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 30, marginBottom: 16,
             }}>
               🔒
             </div>
-            <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 18, fontWeight: 600, color: '#F4F4F5', marginBottom: 8, textAlign: 'center' }}>
+            <p style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 600, color: 'rgb(var(--c-text))', marginBottom: 8, textAlign: 'center' }}>
               Enable quick unlock?
             </p>
-            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#8B8B93', textAlign: 'center', lineHeight: 1.6, marginBottom: 28 }}>
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: 'rgb(var(--c-text-3))', textAlign: 'center', lineHeight: 1.6, marginBottom: 28 }}>
               Use Face ID or your fingerprint to unlock Cycle instantly next time — no password needed.
             </p>
             {/* Enable button */}
@@ -354,9 +354,9 @@ export default function AuthPage() {
               }}
               style={{
                 width: '100%', padding: '14px 0', marginBottom: 10,
-                background: '#E8C36A', borderRadius: 14, border: 'none',
-                fontFamily: 'Poppins, sans-serif', fontSize: 15, fontWeight: 600,
-                color: '#0E0E10', cursor: 'pointer',
+                background: 'rgb(var(--c-accent))', borderRadius: 14, border: 'none',
+                fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 600,
+                color: 'rgb(var(--c-bg))', cursor: 'pointer',
                 boxShadow: '0 0 0 0 transparent',
               }}
             >
@@ -367,7 +367,7 @@ export default function AuthPage() {
               onClick={() => navigate('/')}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
-                fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#8B8B93',
+                fontFamily: 'Inter, sans-serif', fontSize: 13, color: 'rgb(var(--c-text-3))',
               }}
             >
               Maybe later
@@ -378,7 +378,7 @@ export default function AuthPage() {
 
       {/* Footer */}
       <div style={{ marginTop: 32, textAlign: 'center' }}>
-        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#5A5A62', letterSpacing: '0.06em' }}>
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-4))', letterSpacing: '0.06em' }}>
           Crafted by PGV
         </p>
       </div>

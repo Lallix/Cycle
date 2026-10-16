@@ -9,6 +9,7 @@ import BottomSheet from '../components/ui/BottomSheet'
 import AccountPicker from '../components/ui/AccountPicker'
 import { User, Wallet, LogOut, Plus, Edit2, Trash2, RefreshCw, Smile, FileUp } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import ThemeSwitch from '../components/ui/ThemeSwitch'
 import Picker from '@emoji-mart/react'
 import data from '@emoji-mart/data'
 import { TYPE_OPTIONS } from '../lib/spend'
@@ -20,7 +21,7 @@ const BANK_OPTIONS = [
 
 const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev'
 
-const BLANK_CAT = { name: '', icon: '🛒', colour: '#E8C36A', budget_amount: '', type: 'predicted' }
+const BLANK_CAT = { name: '', icon: '🛒', colour: 'rgb(var(--c-accent))', budget_amount: '', type: 'predicted' }
 
 export default function SettingsPage() {
   const { user, profile, signOut, updateProfile, biometricAvailable, biometricEnabled, registerBiometric, disableBiometric } = useAuth()
@@ -159,7 +160,7 @@ export default function SettingsPage() {
     setCatForm({
       name:          cat.name,
       icon:          cat.icon || '💳',
-      colour:        cat.colour || '#E8C36A',
+      colour:        cat.colour || 'rgb(var(--c-accent))',
       budget_amount: cat.budget_amount ? String(cat.budget_amount) : '',
       type:          cat.type || 'predicted',
     })
@@ -237,18 +238,18 @@ export default function SettingsPage() {
               <Plus size={13} /> Add
             </button>
           </div>
-          <div className="border border-border rounded-2xl overflow-hidden" style={{ background: '#17171A' }}>
+          <div className="border border-border rounded-2xl overflow-hidden" style={{ background: 'rgb(var(--c-surface))' }}>
             {incomeRecords.map((inc, i) => {
               const cfg = inc.account ? getAccountConfig(inc.account) : null
               const totalIncome = incomeRecords.reduce((s, r) => s + parseFloat(r.amount || 0), 0)
               return (
                 <div key={inc.id} className="flex items-center gap-3 px-4 py-3 border-b border-border last:border-0">
                   <div className="flex-1 min-w-0">
-                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: '#F4F4F5' }}>
+                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: 'rgb(var(--c-text))' }}>
                       {inc.label || 'Income'}
                     </p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                      <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, color: '#5BC98B' }}>
+                      <p style={{ fontFamily: 'var(--font-display)', fontSize: 13, color: 'rgb(var(--c-positive))' }}>
                         {formatMoney(inc.amount)}
                       </p>
                       {inc.account && cfg && (
@@ -270,8 +271,8 @@ export default function SettingsPage() {
             {/* Total */}
             {incomeRecords.length > 1 && (
               <div className="flex items-center justify-between px-4 py-3 border-t border-border" style={{ background: '#252220' }}>
-                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#8B8B93' }}>Total income</p>
-                <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 14, fontWeight: 600, color: '#5BC98B' }}>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: 'rgb(var(--c-text-3))' }}>Total income</p>
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 600, color: 'rgb(var(--c-positive))' }}>
                   {formatMoney(incomeRecords.reduce((s, r) => s + parseFloat(r.amount || 0), 0))}
                 </p>
               </div>
@@ -284,12 +285,12 @@ export default function SettingsPage() {
           <button
             onClick={() => navigate('/import')}
             className="w-full flex items-center gap-3 px-4 py-3 border border-border rounded-2xl tappable"
-            style={{ background: '#17171A' }}
+            style={{ background: 'rgb(var(--c-surface))' }}
           >
             <FileUp size={18} className="text-gold" />
             <div className="flex-1 text-left">
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: '#F4F4F5' }}>Import bank statement</p>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#8B8B93' }}>Capitec CSV — main account or credit card</p>
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: 'rgb(var(--c-text))' }}>Import bank statement</p>
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: 'rgb(var(--c-text-3))' }}>Capitec CSV — main account or credit card</p>
             </div>
           </button>
         </section>
@@ -302,7 +303,7 @@ export default function SettingsPage() {
               <Plus size={13} /> Add
             </button>
           </div>
-          <div className="border border-border rounded-2xl overflow-hidden" style={{ background: '#17171A' }}>
+          <div className="border border-border rounded-2xl overflow-hidden" style={{ background: 'rgb(var(--c-surface))' }}>
             {accounts.length === 0 && (
               <p className="text-sm text-muted px-4 py-4">No accounts yet — add one above</p>
             )}
@@ -319,24 +320,24 @@ export default function SettingsPage() {
                   </div>
                   {/* Bank name (primary) + descriptor (secondary) */}
                   <div className="flex-1 min-w-0">
-                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: '#F4F4F5' }}>
+                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: 'rgb(var(--c-text))' }}>
                       {acc.bank || acc.name}
                     </p>
                     {acc.name && acc.name !== acc.bank && (
-                      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#8B8B93', marginTop: 1 }}>
+                      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: 'rgb(var(--c-text-3))', marginTop: 1 }}>
                         {acc.name}
                       </p>
                     )}
                   </div>
                   {/* Default badge or set-default tap */}
                   {acc.is_default ? (
-                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 6, background: 'rgba(232,195,106,0.1)', color: '#E8C36A', fontFamily: 'Inter, sans-serif', flexShrink: 0 }}>
+                    <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 6, background: 'rgb(var(--c-accent) / 0.1)', color: 'rgb(var(--c-accent))', fontFamily: 'Inter, sans-serif', flexShrink: 0 }}>
                       Default
                     </span>
                   ) : (
                     <button
                       onClick={() => handleSetDefault(acc)}
-                      style={{ fontSize: 10, padding: '2px 8px', borderRadius: 6, background: 'transparent', border: '0.5px solid #34343A', color: '#8B8B93', fontFamily: 'Inter, sans-serif', flexShrink: 0, cursor: 'pointer' }}
+                      style={{ fontSize: 10, padding: '2px 8px', borderRadius: 6, background: 'transparent', border: '0.5px solid rgb(var(--c-border-strong))', color: 'rgb(var(--c-text-3))', fontFamily: 'Inter, sans-serif', flexShrink: 0, cursor: 'pointer' }}
                     >
                       Set default
                     </button>
@@ -391,11 +392,17 @@ export default function SettingsPage() {
           </div>
         </section>
 
+        {/* Look */}
+        <section>
+          <p className="text-xs text-muted uppercase tracking-widest mb-2">Look</p>
+          <ThemeSwitch />
+        </section>
+
         {/* Biometric */}
         {biometricAvailable && (
           <section>
             <p className="text-xs text-muted uppercase tracking-widest mb-2">Security</p>
-            <div className="border border-border rounded-2xl overflow-hidden" style={{ background: '#17171A' }}>
+            <div className="border border-border rounded-2xl overflow-hidden" style={{ background: 'rgb(var(--c-surface))' }}>
               <div className="flex items-center justify-between p-4">
                 <div>
                   <p className="text-sm font-medium text-fg" style={{ fontFamily: 'Inter, sans-serif' }}>
@@ -413,9 +420,9 @@ export default function SettingsPage() {
                   }}
                   className="px-4 py-2 rounded-xl text-xs font-medium transition-all"
                   style={{
-                    background: biometricEnabled ? 'rgba(240,122,106,0.1)' : 'rgba(232,195,106,0.1)',
-                    color: biometricEnabled ? '#F07A6A' : '#E8C36A',
-                    border: `0.5px solid ${biometricEnabled ? 'rgba(240,122,106,0.2)' : 'rgba(232,195,106,0.2)'}`,
+                    background: biometricEnabled ? 'rgb(var(--c-negative) / 0.1)' : 'rgb(var(--c-accent) / 0.1)',
+                    color: biometricEnabled ? 'rgb(var(--c-negative))' : 'rgb(var(--c-accent))',
+                    border: `0.5px solid ${biometricEnabled ? 'rgb(var(--c-negative) / 0.2)' : 'rgb(var(--c-accent) / 0.2)'}`,
                     fontFamily: 'Inter, sans-serif',
                   }}
                 >
@@ -438,7 +445,7 @@ export default function SettingsPage() {
 
         <div className="flex flex-col items-center gap-1 pb-4 pt-2">
           <p className="text-xs text-muted">Cycle · {APP_VERSION}</p>
-          <p className="text-xs" style={{ color: '#5A5A62', letterSpacing: '0.08em' }}>Crafted by PGV</p>
+          <p className="text-xs" style={{ color: 'rgb(var(--c-text-4))', letterSpacing: '0.08em' }}>Crafted by PGV</p>
         </div>
       </div>
 
@@ -446,13 +453,13 @@ export default function SettingsPage() {
       <BottomSheet open={accountOpen} onClose={() => { setAccountOpen(false); setEditingAccount(null) }} title={editingAccount ? "Edit Account" : "Add Account"}>
         <div className="px-5 space-y-4 pb-8">
           <div>
-<label className="text-xs text-muted uppercase tracking-widest block mb-2">Descriptor <span style={{textTransform:'none',color:'#5A5A62'}}>(optional)</span></label>
+<label className="text-xs text-muted uppercase tracking-widest block mb-2">Descriptor <span style={{textTransform:'none',color:'rgb(var(--c-text-4))'}}>(optional)</span></label>
             <input
               type="text"
               placeholder="e.g. Cheque Account, Credit Card (optional)"
               value={accountForm.name}
               onChange={e => setAccountForm(f => ({ ...f, name: e.target.value }))}
-              style={{ width: '100%', padding: '12px 16px', background: '#1F1F23', border: '0.5px solid #34343A', borderRadius: 12, color: '#F4F4F5', fontFamily: 'Inter, sans-serif', fontSize: 14, outline: 'none' }}
+              style={{ width: '100%', padding: '12px 16px', background: 'rgb(var(--c-surface-2))', border: '0.5px solid rgb(var(--c-border-strong))', borderRadius: 12, color: 'rgb(var(--c-text))', fontFamily: 'Inter, sans-serif', fontSize: 14, outline: 'none' }}
             />
           </div>
           <div>
@@ -465,9 +472,9 @@ export default function SettingsPage() {
                   <button key={bank} onClick={() => setAccountForm(f => ({ ...f, bank }))}
                     style={{
                       padding: '7px 12px', borderRadius: 10, cursor: 'pointer',
-                      border: `0.5px solid ${sel ? cfg.color : '#34343A'}`,
+                      border: `0.5px solid ${sel ? cfg.color : 'rgb(var(--c-border-strong))'}`,
                       background: sel ? cfg.bg : 'transparent',
-                      color: sel ? cfg.color : '#8B8B93',
+                      color: sel ? cfg.color : 'rgb(var(--c-text-3))',
                       fontFamily: 'Inter, sans-serif', fontSize: 12,
                       transition: 'all 0.15s ease',
                     }}
@@ -480,7 +487,7 @@ export default function SettingsPage() {
           </div>
           <button
             onClick={handleAddAccount} disabled={savingAccount}
-            style={{ width: '100%', padding: '14px 0', background: savingAccount ? '#C9A24E' : '#E8C36A', borderRadius: 14, border: 'none', fontFamily: 'Poppins, sans-serif', fontSize: 15, fontWeight: 600, color: '#0E0E10', cursor: 'pointer' }}
+            style={{ width: '100%', padding: '14px 0', background: savingAccount ? 'rgb(var(--c-accent-dark))' : 'rgb(var(--c-accent))', borderRadius: 14, border: 'none', fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 600, color: 'rgb(var(--c-bg))', cursor: 'pointer' }}
           >
             {savingAccount ? 'Saving...' : editingAccount ? 'Save Changes' : 'Add Account'}
           </button>
@@ -493,33 +500,33 @@ export default function SettingsPage() {
         <div className="px-5 space-y-4 pb-8">
           <div>
             <label className="text-xs text-muted uppercase tracking-widest block mb-2">
-              Label <span style={{textTransform:'none',color:'#5A5A62'}}>(e.g. Salary, Rental, Freelance)</span>
+              Label <span style={{textTransform:'none',color:'rgb(var(--c-text-4))'}}>(e.g. Salary, Rental, Freelance)</span>
             </label>
             <input type="text" placeholder="e.g. Monthly Salary"
               value={incomeForm.label}
               onChange={e => setIncomeForm(f => ({ ...f, label: e.target.value }))}
-              style={{ width: '100%', padding: '12px 16px', background: '#1F1F23', border: '0.5px solid #34343A', borderRadius: 12, color: '#F4F4F5', fontFamily: 'Inter, sans-serif', fontSize: 14, outline: 'none' }}
+              style={{ width: '100%', padding: '12px 16px', background: 'rgb(var(--c-surface-2))', border: '0.5px solid rgb(var(--c-border-strong))', borderRadius: 12, color: 'rgb(var(--c-text))', fontFamily: 'Inter, sans-serif', fontSize: 14, outline: 'none' }}
             />
           </div>
           <div>
             <label className="text-xs text-muted uppercase tracking-widest block mb-2">Amount</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#1F1F23', border: '0.5px solid #34343A', borderRadius: 12, padding: '12px 16px' }}>
-              <span style={{ fontFamily: 'Poppins, sans-serif', color: '#8B8B93' }}>R</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgb(var(--c-surface-2))', border: '0.5px solid rgb(var(--c-border-strong))', borderRadius: 12, padding: '12px 16px' }}>
+              <span style={{ fontFamily: 'var(--font-display)', color: 'rgb(var(--c-text-3))' }}>R</span>
               <input type="number" inputMode="decimal" placeholder="0.00"
                 value={incomeForm.amount}
                 onChange={e => setIncomeForm(f => ({ ...f, amount: e.target.value }))}
-                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontFamily: 'Poppins, sans-serif', fontSize: 18, color: '#F4F4F5' }}
+                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontFamily: 'var(--font-display)', fontSize: 18, color: 'rgb(var(--c-text))' }}
               />
             </div>
           </div>
           <div>
             <label className="text-xs text-muted uppercase tracking-widest block mb-2">
-              Paid into account <span style={{textTransform:'none',color:'#5A5A62'}}>(optional)</span>
+              Paid into account <span style={{textTransform:'none',color:'rgb(var(--c-text-4))'}}>(optional)</span>
             </label>
             <AccountPicker value={incomeForm.account} onChange={(val) => setIncomeForm(f => ({ ...f, account: val }))} />
           </div>
           <button onClick={saveIncomeSource} disabled={savingIncome}
-            style={{ width: '100%', padding: '14px 0', background: savingIncome ? '#C9A24E' : '#E8C36A', borderRadius: 14, border: 'none', fontFamily: 'Poppins, sans-serif', fontSize: 15, fontWeight: 600, color: '#0E0E10', cursor: 'pointer' }}>
+            style={{ width: '100%', padding: '14px 0', background: savingIncome ? 'rgb(var(--c-accent-dark))' : 'rgb(var(--c-accent))', borderRadius: 14, border: 'none', fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 600, color: 'rgb(var(--c-bg))', cursor: 'pointer' }}>
             {savingIncome ? 'Saving...' : editingIncome ? 'Save Changes' : 'Add Income Source'}
           </button>
         </div>
@@ -572,7 +579,7 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Budget amount / cycle <span style={{textTransform:'none',color:'#5A5A62'}}>(optional)</span></label>
+            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Budget amount / cycle <span style={{textTransform:'none',color:'rgb(var(--c-text-4))'}}>(optional)</span></label>
             <div className="flex items-center gap-2 bg-surface-1 border border-border rounded-xl px-4 py-3">
               <span className="text-muted font-mono text-sm">R</span>
               <input
@@ -591,7 +598,7 @@ export default function SettingsPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{
                 width: 52, height: 52, borderRadius: 14,
-                background: '#1F1F23', border: '0.5px solid #34343A',
+                background: 'rgb(var(--c-surface-2))', border: '0.5px solid rgb(var(--c-border-strong))',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26,
               }}>
                 {catForm.icon || '💳'}
@@ -601,8 +608,8 @@ export default function SettingsPage() {
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6,
                   padding: '8px 14px', borderRadius: 10,
-                  background: '#1F1F23', border: '0.5px solid #34343A',
-                  color: '#E8C36A', fontFamily: 'Inter, sans-serif', fontSize: 13, cursor: 'pointer',
+                  background: 'rgb(var(--c-surface-2))', border: '0.5px solid rgb(var(--c-border-strong))',
+                  color: 'rgb(var(--c-accent))', fontFamily: 'Inter, sans-serif', fontSize: 13, cursor: 'pointer',
                 }}
               >
                 <Smile size={15} />
@@ -610,7 +617,7 @@ export default function SettingsPage() {
               </button>
             </div>
             {emojiPickerOpen && (
-              <div style={{ marginTop: 10, borderRadius: 16, overflow: 'hidden', border: '0.5px solid #26262B' }}>
+              <div style={{ marginTop: 10, borderRadius: 16, overflow: 'hidden', border: '0.5px solid rgb(var(--c-border))' }}>
                 <Picker
                   data={data}
                   theme="dark"
@@ -633,9 +640,9 @@ export default function SettingsPage() {
                 <button key={opt.value} onClick={() => setCatForm(f => ({ ...f, type: opt.value }))}
                   style={{
                     flex: '1 0 30%', padding: '8px 0', borderRadius: 10, cursor: 'pointer',
-                    border: `0.5px solid ${catForm.type === opt.value ? 'rgba(232,195,106,0.5)' : '#34343A'}`,
-                    background: catForm.type === opt.value ? 'rgba(232,195,106,0.1)' : 'transparent',
-                    color: catForm.type === opt.value ? '#E8C36A' : '#8B8B93',
+                    border: `0.5px solid ${catForm.type === opt.value ? 'rgb(var(--c-accent) / 0.5)' : 'rgb(var(--c-border-strong))'}`,
+                    background: catForm.type === opt.value ? 'rgb(var(--c-accent) / 0.1)' : 'transparent',
+                    color: catForm.type === opt.value ? 'rgb(var(--c-accent))' : 'rgb(var(--c-text-3))',
                     fontFamily: 'Inter, sans-serif', fontSize: 12,
                   }}
                 >
@@ -643,7 +650,7 @@ export default function SettingsPage() {
                 </button>
               ))}
             </div>
-            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#5A5A62', marginTop: 6 }}>
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-4))', marginTop: 6 }}>
               Variable = has a budget cap · Tracking = records spend only
             </p>
           </div>

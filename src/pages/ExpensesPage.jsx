@@ -126,33 +126,33 @@ export default function ExpensesPage() {
 
   const inputStyle = {
     width: '100%', padding: '12px 16px',
-    background: '#1F1F23', border: '0.5px solid #34343A',
-    borderRadius: 12, color: '#F4F4F5',
+    background: 'rgb(var(--c-surface-2))', border: '0.5px solid rgb(var(--c-border-strong))',
+    borderRadius: 12, color: 'rgb(var(--c-text))',
     fontFamily: 'Inter, sans-serif', fontSize: 14,
     outline: 'none',
   }
 
   return (
-    <div style={{ minHeight: '100%', background: '#0E0E10', paddingBottom: 120 }}>
+    <div style={{ minHeight: '100%', background: 'rgb(var(--c-bg))', paddingBottom: 120 }}>
 
       {/* Header */}
       <div style={{ padding: 'max(env(safe-area-inset-top), 16px) 16px 12px' }}>
         <div className="flex items-center justify-between">
-          <h1 style={{ fontFamily: 'Poppins, sans-serif', fontSize: 22, fontWeight: 600, color: '#F4F4F5' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 600, color: 'rgb(var(--c-text))' }}>
             Transactions
           </h1>
           <input ref={importRef} type="file" accept=".csv,text/csv,.pdf,application/pdf" onChange={onImportFile} hidden />
           <button
             onClick={() => importRef.current?.click()}
             className="flex items-center gap-2 tappable"
-            style={{ padding: '9px 14px', borderRadius: 12, background: '#E8C36A', color: '#0E0E10',
+            style={{ padding: '9px 14px', borderRadius: 12, background: 'rgb(var(--c-accent))', color: 'rgb(var(--c-bg))',
               fontSize: 13, fontWeight: 600, fontFamily: 'Inter, sans-serif', border: 'none' }}
             aria-label="Import a bank statement"
           >
             <FileUp size={16} /> Import statement
           </button>
         </div>
-        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#8B8B93', marginTop: 2 }}>
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: 'rgb(var(--c-text-3))', marginTop: 2 }}>
           {filtered.length} transaction{filtered.length !== 1 ? 's' : ''} · {formatMoney(totalSpent)} spent
         </p>
       </div>
@@ -162,7 +162,7 @@ export default function ExpensesPage() {
 
       {/* Search */}
       <div style={{ margin: '0 16px 12px', position: 'relative' }}>
-        <Search size={15} color="#8B8B93" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
+        <Search size={15} color="rgb(var(--c-text-3))" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
         <input
           type="text"
           placeholder="Search expenses..."
@@ -180,7 +180,7 @@ export default function ExpensesPage() {
       {/* Transactions */}
       {loadingHistory ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
-          <div style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid #E8C36A', borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />
+          <div style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid rgb(var(--c-accent))', borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />
           <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
         </div>
       ) : filtered.length === 0 ? (
@@ -195,12 +195,12 @@ export default function ExpensesPage() {
         <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {grouped.map(([date, txs]) => (
             <div key={date}>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#8B8B93', fontWeight: 600, marginBottom: 8 }}>
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: 'rgb(var(--c-text-3))', fontWeight: 600, marginBottom: 8 }}>
                 {format(new Date(date), 'EEEE, d MMMM')}
               </p>
-              <div style={{ background: '#17171A', borderRadius: 16, border: '0.5px solid #26262B', overflow: 'hidden' }}>
+              <div style={{ background: 'rgb(var(--c-surface))', borderRadius: 16, border: '0.5px solid rgb(var(--c-border))', overflow: 'hidden' }}>
                 {txs.map((tx, i) => (
-                  <div key={tx.id} style={{ borderBottom: i < txs.length - 1 ? '0.5px solid #26262B' : 'none' }}>
+                  <div key={tx.id} style={{ borderBottom: i < txs.length - 1 ? '0.5px solid rgb(var(--c-border))' : 'none' }}>
                     <ExpenseItem
                       transaction={tx}
                       onDelete={handleDelete}
@@ -219,25 +219,25 @@ export default function ExpensesPage() {
         <div style={{ padding: '0 20px 32px', display: 'flex', flexDirection: 'column', gap: 14 }}>
 
           <div>
-            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#8B8B93', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Amount</label>
+            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Amount</label>
             <div style={{ position: 'relative' }}>
-              <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', fontFamily: 'Poppins, sans-serif', color: '#8B8B93' }}>R</span>
+              <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', fontFamily: 'var(--font-display)', color: 'rgb(var(--c-text-3))' }}>R</span>
               <input type="number" inputMode="decimal" value={editForm.amount || ''} onChange={e => setEditForm(f => ({...f, amount: e.target.value}))} style={{ ...inputStyle, paddingLeft: 32 }} />
             </div>
           </div>
 
           <div>
-            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#8B8B93', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Notes</label>
+            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Notes</label>
             <input type="text" placeholder="Optional note" value={editForm.notes || ''} onChange={e => setEditForm(f => ({...f, notes: e.target.value}))} style={inputStyle} />
           </div>
 
           <div>
-            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#8B8B93', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Date</label>
+            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Date</label>
             <input type="date" value={editForm.date || ''} onChange={e => setEditForm(f => ({...f, date: e.target.value}))} style={{ ...inputStyle, colorScheme: 'dark' }} />
           </div>
 
           <div>
-            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#8B8B93', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 8 }}>Account</label>
+            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 8 }}>Account</label>
             <AccountPicker value={editForm.account} onChange={(val) => setEditForm(f => ({...f, account: val}))} />
           </div>
 
@@ -245,10 +245,10 @@ export default function ExpensesPage() {
             onClick={handleSaveEdit} disabled={saving}
             style={{
               width: '100%', padding: '14px 0', marginTop: 4,
-              background: saving ? '#C9A24E' : '#E8C36A',
+              background: saving ? 'rgb(var(--c-accent-dark))' : 'rgb(var(--c-accent))',
               borderRadius: 14, border: 'none',
-              fontFamily: 'Poppins, sans-serif', fontSize: 15, fontWeight: 600,
-              color: '#0E0E10', cursor: 'pointer',
+              fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 600,
+              color: 'rgb(var(--c-bg))', cursor: 'pointer',
             }}
           >
             {saving ? 'Saving...' : 'Save changes'}

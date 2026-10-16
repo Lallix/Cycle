@@ -23,7 +23,7 @@ export default function UpcomingBills() {
 
   return (
     <div style={{ marginBottom: 8 }}>
-      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, color: '#8B8B93', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '0 16px', marginBottom: 10 }}>
+      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '0 16px', marginBottom: 10 }}>
         Due Soon
       </p>
 
@@ -43,8 +43,8 @@ export default function UpcomingBills() {
                 display: 'flex', flexDirection: 'column', gap: 8,
                 padding: '12px 14px',
                 borderRadius: 14,
-                border: `0.5px solid ${paid ? 'rgba(91,201,139,0.25)' : '#26262B'}`,
-                background: paid ? 'rgba(91,201,139,0.05)' : '#17171A',
+                border: `0.5px solid ${paid ? 'rgb(var(--c-positive) / 0.25)' : 'rgb(var(--c-border))'}`,
+                background: paid ? 'rgb(var(--c-positive) / 0.05)' : 'rgb(var(--c-surface))',
                 opacity: paid ? 0.7 : 1,
                 cursor: 'pointer',
                 textAlign: 'left',
@@ -55,24 +55,24 @@ export default function UpcomingBills() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4 }}>
                 <span style={{
                   fontFamily: 'Inter, sans-serif', fontSize: 10, fontWeight: 600,
-                  color: isToday ? '#F07A6A' : isTomorrow ? '#D98E5A' : '#8B8B93',
+                  color: isToday ? 'rgb(var(--c-negative))' : isTomorrow ? 'rgb(var(--c-unplanned))' : 'rgb(var(--c-text-3))',
                 }}>
                   {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : format(exp.dueDate, 'd MMM')}
                 </span>
                 {paid
-                  ? <CheckCircle size={13} color="#5BC98B" />
-                  : <Clock size={13} color="#8B8B93" />
+                  ? <CheckCircle size={13} color="rgb(var(--c-positive))" />
+                  : <Clock size={13} color="rgb(var(--c-text-3))" />
                 }
               </div>
 
               {/* Name */}
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 500, color: '#F4F4F5', lineHeight: 1.3 }}>
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 500, color: 'rgb(var(--c-text))', lineHeight: 1.3 }}>
                 {exp.name}
               </p>
 
               {/* Amount + account */}
               <div>
-                <p style={{ fontFamily: 'Poppins, sans-serif', fontSize: 14, fontWeight: 600, color: '#F4F4F5', marginBottom: 4 }}>
+                <p style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 600, color: 'rgb(var(--c-text))', marginBottom: 4 }}>
                   {formatMoney(exp.amount)}
                 </p>
                 <span style={{

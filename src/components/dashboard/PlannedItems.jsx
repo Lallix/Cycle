@@ -31,31 +31,31 @@ export default function PlannedItems() {
   return (
     <div style={{ margin: '0 16px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, color: '#8B8B93', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           Planned
         </p>
-        <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#8B8B93' }}>
+        <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-3))' }}>
           Net {net >= 0 ? '+' : '−'}{formatMoney(Math.abs(net), true)}
         </span>
       </div>
 
-      <div style={{ background: '#17171A', borderRadius: 16, border: '0.5px solid #26262B', overflow: 'hidden' }}>
+      <div style={{ background: 'rgb(var(--c-surface))', borderRadius: 16, border: '0.5px solid rgb(var(--c-border))', overflow: 'hidden' }}>
         {plannedItems.map((p, i) => {
           const isIn = p.direction === 'in'
           return (
             <div key={p.id} style={{
               display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px',
-              borderBottom: i < plannedItems.length - 1 ? '0.5px solid #26262B' : 'none',
+              borderBottom: i < plannedItems.length - 1 ? '0.5px solid rgb(var(--c-border))' : 'none',
             }}>
-              <CalendarClock size={16} color={isIn ? '#5BC98B' : '#A1A1AA'} style={{ flexShrink: 0 }} />
+              <CalendarClock size={16} color={isIn ? 'rgb(var(--c-positive))' : 'rgb(var(--c-text-2))'} style={{ flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 500, color: '#F4F4F5' }}>{p.name}</p>
-                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: '#8B8B93' }}>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 500, color: 'rgb(var(--c-text))' }}>{p.name}</p>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-3))' }}>
                   {p.expected_date ? `By ${format(parseISO(p.expected_date), 'd MMM')}` : 'No date'}
                   {p.cycle_categories?.name ? ` · ${p.cycle_categories.name}` : ''}
                 </p>
               </div>
-              <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: 13, fontWeight: 600, color: isIn ? '#5BC98B' : '#F4F4F5', flexShrink: 0 }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 600, color: isIn ? 'rgb(var(--c-positive))' : 'rgb(var(--c-text))', flexShrink: 0 }}>
                 {isIn ? '+' : '−'}{formatMoney(p.amount, true)}
               </span>
               <button
@@ -65,11 +65,11 @@ export default function PlannedItems() {
                 style={{
                   width: 30, height: 30, borderRadius: 9, flexShrink: 0, cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: 'rgba(232,195,106,0.08)', border: '0.5px solid rgba(232,195,106,0.3)',
+                  background: 'rgb(var(--c-accent) / 0.08)', border: '0.5px solid rgb(var(--c-accent) / 0.3)',
                   opacity: busyId === p.id ? 0.4 : 1,
                 }}
               >
-                <Check size={14} color="#E8C36A" />
+                <Check size={14} color="rgb(var(--c-accent))" />
               </button>
             </div>
           )

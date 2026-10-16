@@ -92,21 +92,21 @@ export default function ExpenseItem({ transaction, onDelete, onEdit }) {
         position: 'absolute', top: 0, right: 0, bottom: 0,
         width: MAX + 16,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(240,122,106,0.08)',
+        background: 'rgb(var(--c-negative) / 0.08)',
       }}>
         <button
           onClick={handleDelete}
           style={{
             width: 40, height: 40, borderRadius: 12,
-            background: 'rgba(240,122,106,0.2)',
-            border: '0.5px solid rgba(240,122,106,0.35)',
+            background: 'rgb(var(--c-negative) / 0.2)',
+            border: '0.5px solid rgb(var(--c-negative) / 0.35)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer',
             transform: `scale(${Math.min(offset / MAX, 1)})`,
             transition: 'transform 0.15s ease',
           }}
         >
-          <Trash2 size={17} color="#F07A6A" />
+          <Trash2 size={17} color="rgb(var(--c-negative))" />
         </button>
       </div>
 
@@ -116,7 +116,7 @@ export default function ExpenseItem({ transaction, onDelete, onEdit }) {
           position: 'relative',
           display: 'flex', alignItems: 'center', gap: 12,
           padding: '12px 16px',
-          background: '#17171A',
+          background: 'rgb(var(--c-surface))',
           transform: `translateX(-${offset}px)`,
           transition: active.current ? 'none' : 'transform 0.25s cubic-bezier(0.22,1,0.36,1)',
           cursor: 'pointer',
@@ -140,7 +140,7 @@ export default function ExpenseItem({ transaction, onDelete, onEdit }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{
             fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500,
-            color: '#F4F4F5', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            color: 'rgb(var(--c-text))', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {catName}
           </p>
@@ -153,12 +153,12 @@ export default function ExpenseItem({ transaction, onDelete, onEdit }) {
                 {acc.label}
               </span>
             )}
-            <span style={{ fontSize: 11, color: '#8B8B93', fontFamily: 'Inter, sans-serif' }}>
+            <span style={{ fontSize: 11, color: 'rgb(var(--c-text-3))', fontFamily: 'Inter, sans-serif' }}>
               {format(new Date(transaction.transaction_date), 'd MMM')}
             </span>
             {(transaction.notes || transaction.description) && (
               <span style={{
-                fontSize: 11, color: '#A1A1AA', fontFamily: 'Inter, sans-serif',
+                fontSize: 11, color: 'rgb(var(--c-text-2))', fontFamily: 'Inter, sans-serif',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160,
               }}>
                 · {transaction.notes || transaction.description}
@@ -169,8 +169,8 @@ export default function ExpenseItem({ transaction, onDelete, onEdit }) {
 
         {/* Amount */}
         <span style={{
-          fontFamily: 'Poppins, sans-serif', fontSize: 14, fontWeight: 500,
-          color: transaction.direction === 'in' ? '#5BC98B' : '#F07A6A', flexShrink: 0, letterSpacing: '-0.01em',
+          fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 500,
+          color: transaction.direction === 'in' ? 'rgb(var(--c-positive))' : 'rgb(var(--c-negative))', flexShrink: 0, letterSpacing: '-0.01em',
         }}>
           {transaction.direction === 'in' ? '+' : '-'}{formatMoney(transaction.amount)}
         </span>

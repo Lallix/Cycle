@@ -23,8 +23,8 @@ export default function BrandLogo({ size = 48, animated = false, className = '' 
         style={{
           width: s * 0.94, height: s * 0.94,
           border: `${stroke}px solid transparent`,
-          borderTopColor: '#E8C36A',
-          borderRightColor: '#E8C36A',
+          borderTopColor: 'rgb(var(--c-accent))',
+          borderRightColor: 'rgb(var(--c-accent))',
           borderBottomColor: '#2A2010',
           borderLeftColor: '#2A2010',
           animation: animated ? 'blSpinCW 4s linear infinite' : 'none',
@@ -38,8 +38,8 @@ export default function BrandLogo({ size = 48, animated = false, className = '' 
         style={{
           width: s * 0.68, height: s * 0.68,
           border: `${stroke}px solid transparent`,
-          borderTopColor: '#F3DDA0',
-          borderLeftColor: '#F3DDA0',
+          borderTopColor: 'rgb(var(--c-accent-light))',
+          borderLeftColor: 'rgb(var(--c-accent-light))',
           borderBottomColor: '#1A1508',
           borderRightColor: '#1A1508',
           animation: animated ? 'blSpinCCW 2.5s linear infinite' : 'none',
@@ -51,7 +51,7 @@ export default function BrandLogo({ size = 48, animated = false, className = '' 
         className="absolute rounded-full"
         style={{
           width: s * 0.36, height: s * 0.36,
-          background: '#0E0E10',
+          background: 'rgb(var(--c-bg))',
         }}
       />
     </div>

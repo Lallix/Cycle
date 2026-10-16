@@ -66,7 +66,7 @@ export default function AppLayout() {
 
       {/* Bottom nav */}
       <nav
-        className="flex-shrink-0 bg-bg border-t border-border relative"
+        className="app-nav flex-shrink-0 bg-bg border-t border-border relative"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="flex items-stretch" style={{ height: 60 }}>
@@ -80,22 +80,22 @@ export default function AppLayout() {
           <div className="flex-1 flex flex-col items-center justify-center">
             <button
               onClick={() => setAddOpen(true)}
-              className="flex items-center justify-center rounded-full transition-all duration-200 active:scale-90 no-select"
+              className="app-fab flex items-center justify-center rounded-full transition-all duration-200 active:scale-90 no-select"
               style={{
                 width: 52,
                 height: 52,
-                background: '#E8C36A',
+                background: 'rgb(var(--c-accent))',
                 boxShadow: '0 0 0 0 transparent, 0 4px 12px rgba(0,0,0,0.4)',
                 marginTop: -18,  // lifts above the nav bar
-                border: '3px solid #0E0E10',
+                border: '3px solid rgb(var(--c-bg))',
               }}
               aria-label="Add transaction"
             >
-              <Plus size={24} strokeWidth={2.5} color="#0E0E10" />
+              <Plus size={24} strokeWidth={2.5} color="rgb(var(--c-on-accent))" />
             </button>
-            <span style={{
+            <span className="app-fab-label" style={{
               fontSize: 10,
-              color: '#8B8B93',
+              color: 'rgb(var(--c-text-3))',
               fontFamily: 'Inter, sans-serif',
               marginTop: 3,
               letterSpacing: '0.02em',

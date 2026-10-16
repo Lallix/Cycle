@@ -41,12 +41,12 @@ function StatCard({ label, amount, color, delay = 0 }) {
   return (
     <div
       className="flex-1 flex flex-col items-center justify-center py-4"
-      style={{ borderRight: '0.5px solid #26262B' }}
+      style={{ borderRight: '0.5px solid rgb(var(--c-border))' }}
     >
       <span style={{
         fontSize: 10,
         fontFamily: 'Inter, sans-serif',
-        color: '#8B8B93',
+        color: 'rgb(var(--c-text-3))',
         textTransform: 'uppercase',
         letterSpacing: '0.08em',
         marginBottom: 4,
@@ -54,10 +54,10 @@ function StatCard({ label, amount, color, delay = 0 }) {
         {label}
       </span>
       <span style={{
-        fontFamily: 'Poppins, sans-serif',
+        fontFamily: 'var(--font-display)',
         fontSize: 14,
         fontWeight: 500,
-        color: color === '#F4F4F5' ? '#F4F4F5' : color,
+        color: color === 'rgb(var(--c-text))' ? 'rgb(var(--c-text))' : color,
         letterSpacing: '-0.01em',
       }}>
         {formatMoney(animated, true)}
@@ -80,9 +80,9 @@ export default function HeroCard() {
     <div
       className="mx-4 mb-4 overflow-hidden"
       style={{
-        background: '#17171A',
+        background: 'rgb(var(--c-surface))',
         borderRadius: 24,
-        border: '0.5px solid #26262B',
+        border: '0.5px solid rgb(var(--c-border))',
       }}
     >
       {/* Ring + daily safe spend */}
@@ -103,7 +103,7 @@ export default function HeroCard() {
           <p style={{
             fontSize: 10,
             fontFamily: 'Inter, sans-serif',
-            color: '#8B8B93',
+            color: 'rgb(var(--c-text-3))',
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
             marginBottom: 4,
@@ -112,10 +112,10 @@ export default function HeroCard() {
           </p>
 
           <div style={{
-            fontFamily: 'Poppins, sans-serif',
+            fontFamily: 'var(--font-display)',
             fontSize: 30,
             fontWeight: 300,
-            color: isOver ? '#F07A6A' : '#E8C36A',
+            color: isOver ? 'rgb(var(--c-negative))' : 'rgb(var(--c-accent))',
             lineHeight: 1,
             letterSpacing: '-0.02em',
           }}>
@@ -132,8 +132,8 @@ export default function HeroCard() {
               marginTop: 4,
               fontSize: 10,
               fontFamily: 'Inter, sans-serif',
-              color: '#F07A6A',
-              background: 'rgba(240,122,106,0.1)',
+              color: 'rgb(var(--c-negative))',
+              background: 'rgb(var(--c-negative) / 0.1)',
               padding: '2px 8px',
               borderRadius: 6,
             }}>
@@ -142,7 +142,7 @@ export default function HeroCard() {
           )}
 
           {totals.fixedDue > 0 && (
-            <p style={{ fontSize: 11, fontFamily: 'Inter, sans-serif', color: '#A1A1AA', marginTop: 8 }}>
+            <p style={{ fontSize: 11, fontFamily: 'Inter, sans-serif', color: 'rgb(var(--c-text-2))', marginTop: 8 }}>
               {formatMoney(totals.fixedDue, true)} fixed still to go off
             </p>
           )}
@@ -151,7 +151,7 @@ export default function HeroCard() {
             <p style={{
               fontSize: 11,
               fontFamily: 'Inter, sans-serif',
-              color: '#8B8B93',
+              color: 'rgb(var(--c-text-3))',
               marginTop: 4,
             }}>
               {cycle.shortLabel} · payday to payday
@@ -162,15 +162,15 @@ export default function HeroCard() {
 
       {/* 3-column stat strip */}
       <div
-        style={{ borderTop: '0.5px solid #26262B', display: 'flex' }}
+        style={{ borderTop: '0.5px solid rgb(var(--c-border))', display: 'flex' }}
       >
-        <StatCard label="Income"  amount={totals.income}    color="#5BC98B" delay={100} />
-        <StatCard label="Spent"   amount={totals.spent}     color="#F07A6A" delay={200} />
+        <StatCard label="Income"  amount={totals.income}    color="rgb(var(--c-positive))" delay={100} />
+        <StatCard label="Spent"   amount={totals.spent}     color="rgb(var(--c-negative))" delay={200} />
         <div className="flex-1 flex flex-col items-center justify-center py-4">
           <span style={{
             fontSize: 10,
             fontFamily: 'Inter, sans-serif',
-            color: '#8B8B93',
+            color: 'rgb(var(--c-text-3))',
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
             marginBottom: 4,
@@ -178,10 +178,10 @@ export default function HeroCard() {
             Left
           </span>
           <span style={{
-            fontFamily: 'Poppins, sans-serif',
+            fontFamily: 'var(--font-display)',
             fontSize: 14,
             fontWeight: 500,
-            color: isOver ? '#F07A6A' : '#E8C36A',
+            color: isOver ? 'rgb(var(--c-negative))' : 'rgb(var(--c-accent))',
             letterSpacing: '-0.01em',
           }}>
             {isOver ? '−' : ''}{formatMoney(Math.abs(totals.remaining), true)}

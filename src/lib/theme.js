@@ -1,25 +1,26 @@
-// Refined gold — one dark surface family, gold only for what matters
-// (key numbers, primary actions, the active tab). Mirrors the CSS variables
-// in styles/globals.css and the colours in tailwind.config.js.
+// Theme colours for inline styles. Each one points at a CSS variable in
+// styles/globals.css, so the same component shows the Classic (refined gold)
+// or Vibe look depending on <html data-theme>. The names are historic:
+// "gold" is the accent of whichever look is active.
 export const T = {
-  bg:           '#0E0E10',   // page
-  surface:      '#17171A',   // cards
-  surface2:     '#1F1F23',   // inputs, raised rows
-  border:       '#26262B',
-  borderStrong: '#34343A',
-  text:         '#F4F4F5',
-  text2:        '#A1A1AA',   // supporting
-  text3:        '#8B8B93',   // captions, labels
-  gold:         '#E8C36A',
-  goldSoft:     'rgba(232,195,106,0.12)',
-  goldLine:     'rgba(232,195,106,0.35)',
-  positive:     '#5BC98B',
-  negative:     '#F07A6A',
-  warning:      '#E9A25A',
-  fixed:        '#7C8DB5',
-  predicted:    '#E8C36A',
-  unplanned:    '#D98E5A',
-  radius:       18,
+  bg:           'rgb(var(--c-bg))',   // page
+  surface:      'rgb(var(--c-surface))',   // cards
+  surface2:     'rgb(var(--c-surface-2))',   // inputs, raised rows
+  border:       'rgb(var(--c-border))',
+  borderStrong: 'rgb(var(--c-border-strong))',
+  text:         'rgb(var(--c-text))',
+  text2:        'rgb(var(--c-text-2))',   // supporting
+  text3:        'rgb(var(--c-text-3))',   // captions, labels
+  gold:         'rgb(var(--c-accent))',
+  goldSoft:     'rgb(var(--c-accent) / 0.12)',
+  goldLine:     'rgb(var(--c-accent) / 0.35)',
+  positive:     'rgb(var(--c-positive))',
+  negative:     'rgb(var(--c-negative))',
+  warning:      'rgb(var(--c-warning))',
+  fixed:        'rgb(var(--c-fixed))',
+  predicted:    'rgb(var(--c-predicted))',
+  unplanned:    'rgb(var(--c-unplanned))',
+  radius:       'var(--radius-card)',
 }
 
 export const TYPE_COLOUR = { fixed: T.fixed, predicted: T.predicted, unplanned: T.unplanned }
