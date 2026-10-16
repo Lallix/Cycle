@@ -1,5 +1,5 @@
-import { useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { FileUp, CheckCircle2, AlertTriangle, Copy, ArrowDownLeft, ArrowUpRight, Lock } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
@@ -53,6 +53,7 @@ function chunk(arr, n) {
 
 export default function ImportPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const toast = useToast()
   const { user } = useAuth()
   const { categories, accounts, addAccount, updateAccount, refresh } = useBudget()
@@ -75,10 +76,22 @@ export default function ImportPage() {
   const [result, setResult] = useState(null)
 
   // ── Step 1: read the file ─────────────────────────────────────
+  // A statement picked straight from the Transactions page arrives in the
+  // navigation state; open it as if it had been chosen here.
+  useEffect(() => {
+    const file = location.state?.file
+    if (!file) return
+    navigate(location.pathname, { replace: true, state: null })   // don't reopen it on back/refresh
+    handleFile(file)
+  }, [])
+
   async function onFile(e) {
     const file = e.target.files?.[0]
     e.target.value = ''
-    if (!file) return
+    if (file) await handleFile(file)
+  }
+
+  async function handleFile(file) {
     setBusy(true)
     setFileName(file.name)
     try {

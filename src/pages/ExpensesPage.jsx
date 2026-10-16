@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { useBudget } from '../context/BudgetContext'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../components/ui/Toast'
@@ -22,6 +22,14 @@ export default function ExpensesPage() {
   const { profile } = useAuth()
   const toast = useToast()
   const navigate = useNavigate()
+  const importRef = useRef(null)
+
+  // Picking a statement here jumps straight to the import review
+  function onImportFile(e) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (file) navigate('/import', { state: { file } })
+  }
 
   const [editOpen, setEditOpen]       = useState(false)
   const [editingTx, setEditingTx]     = useState(null)
@@ -133,13 +141,15 @@ export default function ExpensesPage() {
           <h1 style={{ fontFamily: 'Poppins, sans-serif', fontSize: 22, fontWeight: 600, color: '#F4F4F5' }}>
             Transactions
           </h1>
+          <input ref={importRef} type="file" accept=".csv,text/csv,.pdf,application/pdf" onChange={onImportFile} hidden />
           <button
-            onClick={() => navigate('/import')}
-            className="flex items-center gap-1.5 tappable"
-            style={{ padding: '6px 12px', borderRadius: 10, background: 'rgba(232,195,106,0.1)',
-              border: '0.5px solid rgba(232,195,106,0.3)', color: '#E8C36A', fontSize: 12, fontFamily: 'Inter, sans-serif' }}
+            onClick={() => importRef.current?.click()}
+            className="flex items-center gap-2 tappable"
+            style={{ padding: '9px 14px', borderRadius: 12, background: '#E8C36A', color: '#0E0E10',
+              fontSize: 13, fontWeight: 600, fontFamily: 'Inter, sans-serif', border: 'none' }}
+            aria-label="Import a bank statement"
           >
-            <FileUp size={14} /> Import
+            <FileUp size={16} /> Import statement
           </button>
         </div>
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: '#8B8B93', marginTop: 2 }}>
