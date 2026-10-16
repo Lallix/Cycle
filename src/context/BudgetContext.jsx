@@ -20,6 +20,7 @@ export function BudgetProvider({ children }) {
   const [accounts, setAccounts]               = useState([])
   const [paydays, setPaydays]                 = useState(null)  // null = not loaded yet
   const [plannedItems, setPlannedItems]       = useState([])
+  const [donePlannedItems, setDonePlannedItems] = useState([])   // ticked off, newest first
   const [budgetHistory, setBudgetHistory]     = useState([])   // cycle_category_budgets
 
   const [cycles, setCycles] = useState([])     // newest first; cycles[0] is the current one
@@ -50,7 +51,7 @@ export function BudgetProvider({ children }) {
   function resetData() {
     setCategories([]); setTransactions([]); setRecurringExpenses([])
     setPaidLog([]); setIncomeRecords([]); setSavingGoals([]); setAccounts([])
-    setPaydays(null); setPlannedItems([]); setBudgetHistory([]); setCycles([]); setCycle(null)
+    setPaydays(null); setPlannedItems([]); setDonePlannedItems([]); setBudgetHistory([]); setCycles([]); setCycle(null)
     setTotals(computeCycleTotals({ transactions: [], categories: [], incomeRecords: [] }))
   }
 
@@ -149,10 +150,13 @@ export function BudgetProvider({ children }) {
       .from('cycle_planned_items')
       .select('*, cycle_categories(id, name, icon, type)')
       .eq('user_id', user.id)
-      .eq('status', 'planned')
+      .in('status', ['planned', 'done'])
       .order('expected_date')
     if (error) throw error
-    setPlannedItems(data || [])
+    const rows = data || []
+    setPlannedItems(rows.filter(r => r.status === 'planned'))
+    setDonePlannedItems(rows.filter(r => r.status === 'done')
+      .sort((a, b) => (b.updated_at || '').localeCompare(a.updated_at || '')))
     return data
   }
 
@@ -500,7 +504,7 @@ export function BudgetProvider({ children }) {
   const value = {
     loading, error,
     categories, transactions, recurringExpenses, paidLog,
-    incomeRecords, savingGoals, accounts, cycle, cycles, paydays, plannedItems, budgetHistory, totals,
+    incomeRecords, savingGoals, accounts, cycle, cycles, paydays, plannedItems, donePlannedItems, budgetHistory, totals,
     // helpers
     isRecurringPaid,
     getCategorySpent,

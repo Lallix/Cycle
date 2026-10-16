@@ -20,9 +20,10 @@ const borderColors = {
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
 
-  const toast = useCallback((message, type = 'success', duration = 3000) => {
+  // action (optional): { label, onClick } — shown as a button, e.g. Undo
+  const toast = useCallback((message, type = 'success', duration = 3000, action = null) => {
     const id = Date.now() + Math.random()
-    setToasts(prev => [...prev, { id, message, type }])
+    setToasts(prev => [...prev, { id, message, type, action }])
     if (duration > 0) {
       setTimeout(() => {
         setToasts(prev => prev.filter(t => t.id !== id))
@@ -51,6 +52,14 @@ export function ToastProvider({ children }) {
           >
             {icons[t.type] || icons.info}
             <p className="flex-1 text-sm text-text-primary">{t.message}</p>
+            {t.action && (
+              <button
+                onClick={() => { dismiss(t.id); t.action.onClick() }}
+                className="text-sm font-semibold text-gold px-2 py-1 rounded-lg hover:bg-gold/10 transition-colors"
+              >
+                {t.action.label}
+              </button>
+            )}
             <button
               onClick={() => dismiss(t.id)}
               className="text-muted hover:text-text-primary transition-colors"
