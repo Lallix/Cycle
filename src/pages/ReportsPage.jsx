@@ -24,7 +24,7 @@ function BarChart({ data }) {
         return (
           <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
             {/* Bars */}
-            <div style={{ display: 'flex', gap: 3, alignItems: 'flex-end', height: H }}>
+            <div style={{ display: 'flex', gap: 3, alignItems: 'flex-end', height: H, width: '100%', maxWidth: 44 }}>
               {/* Income bar */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: H }}>
                 <div style={{ width: '100%', background: 'rgb(var(--c-positive) / 0.25)', borderRadius: '3px 3px 0 0', height: incH, minHeight: 2 }} />

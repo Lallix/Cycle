@@ -1,13 +1,13 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBudget } from '../../context/BudgetContext'
-import { formatMoney } from '../../lib/format'
 import { normaliseType } from '../../lib/totals'
 
 // Vibe look: the dashboard pieces from the 3D concept, on live data.
 // Clay surfaces and the tilt come from .clay / .tilt in styles/globals.css.
 
-const R = v => `${v < 0 ? '−' : ''}${formatMoney(Math.abs(v))}`.replace('.00', '')
+// Whole rands, no space after R, so the big number never wraps: −R2 177
+const R = v => `${v < 0 ? '−' : ''}R${Math.round(Math.abs(v)).toLocaleString('en-ZA').replace(/[,\s]/g, ' ')}`
 const Rk = v => `${v < 0 ? '−' : ''}R${(Math.abs(v) / 1000).toFixed(1)}k`
 const display = { fontFamily: 'var(--font-display)' }
 
