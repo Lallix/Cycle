@@ -11,25 +11,37 @@ const R = v => `${v < 0 ? '−' : ''}R${Math.round(Math.abs(v)).toLocaleString('
 const Rk = v => `${v < 0 ? '−' : ''}R${(Math.abs(v) / 1000).toFixed(1)}k`
 const display = { fontFamily: 'var(--font-display)' }
 
-// Tilt a card towards the finger / mouse; a resting tilt on the hero
-function useTilt(rest) {
+// Tilt a card towards the mouse. Cards sit flat; on a phone the tilt only
+// follows a finger that is pressed on the card, and springs back on lift,
+// cancel or scroll (touch scrolling often never sends "leave").
+function useTilt() {
   const ref = useRef(null)
   useEffect(() => {
     const el = ref.current
     if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const restT = rest ? 'perspective(700px) rotateX(6deg) rotateY(-5deg)' : 'perspective(700px)'
-    el.style.transform = restT
-    const move = e => {
+    const FLAT = 'perspective(700px) rotateX(0deg) rotateY(0deg)'
+    el.style.transform = FLAT
+    let pressed = false
+    const tiltTo = e => {
       const r = el.getBoundingClientRect()
-      const rx = ((e.clientY - r.top) / r.height - 0.5) * -10
-      const ry = ((e.clientX - r.left) / r.width - 0.5) * 12
+      const rx = ((e.clientY - r.top) / r.height - 0.5) * -8
+      const ry = ((e.clientX - r.left) / r.width - 0.5) * 10
       el.style.transform = `perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg)`
     }
-    const leave = () => { el.style.transform = restT }
+    const flat = () => { pressed = false; el.style.transform = FLAT }
+    const move = e => { if (e.pointerType === 'mouse' || pressed) tiltTo(e) }
+    const down = e => { if (e.pointerType !== 'mouse') { pressed = true; tiltTo(e) } }
     el.addEventListener('pointermove', move)
-    el.addEventListener('pointerleave', leave)
-    return () => { el.removeEventListener('pointermove', move); el.removeEventListener('pointerleave', leave) }
-  }, [rest])
+    el.addEventListener('pointerdown', down)
+    ;['pointerup', 'pointercancel', 'pointerleave'].forEach(t => el.addEventListener(t, flat))
+    window.addEventListener('scroll', flat, true)
+    return () => {
+      el.removeEventListener('pointermove', move)
+      el.removeEventListener('pointerdown', down)
+      ;['pointerup', 'pointercancel', 'pointerleave'].forEach(t => el.removeEventListener(t, flat))
+      window.removeEventListener('scroll', flat, true)
+    }
+  }, [])
   return ref
 }
 
@@ -50,7 +62,7 @@ export function VibeHeader({ firstName, right }) {
 
 export function VibeHero() {
   const { totals, cycle } = useBudget()
-  const ref = useTilt(true)
+  const ref = useTilt()
   const committed = totals.spent + totals.fixedDue
   const used = totals.income > 0 ? committed / totals.income : 0
   const left = totals.remaining
