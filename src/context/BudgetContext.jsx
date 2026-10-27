@@ -12,6 +12,7 @@ export function BudgetProvider({ children }) {
   const [error, setError]           = useState(null)
 
   const [categories, setCategories]           = useState([])
+  const [archivedCategories, setArchivedCategories] = useState([])   // removed, can be restored
   const [transactions, setTransactions]       = useState([])
   const [recurringExpenses, setRecurringExpenses] = useState([])
   const [paidLog, setPaidLog]                 = useState([])   // cycle_recurring_paid_log
@@ -78,10 +79,10 @@ export function BudgetProvider({ children }) {
       .from('cycle_categories')
       .select('*')
       .eq('user_id', user.id)
-      .eq('is_active', true)
       .order('sort_order')
     if (error) throw error
-    setCategories(data || [])
+    setCategories((data || []).filter(c => c.is_active))
+    setArchivedCategories((data || []).filter(c => !c.is_active))
     return data
   }
 
@@ -426,12 +427,22 @@ export function BudgetProvider({ children }) {
     return data
   }
 
+  // "Deleting" a category archives it: it disappears from the app but keeps its
+  // transactions, budget history and payee rules, so it can be restored.
   async function deleteCategory(id) {
     const { error } = await supabase
       .from('cycle_categories')
-      .delete().eq('id', id).eq('user_id', user.id)
+      .update({ is_active: false }).eq('id', id).eq('user_id', user.id)
     if (error) throw error
-    setCategories(prev => prev.filter(c => c.id !== id))
+    await loadCategories()
+  }
+
+  async function restoreCategory(id) {
+    const { error } = await supabase
+      .from('cycle_categories')
+      .update({ is_active: true }).eq('id', id).eq('user_id', user.id)
+    if (error) throw error
+    await loadCategories()
   }
 
   async function updateIncome(id, amount) {
@@ -514,7 +525,7 @@ export function BudgetProvider({ children }) {
     addTransaction, updateTransaction, deleteTransaction,
     toggleRecurringPaid,
     addRecurringExpense, updateRecurringExpense, deleteRecurringExpense,
-    addCategory, updateCategory, deleteCategory,
+    addCategory, updateCategory, deleteCategory, restoreCategory, archivedCategories,
     updateIncome, addIncome, deleteIncome,
     addSavingGoal, updateSavingGoal, contributeSavings,
     addAccount, updateAccount, deleteAccount,

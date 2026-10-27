@@ -7,7 +7,7 @@ import PageHeader from '../components/ui/PageHeader'
 import Button from '../components/ui/Button'
 import BottomSheet from '../components/ui/BottomSheet'
 import AccountPicker from '../components/ui/AccountPicker'
-import { User, Wallet, LogOut, Plus, Edit2, Trash2, RefreshCw, Smile, FileUp } from 'lucide-react'
+import { User, Wallet, LogOut, Plus, Edit2, Trash2, RefreshCw, Smile, FileUp, ChevronDown, RotateCcw } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import ThemeSwitch from '../components/ui/ThemeSwitch'
 import Picker from '@emoji-mart/react'
@@ -25,7 +25,7 @@ const BLANK_CAT = { name: '', icon: '🛒', colour: 'rgb(var(--c-accent))', budg
 
 export default function SettingsPage() {
   const { user, profile, signOut, updateProfile, biometricAvailable, biometricEnabled, registerBiometric, disableBiometric } = useAuth()
-  const { categories, incomeRecords, accounts, addCategory, updateCategory, deleteCategory, updateIncome, addIncome, deleteIncome, addAccount, updateAccount, deleteAccount } = useBudget()
+  const { categories, archivedCategories, restoreCategory, incomeRecords, accounts, addCategory, updateCategory, deleteCategory, updateIncome, addIncome, deleteIncome, addAccount, updateAccount, deleteAccount } = useBudget()
   const toast = useToast()
   const navigate = useNavigate()
 
@@ -44,6 +44,7 @@ export default function SettingsPage() {
   const [savingIncome, setSavingIncome]       = useState(false)
   const [savingAccount, setSavingAccount]     = useState(false)
   const [editingAccount, setEditingAccount]   = useState(null)
+  const [archivedOpen, setArchivedOpen]       = useState(false)
 
   // ── Profile ────────────────────────────────────────────────
   function openProfile() {
@@ -190,10 +191,18 @@ export default function SettingsPage() {
     finally { setSaving(false) }
   }
 
+  // Removing archives the category; Undo (10 s) or the Archived list brings it back
   async function handleDeleteCat(cat) {
     try {
       await deleteCategory(cat.id)
-      toast('Category removed', 'success')
+      toast(`${cat.name} removed`, 'success', 10000, { label: 'Undo', onClick: () => handleRestoreCat(cat) })
+    } catch (e) { toast(e.message, 'error') }
+  }
+
+  async function handleRestoreCat(cat) {
+    try {
+      await restoreCategory(cat.id)
+      toast(`${cat.name} is back`, 'success')
     } catch (e) { toast(e.message, 'error') }
   }
 
@@ -380,7 +389,7 @@ export default function SettingsPage() {
                   <button onClick={() => openEditCat(cat)} className="p-1.5 rounded-lg hover:bg-surface-2 transition-colors">
                     <Edit2 size={13} className="text-muted" />
                   </button>
-                  <button onClick={() => handleDeleteCat(cat)} className="p-1.5 rounded-lg hover:bg-danger/10 transition-colors">
+                  <button onClick={() => handleDeleteCat(cat)} aria-label={`Remove ${cat.name}`} title="Remove (can be restored)" className="p-1.5 rounded-lg hover:bg-danger/10 transition-colors">
                     <Trash2 size={13} className="text-muted hover:text-danger" />
                   </button>
                 </div>
@@ -390,6 +399,37 @@ export default function SettingsPage() {
               <p className="text-sm text-muted px-4 py-4">No categories yet</p>
             )}
           </div>
+
+          {/* Removed categories, kept so they can come back with their history */}
+          {archivedCategories.length > 0 && (
+            <div className="mt-3">
+              <button
+                onClick={() => setArchivedOpen(o => !o)}
+                aria-expanded={archivedOpen}
+                className="w-full flex items-center justify-between px-1 py-1 text-xs text-muted"
+              >
+                <span>Removed ({archivedCategories.length}) — tap to restore</span>
+                <ChevronDown size={14} style={{ transform: archivedOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+              </button>
+              {archivedOpen && (
+                <div className="bg-surface-1 border border-border rounded-2xl overflow-hidden divide-y divide-border mt-2">
+                  {archivedCategories.map(cat => (
+                    <div key={cat.id} className="flex items-center gap-3 px-4 py-3" style={{ opacity: 0.75 }}>
+                      <span className="text-lg w-7 text-center">{cat.icon || '💳'}</span>
+                      <p className="flex-1 min-w-0 text-sm font-medium truncate">{cat.name}</p>
+                      <button
+                        onClick={() => handleRestoreCat(cat)}
+                        className="flex items-center gap-1 text-xs font-semibold text-gold px-2.5 py-1.5 rounded-lg hover:bg-gold/10"
+                        aria-label={`Restore ${cat.name}`}
+                      >
+                        <RotateCcw size={12} /> Restore
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </section>
 
         {/* Look */}
