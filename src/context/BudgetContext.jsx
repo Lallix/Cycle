@@ -272,6 +272,7 @@ export function BudgetProvider({ children }) {
         amount:           payload.amount,
         category_id:      payload.category_id || null,
         account:          payload.account || null,
+        account_id:       accounts.find(a => a.name === payload.account)?.id || null,
         notes:            payload.notes || null,
         transaction_date: payload.date || new Date().toISOString().split('T')[0],
         cycle_key:        null,   // filled by the database from your paydays

@@ -13,6 +13,7 @@ import { hashLines } from '../lib/import/fingerprint'
 import { buildCategoriser, payeeKey, escapeRegex } from '../lib/import/categorise'
 import { parseGoTyme, isGoTymeStatement } from '../lib/import/gotyme'
 import { readPdfItems, PdfPasswordError } from '../lib/import/pdfText'
+import { matchManual, shiftDate, MATCH_DAYS } from '../lib/import/matchManual'
 
 // Import a bank statement: Capitec CSV (main account or credit card) or a
 // GoTyme / TymeBank PDF statement (password-protected PDFs ask for the
@@ -69,7 +70,7 @@ export default function ImportPage() {
   const [account, setAccount] = useState(null)
   const [accountChoice, setAccountChoice] = useState('new')
   const [newAccount, setNewAccount] = useState({ name: '', kind: 'bank' })
-  const [rows, setRows] = useState([])            // lines + hash, duplicate, categoryId, via, key
+  const [rows, setRows] = useState([])            // lines + hash, duplicate, categoryId, via, key, replaces
   const [learned, setLearned] = useState({})      // payee key → category id (becomes a rule)
   const [filter, setFilter] = useState('new')
   const [shown, setShown] = useState(PAGE)
@@ -201,9 +202,34 @@ export default function ImportPage() {
     if (error) throw error
     const categorise = buildCategoriser(categories, rules || [])
 
+    // Expenses you added by hand that this statement now covers
+    const dates = lines.map(l => l.date).sort()
+    let manual = []
+    if (dates.length) {
+      const { data, error: mErr } = await supabase
+        .from('cycle_transactions')
+        .select('id, transaction_date, amount, direction, account, account_id, category_id, notes')
+        .eq('user_id', user.id)
+        .eq('source', 'manual')
+        .is('import_hash', null)
+        .gte('transaction_date', shiftDate(dates[0], -MATCH_DAYS))
+        .lte('transaction_date', shiftDate(dates[dates.length - 1], MATCH_DAYS))
+      if (mErr) throw mErr
+      manual = data || []
+    }
+    const freshIdx = lines.map((_, i) => i).filter(i => !existing.has(hashes[i]))
+    const matched = matchManual(freshIdx.map(i => lines[i]), manual, acc)
+    const replaces = new Map([...matched].map(([k, m]) => [freshIdx[k], m]))
+
     setRows(lines.map((l, i) => {
       const { categoryId, via } = categorise(l, acc.id)
-      return { ...l, hash: hashes[i], duplicate: existing.has(hashes[i]), categoryId, via, key: payeeKey(l.description) }
+      const m = replaces.get(i)
+      // The category you picked by hand wins over the rules
+      return {
+        ...l, hash: hashes[i], duplicate: existing.has(hashes[i]), key: payeeKey(l.description),
+        categoryId: m?.category_id || categoryId, via: m?.category_id ? 'hand-added' : via,
+        replaces: m || null,
+      }
     }))
     setLearned({})
     setFilter('new')
@@ -230,6 +256,7 @@ export default function ImportPage() {
       fresh: fresh.length,
       duplicates: rows.length - fresh.length,
       uncategorised: fresh.filter(r => !r.categoryId).length,
+      replaced: fresh.filter(r => r.replaces).length,
       moneyIn: fresh.filter(r => r.direction === 'in').reduce((s, r) => s + r.amount, 0),
       moneyOut: fresh.filter(r => r.direction === 'out').reduce((s, r) => s + r.amount, 0),
       from: rows[0]?.date, to: rows[rows.length - 1]?.date,
@@ -277,6 +304,7 @@ export default function ImportPage() {
           bank_category: r.bankCategory || null,
           balance: r.balance,
           transaction_date: r.date,
+          notes: r.replaces?.notes || null,
           source: 'import',
           import_hash: r.hash,
           import_batch_id: batch.id,
@@ -284,6 +312,14 @@ export default function ImportPage() {
         })))
         if (error) throw error
         inserted += part.length
+      }
+
+      // The statement lines now stand in for the expenses added by hand
+      const replacedIds = fresh.filter(r => r.replaces).map(r => r.replaces.id)
+      for (const part of chunk(replacedIds, 200)) {
+        const { error } = await supabase.from('cycle_transactions').delete()
+          .eq('user_id', user.id).eq('source', 'manual').in('id', part)
+        if (error) toast(`Imported, but hand-added copies were not removed: ${error.message}`, 'warning', 6000)
       }
 
       // Remember the payees you categorised by hand
@@ -310,7 +346,7 @@ export default function ImportPage() {
       await supabase.from('cycle_import_batches')
         .update({ inserted_count: inserted }).eq('id', batch.id)
 
-      setResult({ inserted, duplicates: stats.duplicates, rules: newRules.length, pending: parsed.pending.length })
+      setResult({ inserted, duplicates: stats.duplicates, rules: newRules.length, pending: parsed.pending.length, replaced: replacedIds.length })
       setStep('done')
       refresh()
     } catch (err) {
@@ -439,6 +475,12 @@ export default function ImportPage() {
                 <span>In <b style={{ color: 'rgb(var(--c-positive))' }}>{formatMoney(stats.moneyIn)}</b></span>
                 <span>Out <b style={{ color: 'rgb(var(--c-negative))' }}>{formatMoney(stats.moneyOut)}</b></span>
               </div>
+              {stats.replaced > 0 && (
+                <p style={label}>
+                  {stats.replaced} expense{stats.replaced > 1 ? 's' : ''} you added by hand {stats.replaced > 1 ? 'are' : 'is'} on this statement.
+                  The statement line{stats.replaced > 1 ? 's' : ''} will replace {stats.replaced > 1 ? 'them' : 'it'}, keeping your category and notes, so nothing counts twice.
+                </p>
+              )}
               {parsed?.pending.length > 0 && (
                 <p style={label}>{parsed.pending.length} pending line{parsed.pending.length > 1 ? 's' : ''} skipped — they will come in with the next statement.</p>
               )}
@@ -481,6 +523,7 @@ export default function ImportPage() {
             </p>
             <p style={label}>
               {result.duplicates > 0 && `${result.duplicates} already in and skipped. `}
+              {result.replaced > 0 && `${result.replaced} hand-added expense${result.replaced > 1 ? 's' : ''} replaced by the statement. `}
               {result.rules > 0 && `${result.rules} payee rule${result.rules > 1 ? 's' : ''} saved. `}
               {result.pending > 0 && `${result.pending} pending skipped.`}
             </p>
@@ -553,6 +596,7 @@ function ReviewRow({ row, groups, onChange }) {
             ))}
           </select>
           {row.via === 'rule' && <span style={{ fontSize: 10, color: 'rgb(var(--c-accent))', flexShrink: 0 }}>rule</span>}
+          {row.replaces && <span title="Replaces an expense you added by hand" style={{ fontSize: 10, color: 'rgb(var(--c-accent))', flexShrink: 0 }}>hand-added ✓</span>}
         </div>
       )}
     </div>
