@@ -1,8 +1,9 @@
 // "Cover your accounts": what each bank still has to pay out this cycle
 // (debit orders, bills, subscriptions) against the money sitting in it.
 //
-// A recurring payment is a fixed-type category. It belongs to the bank that
-// paid it most often over the last few cycles (the bond went off Capitec main
+// A recurring payment is a fixed-type category. It belongs to the bank of the
+// account set on it on the budget sheet, else to the bank that paid it most
+// often over the last few cycles (the bond went off Capitec main
 // one month and the Capitec card the next — both are Capitec). What it should
 // cost is its budget, or its recent average when it has none; what is still
 // to go off is that minus what has already been paid this cycle.
@@ -30,9 +31,10 @@ export function latestBalance(rows) {
  * recent:     arrays of transactions for the last few finished cycles
  * current:    transactions of the running cycle
  * balances:   { accountId: { balance, date } }
+ * paidTicks:  Set of category ids ticked as paid this cycle
  * Returns groups (one per bank), biggest top-up first.
  */
-export function coverByBank({ accounts, categories, recent, current, balances }) {
+export function coverByBank({ accounts, categories, recent, current, balances, paidTicks = new Set() }) {
   const accById = Object.fromEntries(accounts.map(a => [a.id, a]))
   const bankOf = id => accById[id]?.bank || accById[id]?.name || null
   const fallbackBank = (accounts.find(a => a.is_default) || accounts[0])?.bank || null
@@ -42,7 +44,9 @@ export function coverByBank({ accounts, categories, recent, current, balances })
     const hits = recent.flat().filter(t => t.category_id === c.id && t.direction !== 'in')
     const byBank = {}
     hits.forEach(t => { const b = bankOf(t.account_id); if (b) byBank[b] = (byBank[b] || 0) + 1 })
-    const bank = Object.entries(byBank).sort((a, b) => b[1] - a[1])[0]?.[0] || (num(c.budget_amount) > 0 ? fallbackBank : null)
+    const bank = (c.pay_account_id && bankOf(c.pay_account_id))
+      || Object.entries(byBank).sort((a, b) => b[1] - a[1])[0]?.[0]
+      || (num(c.budget_amount) > 0 ? fallbackBank : null)
     if (!bank) return null
 
     const perCycle = recent.map(txs => txs.filter(t => t.category_id === c.id).reduce((s, t) => s + outflow(t), 0))
@@ -55,8 +59,8 @@ export function coverByBank({ accounts, categories, recent, current, balances })
     const last = hits.map(t => t.transaction_date).sort().pop()
     return {
       id: c.id, name: c.name, icon: c.icon, bank, expected, paid,
-      remaining: Math.max(0, expected - paid),
-      dueDay: last ? parseInt(last.slice(8, 10), 10) : null,
+      remaining: paidTicks.has(c.id) ? 0 : Math.max(0, expected - paid),
+      dueDay: c.due_day || (last ? parseInt(last.slice(8, 10), 10) : null),
     }
   }).filter(Boolean)
 

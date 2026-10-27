@@ -1,21 +1,27 @@
 import { useBudget } from '../../context/BudgetContext'
 import { getUpcomingDays } from '../../lib/cycle'
-import { formatMoney, getAccountConfig } from '../../lib/format'
+import { formatMoney, accountStyle } from '../../lib/format'
 import { useToast } from '../ui/Toast'
 import { CheckCircle, Clock } from 'lucide-react'
 import { format } from 'date-fns'
 
+// Fixed bills from the budget sheet that go off in the next week. A bill is
+// paid once its debit is in your transactions, or when you tick it here.
 export default function UpcomingBills() {
-  const { recurringExpenses, cycle, toggleRecurringPaid, isRecurringPaid } = useBudget()
+  const { sheet, cycle, accounts, toggleFixedPaid } = useBudget()
   const toast = useToast()
 
-  const upcoming = getUpcomingDays(recurringExpenses, cycle, 7)
+  const bills = sheet.sections.fixed.rows
+    .filter(r => r.dueDay && r.budget > 0)
+    .map(r => ({ ...r, due_day: r.dueDay, is_active: true }))
+  const upcoming = cycle ? getUpcomingDays(bills, cycle, 7) : []
   if (!upcoming.length) return null
 
-  async function handleToggle(expense) {
+  async function handleToggle(bill) {
+    if (bill.autoPaid) { toast(`${bill.name} is already on your statement`, 'info'); return }
     try {
-      await toggleRecurringPaid(expense.id)
-      toast(isRecurringPaid(expense.id) ? 'Marked as unpaid' : 'Marked as paid ✓', 'success')
+      await toggleFixedPaid(bill.id)
+      toast(bill.ticked ? 'Marked as unpaid' : 'Marked as paid ✓', 'success')
     } catch {
       toast('Failed to update', 'error')
     }
@@ -29,8 +35,9 @@ export default function UpcomingBills() {
 
       <div style={{ display: 'flex', gap: 10, padding: '0 16px 10px', overflowX: 'auto', scrollbarWidth: 'none' }}>
         {upcoming.map(exp => {
-          const acc       = getAccountConfig(exp.account)
-          const paid      = isRecurringPaid(exp.id)
+          const payAcc    = accounts.find(a => a.id === exp.payAccountId)
+          const acc       = payAcc ? accountStyle(payAcc) : null
+          const paid      = exp.paid
           const isToday   = exp.daysUntil === 0
           const isTomorrow = exp.daysUntil === 1
 
@@ -73,15 +80,17 @@ export default function UpcomingBills() {
               {/* Amount + account */}
               <div>
                 <p style={{ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 600, color: 'rgb(var(--c-text))', marginBottom: 4 }}>
-                  {formatMoney(exp.amount)}
+                  {formatMoney(paid ? exp.budget : exp.stillDue)}
                 </p>
-                <span style={{
-                  fontFamily: 'Inter, sans-serif', fontSize: 10, fontWeight: 500,
-                  padding: '2px 6px', borderRadius: 4,
-                  color: acc.color, background: acc.bg,
-                }}>
-                  {exp.account}
-                </span>
+                {acc && (
+                  <span style={{
+                    fontFamily: 'Inter, sans-serif', fontSize: 10, fontWeight: 500,
+                    padding: '2px 6px', borderRadius: 4,
+                    color: acc.color, background: acc.bg,
+                  }}>
+                    {acc.label}
+                  </span>
+                )}
               </div>
             </button>
           )

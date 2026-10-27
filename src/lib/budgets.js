@@ -27,12 +27,12 @@ export const roundUp50 = v => Math.ceil(Math.max(0, v) / 50) * 50
  * recentTx: arrays of transactions for it and the cycles before it (for suggestions)
  * Returns totals planned vs actual and one row per spending category.
  */
-export function reviewCycle({ cycleTx, recentTx, categories, history, incomeRecords, cycleKey }) {
+export function reviewCycle({ cycleTx, recentTx, categories, history, cycleKey }) {
   const catMap = Object.fromEntries(categories.map(c => [c.id, c]))
   const plan = effectiveBudgets(categories, history, cycleKey)
   const actual = spendByCategory(cycleTx, catMap)
   const recent = recentTx.map(txs => spendByCategory(txs, catMap))
-  const totals = computeCycleTotals({ transactions: cycleTx, categories, incomeRecords })
+  const totals = computeCycleTotals({ transactions: cycleTx, categories, budgets: plan })
 
   const rows = categories
     .map(c => {

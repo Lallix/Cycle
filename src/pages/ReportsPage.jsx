@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useBudget } from '../context/BudgetContext'
 import { formatMoney } from '../lib/format'
-import { isSpend } from '../lib/spend'
+import { isSpend, spendAmount } from '../lib/spend'
 import { computeCycleTotals } from '../lib/totals'
 import CycleSelector from '../components/ui/CycleSelector'
 import LoadingScreen from '../components/ui/LoadingScreen'
@@ -150,7 +150,7 @@ function Spinner() {
 
 // ── Main page ──────────────────────────────────────────────────────────────
 export default function ReportsPage() {
-  const { loading, categories, incomeRecords, transactions, cycles, getTransactionsForCycle } = useBudget()
+  const { loading, categories, transactions, cycles, getTransactionsForCycle } = useBudget()
 
   const [cycleIndex, setCycleIndex]       = useState(0)
   const [cycleTx, setCycleTx]             = useState(null)
@@ -159,7 +159,7 @@ export default function ReportsPage() {
   const [loadingTrend, setLoadingTrend]   = useState(true)
 
   const navigate  = useNavigate()
-  const totalsFor = txs => computeCycleTotals({ transactions: txs, categories, incomeRecords })
+  const totalsFor = txs => computeCycleTotals({ transactions: txs, categories })
 
   // Build 6-cycle trend on mount
   useEffect(() => {
@@ -205,13 +205,14 @@ export default function ReportsPage() {
   const spentPct  = income > 0 ? Math.min(Math.round((spent / income) * 100), 100) : 0
   const isOver    = remaining < 0
 
-  // Category breakdown
+  // Category breakdown — net of refunds, the same as the dashboard and budget
   const catMap = {}
   activeTx.forEach(tx => {
     const cat = tx.cycle_categories || tx.categories
-    if (!cat || !isSpend(tx)) return
+    const value = spendAmount(tx)
+    if (!cat || value === 0) return
     if (!catMap[cat.id]) catMap[cat.id] = { ...cat, value: 0 }
-    catMap[cat.id].value += parseFloat(tx.amount || 0)
+    catMap[cat.id].value += value
   })
   const categoryData = Object.values(catMap).filter(c => c.value > 0).sort((a, b) => b.value - a.value)
 

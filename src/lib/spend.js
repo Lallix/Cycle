@@ -9,8 +9,14 @@ export function isSpend(tx) {
   return !NON_SPEND_TYPES.has(cat?.type)
 }
 
+// Net spend of one line, as the dashboard counts it: money out of a spending
+// category adds, money back into one (a refund) takes off. Uncategorised
+// lines count as unplanned spending.
 export function spendAmount(tx) {
-  return isSpend(tx) ? parseFloat(tx.amount || 0) : 0
+  const cat = tx.cycle_categories || tx.categories
+  if (NON_SPEND_TYPES.has(cat?.type)) return 0
+  const amount = parseFloat(tx.amount || 0)
+  return tx.direction === 'in' ? -amount : amount
 }
 
 // Category types. 'variable' and 'unbudgeted' are the original types; the

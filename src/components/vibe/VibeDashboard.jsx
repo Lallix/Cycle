@@ -123,7 +123,7 @@ export function VibeBlocks() {
       {BLOCKS.map(b => {
         const s = totals[b.spent] || 0, p = totals[b.plan] || 0
         return (
-          <button key={b.key} onClick={() => navigate('/budget')} className="vibe-block tappable" style={{ background: b.grad, textAlign: 'left' }}>
+          <button key={b.key} onClick={() => navigate(`/budget#${b.key}`)} className="vibe-block tappable" style={{ background: b.grad, textAlign: 'left' }}>
             <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', opacity: 0.7 }}>{b.label}</span>
             <span style={{ ...display, display: 'block', fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em', marginTop: 4 }}>{Rk(s)}</span>
             <span style={{ display: 'block', fontSize: 11, fontWeight: 600, opacity: 0.75, marginTop: 2 }}>of {Rk(p)} · {b.note(s, p)}</span>
@@ -167,7 +167,7 @@ export function VibeTiles() {
           const [msg, tone] = vibe(t.pct)
           const over = t.pct >= 100
           return (
-            <button key={t.id} onClick={() => navigate('/budget')} className="clay vibe-tile tappable" style={{ textAlign: 'left' }}>
+            <button key={t.id} onClick={() => navigate(`/budget#${normaliseType(t.type)}`)} className="clay vibe-tile tappable" style={{ textAlign: 'left' }}>
               <span className="vibe-icon" style={{ background: TILE_GRADS[i % TILE_GRADS.length] }}>{t.icon || '💳'}</span>
               <span style={{ ...display, display: 'block', fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', marginTop: 12,
                 color: over ? `rgb(var(--c-${tone}))` : 'rgb(var(--c-text))' }}>{Math.round(t.pct)}%</span>

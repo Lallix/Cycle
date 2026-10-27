@@ -7,13 +7,10 @@ import { isEverydayType } from '../../lib/spend'
 // Only shows the user's actual accounts (from transactions + recurring expenses)
 
 export default function ExpenseFilters({ activeFilter, onFilterChange }) {
-  const { categories, transactions, recurringExpenses } = useBudget()
+  const { categories, transactions } = useBudget()
 
   // Derive unique accounts actually used in this cycle
-  const usedAccounts = [...new Set([
-    ...transactions.map(t => t.account),
-    ...recurringExpenses.map(e => e.account),
-  ].filter(Boolean))]
+  const usedAccounts = [...new Set(transactions.map(t => t.account).filter(Boolean))]
 
   const varCategories = categories.filter(c => isEverydayType(c.type))
 

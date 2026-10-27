@@ -1,7 +1,7 @@
 // Cycle totals by spend type.
 //
 //   income     money earned this cycle (salary, fuel claims); before payday
-//              lands, the expected income from Settings is used instead
+//              lands, the income budgets (expected money in) are used instead
 //   fixed      spent so far + what is still due (each fixed category's budget
 //              minus what has gone off) — so "left" never counts the bond
 //              as spare money just because it has not been paid yet
@@ -32,7 +32,7 @@ export function spendByCategory(transactions, catMap) {
   return out
 }
 
-export function computeCycleTotals({ transactions, categories, incomeRecords, savingGoals = [] }) {
+export function computeCycleTotals({ transactions, categories, budgets = null, savingGoals = [] }) {
   const catMap = Object.fromEntries(categories.map(c => [c.id, c]))
   const t = { income: 0, fixed: 0, predicted: 0, unplanned: 0, onceOff: 0, debt: 0 }
 
@@ -47,16 +47,18 @@ export function computeCycleTotals({ transactions, categories, incomeRecords, sa
   })
 
   const byCat = spendByCategory(transactions, catMap)
+  // budgets: the amounts in force for this cycle (budget history); else today's
+  const amountOf = c => (budgets && c.id in budgets ? num(budgets[c.id]) : num(c.budget_amount))
   const budgetOf = type => categories
     .filter(c => normaliseType(c.type) === type)
-    .reduce((s, c) => s + num(c.budget_amount), 0)
+    .reduce((s, c) => s + amountOf(c), 0)
 
   const fixedPlanned = budgetOf('fixed')
   const fixedDue = categories
-    .filter(c => normaliseType(c.type) === 'fixed' && num(c.budget_amount) > 0)
-    .reduce((s, c) => s + Math.max(0, num(c.budget_amount) - (byCat[c.id] || 0)), 0)
+    .filter(c => normaliseType(c.type) === 'fixed' && amountOf(c) > 0)
+    .reduce((s, c) => s + Math.max(0, amountOf(c) - (byCat[c.id] || 0)), 0)
 
-  const incomeExpected = incomeRecords.reduce((s, i) => s + num(i.amount), 0)
+  const incomeExpected = budgetOf('income')
   const income = Math.max(t.income, incomeExpected)
   const spent = t.fixed + t.predicted + t.unplanned
   const remaining = income - spent - fixedDue

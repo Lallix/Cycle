@@ -1,8 +1,9 @@
-import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './AuthContext'
 import { cyclesFromPaydays } from '../lib/cycle'
 import { computeCycleTotals, spendByCategory } from '../lib/totals'
+import { buildSheet } from '../lib/sheet'
 
 const BudgetContext = createContext(null)
 
@@ -14,9 +15,8 @@ export function BudgetProvider({ children }) {
   const [categories, setCategories]           = useState([])
   const [archivedCategories, setArchivedCategories] = useState([])   // removed, can be restored
   const [transactions, setTransactions]       = useState([])
-  const [recurringExpenses, setRecurringExpenses] = useState([])
-  const [paidLog, setPaidLog]                 = useState([])   // cycle_recurring_paid_log
-  const [incomeRecords, setIncomeRecords]     = useState([])
+  const [fixedPaid, setFixedPaid]             = useState([])   // cycle_fixed_paid: category ids ticked this cycle
+  const [recentTx, setRecentTx]               = useState([])   // the three cycles before this one
   const [savingGoals, setSavingGoals]         = useState([])
   const [accounts, setAccounts]               = useState([])
   const [paydays, setPaydays]                 = useState(null)  // null = not loaded yet
@@ -26,7 +26,7 @@ export function BudgetProvider({ children }) {
 
   const [cycles, setCycles] = useState([])     // newest first; cycles[0] is the current one
   const [cycle, setCycle]   = useState(null)
-  const [totals, setTotals] = useState(computeCycleTotals({ transactions: [], categories: [], incomeRecords: [] }))
+  const [totals, setTotals] = useState(computeCycleTotals({ transactions: [], categories: [] }))
 
   // ── Cycles come from your paydays (cycle_paydays) ────────────
   useEffect(() => {
@@ -46,23 +46,27 @@ export function BudgetProvider({ children }) {
   }, [user, cycle?.key])
 
   useEffect(() => {
-    if (cycle) setTotals(computeCycleTotals({ transactions, categories, incomeRecords, savingGoals }))
-  }, [transactions, categories, incomeRecords, savingGoals, cycle])
+    if (cycle) setTotals(computeCycleTotals({ transactions, categories, savingGoals }))
+  }, [transactions, categories, savingGoals, cycle])
+
+  // The plan for this cycle, laid out like the spreadsheet (lib/sheet.js)
+  const sheet = useMemo(() => buildSheet({
+    categories, transactions, paidTicks: new Set(fixedPaid), recent: recentTx,
+  }), [categories, transactions, fixedPaid, recentTx])
 
   function resetData() {
-    setCategories([]); setTransactions([]); setRecurringExpenses([])
-    setPaidLog([]); setIncomeRecords([]); setSavingGoals([]); setAccounts([])
+    setCategories([]); setTransactions([])
+    setFixedPaid([]); setRecentTx([]); setSavingGoals([]); setAccounts([])
     setPaydays(null); setPlannedItems([]); setDonePlannedItems([]); setBudgetHistory([]); setCycles([]); setCycle(null)
-    setTotals(computeCycleTotals({ transactions: [], categories: [], incomeRecords: [] }))
+    setTotals(computeCycleTotals({ transactions: [], categories: [] }))
   }
 
   async function loadAll() {
     setLoading(true); setError(null)
     try {
       await Promise.all([
-        loadCategories(), loadTransactions(), loadRecurringExpenses(),
-        loadPaidLog(), loadIncome(), loadSavingGoals(), loadAccounts(), loadPlannedItems(),
-        loadBudgetHistory(),
+        loadCategories(), loadTransactions(), loadFixedPaid(), loadRecent(),
+        loadSavingGoals(), loadAccounts(), loadPlannedItems(), loadBudgetHistory(),
       ])
     } catch (err) {
       console.error('Data load error:', err)
@@ -100,39 +104,25 @@ export function BudgetProvider({ children }) {
     return data
   }
 
-  async function loadRecurringExpenses() {
-    const { data, error } = await supabase
-      .from('cycle_recurring_expenses')
-      .select(`*, cycle_categories(id, name, icon, colour)`)
-      .eq('user_id', user.id)
-      .eq('is_active', true)
-      .order('sort_order')
-    if (error) throw error
-    setRecurringExpenses(data || [])
-    return data
-  }
-
-  async function loadPaidLog() {
+  async function loadFixedPaid() {
     if (!cycle) return
     const { data, error } = await supabase
-      .from('cycle_recurring_paid_log')
-      .select('recurring_id, paid_at')
+      .from('cycle_fixed_paid')
+      .select('category_id')
       .eq('user_id', user.id)
       .eq('cycle_key', cycle.key)
     if (error) throw error
-    setPaidLog(data || [])
+    setFixedPaid((data || []).map(d => d.category_id))
     return data
   }
 
-  async function loadIncome() {
-    const { data, error } = await supabase
-      .from('cycle_income')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('is_active', true)
-    if (error) throw error
-    setIncomeRecords(data || [])
-    return data
+  // Earlier cycles' lines: when each bill usually goes off, and from where
+  async function loadRecent() {
+    const keys = cycles.slice(1, 4).map(c => c.key)
+    if (!keys.length) { setRecentTx([]); return }
+    const sets = await Promise.all(keys.map(k => getTransactionsForCycle(k)))
+    setRecentTx(sets)
+    return sets
   }
 
   async function loadPaydays() {
@@ -316,78 +306,29 @@ export function BudgetProvider({ children }) {
     setTransactions(prev => prev.filter(t => t.id !== id))
   }
 
-  async function toggleRecurringPaid(expenseId) {
-    const isPaid = paidLog.some(p => p.recurring_id === expenseId)
-
-    if (isPaid) {
+  // Tick a fixed bill as paid this cycle (for when the debit is not on an
+  // imported statement yet); tick again to undo.
+  async function toggleFixedPaid(categoryId) {
+    if (fixedPaid.includes(categoryId)) {
       const { error } = await supabase
-        .from('cycle_recurring_paid_log')
+        .from('cycle_fixed_paid')
         .delete()
-        .eq('user_id', user.id)
-        .eq('recurring_id', expenseId)
-        .eq('cycle_key', cycle.key)
+        .eq('user_id', user.id).eq('category_id', categoryId).eq('cycle_key', cycle.key)
       if (error) throw error
-      setPaidLog(prev => prev.filter(p => p.recurring_id !== expenseId))
+      setFixedPaid(prev => prev.filter(id => id !== categoryId))
     } else {
-      const { data, error } = await supabase
-        .from('cycle_recurring_paid_log')
-        .insert({ user_id: user.id, recurring_id: expenseId, cycle_key: cycle.key })
-        .select()
-        .single()
+      const { error } = await supabase
+        .from('cycle_fixed_paid')
+        .insert({ user_id: user.id, category_id: categoryId, cycle_key: cycle.key })
       if (error) throw error
-      setPaidLog(prev => [...prev, data])
+      setFixedPaid(prev => [...prev, categoryId])
     }
-  }
-
-  function isRecurringPaid(expenseId) {
-    return paidLog.some(p => p.recurring_id === expenseId)
   }
 
   // Net spend in a category this cycle (refunds reduce it)
   function getCategorySpent(categoryId) {
     const catMap = Object.fromEntries(categories.map(c => [c.id, c]))
     return spendByCategory(transactions, catMap)[categoryId] || 0
-  }
-
-  async function addRecurringExpense(payload) {
-    const { data, error } = await supabase
-      .from('cycle_recurring_expenses')
-      .insert({
-        user_id:     user.id,
-        name:        payload.name,
-        amount:      payload.amount,
-        account:     payload.account || null,
-        due_day:     payload.due_day || null,
-        category_id: payload.category_id || null,
-        notes:       payload.notes || null,
-        sort_order:  recurringExpenses.length,
-      })
-      .select(`*, cycle_categories(id, name, icon, colour)`)
-      .single()
-    if (error) throw error
-    setRecurringExpenses(prev => [...prev, data])
-    return data
-  }
-
-  async function updateRecurringExpense(id, payload) {
-    const { data, error } = await supabase
-      .from('cycle_recurring_expenses')
-      .update(payload)
-      .eq('id', id)
-      .eq('user_id', user.id)
-      .select(`*, cycle_categories(id, name, icon, colour)`)
-      .single()
-    if (error) throw error
-    setRecurringExpenses(prev => prev.map(e => e.id === id ? data : e))
-    return data
-  }
-
-  async function deleteRecurringExpense(id) {
-    const { error } = await supabase
-      .from('cycle_recurring_expenses')
-      .delete().eq('id', id).eq('user_id', user.id)
-    if (error) throw error
-    setRecurringExpenses(prev => prev.filter(e => e.id !== id))
   }
 
   async function addCategory(payload) {
@@ -400,11 +341,19 @@ export function BudgetProvider({ children }) {
         icon:          payload.icon || null,
         colour:        payload.colour || null,
         budget_amount: payload.budget_amount || null,
+        due_day:       payload.due_day || null,
+        pay_account_id: payload.pay_account_id || null,
         sort_order:    categories.length,
       })
       .select().single()
     if (error) throw error
     setCategories(prev => [...prev, data])
+    if (data.budget_amount != null && cycle) {
+      await supabase.from('cycle_category_budgets').upsert(
+        { user_id: user.id, category_id: data.id, effective_from: cycle.key, amount: data.budget_amount },
+        { onConflict: 'category_id,effective_from' })
+      await loadBudgetHistory()
+    }
     return data
   }
 
@@ -446,38 +395,6 @@ export function BudgetProvider({ children }) {
     await loadCategories()
   }
 
-  async function updateIncome(id, amount) {
-    const { data, error } = await supabase
-      .from('cycle_income')
-      .update({ amount }).eq('id', id).eq('user_id', user.id)
-      .select().single()
-    if (error) throw error
-    setIncomeRecords(prev => prev.map(i => i.id === id ? data : i))
-    return data
-  }
-
-  async function addIncome(payload) {
-    // Accept either a plain amount (legacy) or a full payload object
-    const record = typeof payload === 'number'
-      ? { user_id: user.id, amount: payload, label: 'Monthly income', is_active: true }
-      : { user_id: user.id, ...payload, is_active: true }
-    const { data, error } = await supabase
-      .from('cycle_income')
-      .insert(record)
-      .select().single()
-    if (error) throw error
-    setIncomeRecords(prev => [...prev, data])
-    return data
-  }
-
-  async function deleteIncome(id) {
-    const { error } = await supabase
-      .from('cycle_income')
-      .delete().eq('id', id).eq('user_id', user.id)
-    if (error) throw error
-    setIncomeRecords(prev => prev.filter(i => i.id !== id))
-  }
-
   async function addSavingGoal(payload) {
     const { data, error } = await supabase
       .from('cycle_saving_goals')
@@ -515,19 +432,16 @@ export function BudgetProvider({ children }) {
 
   const value = {
     loading, error,
-    categories, transactions, recurringExpenses, paidLog,
-    incomeRecords, savingGoals, accounts, cycle, cycles, paydays, plannedItems, donePlannedItems, budgetHistory, totals,
+    categories, transactions, sheet, recentTx, fixedPaid,
+    savingGoals, accounts, cycle, cycles, paydays, plannedItems, donePlannedItems, budgetHistory, totals,
     // helpers
-    isRecurringPaid,
     getCategorySpent,
     // actions
     refresh: loadAll,
     getTransactionsForCycle,
     addTransaction, updateTransaction, deleteTransaction,
-    toggleRecurringPaid,
-    addRecurringExpense, updateRecurringExpense, deleteRecurringExpense,
+    toggleFixedPaid,
     addCategory, updateCategory, deleteCategory, restoreCategory, archivedCategories,
-    updateIncome, addIncome, deleteIncome,
     addSavingGoal, updateSavingGoal, contributeSavings,
     addAccount, updateAccount, deleteAccount,
     updatePlannedItem, setCategoryBudget,

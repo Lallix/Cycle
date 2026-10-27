@@ -15,18 +15,9 @@ const R = v => `${v < 0 ? '−' : ''}R${Math.round(Math.abs(v)).toLocaleString('
 
 export default function CoverAccounts() {
   const { user } = useAuth()
-  const { accounts, categories, cycles, transactions, getTransactionsForCycle } = useBudget()
-  const [recent, setRecent] = useState(null)
+  const { accounts, categories, cycles, transactions, recentTx: recent, fixedPaid } = useBudget()
   const [balances, setBalances] = useState({})
   const [open, setOpen] = useState(null)
-
-  const recentKeys = cycles.slice(1, 4).map(c => c.key).join(',')
-  useEffect(() => {
-    if (!recentKeys) { setRecent([]); return }
-    Promise.all(cycles.slice(1, 4).map(c => getTransactionsForCycle(c.key)))
-      .then(setRecent)
-      .catch(() => setRecent([]))
-  }, [recentKeys])
 
   const accountIds = accounts.map(a => a.id).join(',')
   useEffect(() => {
@@ -48,9 +39,9 @@ export default function CoverAccounts() {
     })).then(rows => setBalances(Object.fromEntries(rows.filter(([, b]) => b))))
   }, [accountIds])
 
-  const groups = useMemo(() => (recent ? coverByBank({
-    accounts, categories, recent, current: transactions, balances,
-  }) : []), [recent, accounts, categories, transactions, balances])
+  const groups = useMemo(() => coverByBank({
+    accounts, categories, recent, current: transactions, balances, paidTicks: new Set(fixedPaid),
+  }), [recent, accounts, categories, transactions, balances, fixedPaid])
 
   if (!groups.length) return null
   const cycleStart = cycles[0]?.key

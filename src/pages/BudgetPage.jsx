@@ -1,213 +1,427 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { ArrowLeft, Plus, Check, ChevronRight } from 'lucide-react'
+import { format, parseISO } from 'date-fns'
 import { useBudget } from '../context/BudgetContext'
-import { useNavigate } from 'react-router-dom'
 import { useToast } from '../components/ui/Toast'
-import { formatMoney } from '../lib/format'
-import Button from '../components/ui/Button'
 import BottomSheet from '../components/ui/BottomSheet'
-import FixedExpenseRow from '../components/budget/FixedExpenseRow'
-import VariableBudgetRow from '../components/budget/VariableBudgetRow'
-import { Plus, ArrowLeft } from 'lucide-react'
-import AccountPicker from '../components/ui/AccountPicker'
-import { isLimitType } from '../lib/spend'
+import { accountStyle } from '../lib/format'
 
-const BLANK_FIXED = { name: '', amount: '', account: 'Capitec', due_day: '1' }
+// The budget sheet: the plan for this cycle, laid out like the spreadsheet.
+// Money in, fixed, predicted and unplanned, each row with Budget (tap to
+// change), what has actually happened this cycle and what is left. The
+// numbers come from lib/sheet.js, the same place the dashboard reads them.
+
+const display = { fontFamily: 'var(--font-display)' }
+const small = { fontSize: 11, color: 'rgb(var(--c-text-3))' }
+// Whole rands with a no-break space, so amounts never wrap
+const R = v => `${v < -0.5 ? '−' : ''}R${Math.round(Math.abs(v)).toLocaleString('en-ZA').replace(/[,\s]/g, ' ')}`
+const suffix = d => (d % 10 === 1 && d !== 11 ? 'st' : d % 10 === 2 && d !== 12 ? 'nd' : d % 10 === 3 && d !== 13 ? 'rd' : 'th')
+
+const SECTIONS = [
+  { key: 'income', title: 'Money in', tone: 'positive', actual: 'In', left: 'To come', hint: 'What you expect to come in each cycle' },
+  { key: 'fixed', title: 'Fixed', tone: 'fixed', actual: 'Paid', left: 'Still due', hint: 'Debit orders and bills: the same every cycle' },
+  { key: 'predicted', title: 'Predicted', tone: 'predicted', actual: 'Spent', left: 'Left', hint: 'Everyday spending with a limit' },
+  { key: 'unplanned', title: 'Unplanned', tone: 'unplanned', actual: 'Spent', left: 'Left', hint: 'The odd things: keep a buffer here' },
+]
+const COLS = 'minmax(0, 1fr) 64px 50px 60px'
 
 export default function BudgetPage() {
-  const { categories, recurringExpenses, totals, addRecurringExpense } = useBudget()
+  const { sheet, cycle, totals } = useBudget()
   const navigate = useNavigate()
-  const toast = useToast()
+  const { hash } = useLocation()
+  const [editing, setEditing] = useState(null)       // a row in the edit sheet
+  const [adding, setAdding] = useState(null)         // section key for a new row
 
-  const [fixedOpen, setFixedOpen]   = useState(false)
-  const [fixedForm, setFixedForm]   = useState(BLANK_FIXED)
-  const [saving, setSaving]         = useState(false)
+  // Opened from a dashboard block: jump to that section
+  useEffect(() => {
+    if (!hash) return
+    const el = document.getElementById(hash.slice(1))
+    if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80)
+  }, [hash])
 
-  const variableCategories = categories.filter(c => isLimitType(c.type))
-  const unbudgetedSpent    = totals.unbudgetedSpent || 0
-
-  async function handleAddFixed() {
-    if (!fixedForm.name.trim() || !fixedForm.amount) {
-      toast('Name and amount are required', 'error')
-      return
-    }
-    setSaving(true)
-    try {
-      await addRecurringExpense({
-        name:    fixedForm.name.trim(),
-        amount:  parseFloat(fixedForm.amount),
-        account: fixedForm.account,
-        due_day: parseInt(fixedForm.due_day, 10),
-      })
-      toast('Fixed expense added', 'success')
-      setFixedOpen(false)
-      setFixedForm(BLANK_FIXED)
-    } catch (e) { toast(e.message, 'error') }
-    finally { setSaving(false) }
-  }
+  const over = sheet.toAllocate < -0.5
 
   return (
-    <div className="pb-28">
-      {/* Header with back button */}
-      <div
-        className="flex items-center gap-3 px-4 pb-2"
-        style={{ paddingTop: 'max(env(safe-area-inset-top), 1rem)' }}
-      >
-        <button
-          onClick={() => navigate('/')}
+    <div style={{ paddingBottom: 120 }}>
+      <div className="flex items-center gap-3 px-4 pb-2" style={{ paddingTop: 'max(env(safe-area-inset-top), 1rem)' }}>
+        <button onClick={() => navigate('/')} aria-label="Back"
           className="w-9 h-9 flex items-center justify-center rounded-2xl border border-border tappable"
-          style={{ background: 'rgb(var(--c-surface))' }}
-        >
+          style={{ background: 'rgb(var(--c-surface))' }}>
           <ArrowLeft size={18} className="text-subtle" />
         </button>
         <div>
-          <h1 className="heading text-lg text-fg">Budget</h1>
-          <p className="text-xs text-subtle" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Cycle total · {formatMoney(totals.income)}
-          </p>
+          <h1 style={{ ...display, fontSize: 22, fontWeight: 800 }}>Budget</h1>
+          <p style={small}>{cycle?.shortLabel} · tap a budget to change it</p>
         </div>
       </div>
 
-      <div className="px-4 space-y-6">
+      {/* The plan in one line: money in − everything planned */}
+      <div className="px-4" style={{ marginTop: 8 }}>
+        <div className="clay" style={{ padding: 16 }}>
+          <div className="grid grid-cols-3 gap-2">
+            <Figure label="Money in" value={R(sheet.income)} tone="positive" />
+            <Figure label="Planned out" value={R(sheet.planned)} />
+            <Figure label={over ? 'Over-planned' : 'To allocate'} value={R(Math.abs(sheet.toAllocate))} tone={over ? 'negative' : 'accent'} />
+          </div>
+          <p style={{ ...small, marginTop: 10 }}>
+            {over
+              ? `Your budgets add up to ${R(-sheet.toAllocate)} more than you expect to come in.`
+              : sheet.toAllocate > 0.5
+                ? `${R(sheet.toAllocate)} of your income has no job yet. Give it one, or leave it as savings.`
+                : 'Every rand has a job. 👌'}
+          </p>
+          <div className="flex justify-between" style={{ ...small, marginTop: 8, paddingTop: 8, borderTop: '0.5px solid rgb(var(--c-border))' }}>
+            <span>Left this cycle (as on Home)</span>
+            <b style={{ ...display, fontSize: 13, color: totals.remaining < 0 ? 'rgb(var(--c-negative))' : 'rgb(var(--c-text))' }}>{R(totals.remaining)}</b>
+          </div>
+        </div>
+      </div>
 
-        {/* Payday review */}
-        <button
-          onClick={() => navigate('/review')}
-          className="w-full flex items-center justify-between px-4 py-3 border border-border rounded-2xl tappable"
-          style={{ background: 'rgb(var(--c-surface))' }}
-        >
-          <span className="text-sm text-fg" style={{ fontFamily: 'Inter, sans-serif' }}>Review last cycle and set limits</span>
-          <span className="text-xs text-gold">Open →</span>
+      {SECTIONS.map(sec => (
+        <Section key={sec.key} sec={sec} data={sheet.sections[sec.key]}
+          onEdit={setEditing} onAdd={() => setAdding(sec.key)} />
+      ))}
+
+      <div className="px-4" style={{ marginTop: 20 }}>
+        <button onClick={() => navigate('/review')} className="clay w-full flex items-center justify-between tappable"
+          style={{ padding: '12px 16px', textAlign: 'left' }}>
+          <span style={{ fontSize: 13 }}>Review last cycle and get suggested budgets</span>
+          <ChevronRight size={16} style={{ color: 'rgb(var(--c-text-3))' }} />
         </button>
+      </div>
 
-        {/* Fixed Expenses */}
-        <section>
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs text-muted uppercase tracking-widest">Fixed bills</p>
-            <button
-              onClick={() => { setFixedForm(BLANK_FIXED); setFixedOpen(true) }}
-              className="flex items-center gap-1 text-xs text-gold hover:opacity-80"
-            >
-              <Plus size={13} /> Add
-            </button>
-          </div>
+      <RowSheet row={editing} onClose={() => setEditing(null)} />
+      <AddSheet section={adding} onClose={() => setAdding(null)} />
+    </div>
+  )
+}
 
-          <div className="bg-surface-1 border border-border rounded-2xl overflow-hidden divide-y divide-border">
-            {recurringExpenses.length === 0 && (
-              <p className="text-sm text-muted px-4 py-4">No fixed expenses yet</p>
-            )}
-            {recurringExpenses.map(exp => (
-              <FixedExpenseRow key={exp.id} expense={exp} />
-            ))}
-          </div>
+function Figure({ label, value, tone }) {
+  return (
+    <div>
+      <p style={{ fontSize: 11, color: 'rgb(var(--c-text-3))' }}>{label}</p>
+      <p style={{ ...display, fontSize: 18, fontWeight: 800, whiteSpace: 'nowrap',
+        color: tone ? `rgb(var(--c-${tone}))` : 'rgb(var(--c-text))' }}>{value}</p>
+    </div>
+  )
+}
 
-          <div className="flex justify-between text-sm mt-2 px-1">
-            <span className="text-muted">Fixed this cycle (paid + still due)</span>
-            <span className="font-mono font-medium">{formatMoney(totals.fixedTotal)}</span>
-          </div>
-        </section>
+function Section({ sec, data, onEdit, onAdd }) {
+  const tone = `rgb(var(--c-${sec.tone}))`
+  const leftTotal = sec.key === 'fixed' ? data.stillDue : data.left
+  return (
+    <section id={sec.key} className="px-4" style={{ marginTop: 22, scrollMarginTop: 12 }}>
+      <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
+        <div>
+          <h2 className="flex items-center gap-2" style={{ ...display, fontSize: 17, fontWeight: 800 }}>
+            <span style={{ width: 10, height: 10, borderRadius: 5, background: tone }} />{sec.title}
+          </h2>
+          <p style={small}>{sec.hint}</p>
+        </div>
+        <button onClick={onAdd} className="flex items-center gap-1 tappable"
+          style={{ fontSize: 12, fontWeight: 600, color: 'rgb(var(--c-accent))', background: 'none', border: 0 }}>
+          <Plus size={14} /> Add
+        </button>
+      </div>
 
-        {/* Variable Budget */}
-        <section>
-          <p className="text-xs text-muted uppercase tracking-widest mb-2">Predicted — monthly limits</p>
-          <div className="bg-surface-1 border border-border rounded-2xl overflow-hidden divide-y divide-border">
-            {variableCategories.length === 0 && (
-              <p className="text-sm text-muted px-4 py-4">Add categories in Settings</p>
-            )}
-            {variableCategories.map(cat => (
-              <VariableBudgetRow key={cat.id} category={cat} />
-            ))}
-          </div>
+      <div className="clay" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="grid items-center" style={{ gridTemplateColumns: COLS, gap: 6, padding: '8px 12px', ...small, fontWeight: 600, borderBottom: '0.5px solid rgb(var(--c-border))' }}>
+          <span>Category</span><span style={{ textAlign: 'right' }}>Budget</span>
+          <span style={{ textAlign: 'right' }}>{sec.actual}</span><span style={{ textAlign: 'right' }}>{sec.left}</span>
+        </div>
 
-          <div className="flex justify-between text-sm mt-2 px-1">
-            <span className="text-muted">Predicted total</span>
-            <span className="font-mono font-medium">{formatMoney(totals.variableSpent)} / {formatMoney(totals.variableBudget)}</span>
-          </div>
-        </section>
+        {data.rows.length === 0 && <p style={{ ...small, padding: '14px 12px' }}>Nothing here yet — tap Add.</p>}
+        {data.rows.map(row => <Row key={row.id} row={row} sec={sec} onEdit={onEdit} />)}
 
-        {/* Unbudgeted */}
-        {unbudgetedSpent > 0 && (
-          <section>
-            <p className="text-xs text-muted uppercase tracking-widest mb-2">Unplanned</p>
-            <div className="bg-surface-1 border border-border rounded-2xl px-4 py-3 flex justify-between">
-              <span className="text-sm text-muted">Unplanned spend this cycle</span>
-              <span className="font-mono text-sm text-warning">{formatMoney(unbudgetedSpent)}</span>
-            </div>
-          </section>
+        <div className="grid items-center" style={{ gridTemplateColumns: COLS, gap: 6, padding: '10px 12px', background: `rgb(var(--c-${sec.tone}) / 0.1)`, fontWeight: 700 }}>
+          <span style={{ fontSize: 13 }}>Total</span>
+          <span style={{ ...display, fontSize: 12, textAlign: 'right' }}>{R(data.budget)}</span>
+          <span style={{ ...display, fontSize: 12, textAlign: 'right' }}>{R(data.actual)}</span>
+          <span style={{ ...display, fontSize: 12, textAlign: 'right', color: leftTotal < -0.5 ? 'rgb(var(--c-negative))' : 'inherit' }}>{R(leftTotal)}</span>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function Row({ row, sec, onEdit }) {
+  const { accounts } = useBudget()
+  const left = sec.key === 'fixed' ? row.stillDue : row.left
+  const overspent = sec.key !== 'income' && sec.key !== 'fixed' && row.left < -0.5
+  const payAcc = row.payAccountId && accounts.find(a => a.id === row.payAccountId)
+  const meta = sec.key === 'fixed'
+    ? [row.dueDay && `${row.dueDayGuessed ? '~' : ''}${row.dueDay}${suffix(row.dueDay)}`, payAcc && accountStyle(payAcc).label, row.paid && 'paid ✓'].filter(Boolean).join(' · ')
+    : null
+
+  return (
+    <div style={{ borderBottom: '0.5px solid rgb(var(--c-border))' }}>
+    <div className="grid items-center" style={{ gridTemplateColumns: COLS, gap: 6, padding: '9px 12px' }}>
+      <button onClick={() => !row.uncategorised && onEdit(row)} className="flex items-center gap-2 tappable"
+        style={{ minWidth: 0, background: 'none', border: 0, padding: 0, textAlign: 'left', color: 'inherit', cursor: row.uncategorised ? 'default' : 'pointer' }}>
+        <span style={{ fontSize: 16, flexShrink: 0 }}>{row.icon || '💳'}</span>
+        <span style={{ minWidth: 0 }}>
+          <span className="block" style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.25, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', overflowWrap: 'anywhere' }}>{row.name}</span>
+          {meta && <span className="block truncate" style={{ ...small, fontSize: 10, color: row.paid ? 'rgb(var(--c-positive))' : small.color }}>{meta}</span>}
+        </span>
+      </button>
+      {row.uncategorised
+        ? <span style={{ ...small, textAlign: 'right' }}>—</span>
+        : <BudgetCell row={row} />}
+      <span style={{ ...display, fontSize: 12, textAlign: 'right', color: 'rgb(var(--c-text-2))' }}>{R(row.actual)}</span>
+      <span style={{ ...display, fontSize: 12, textAlign: 'right', fontWeight: 700,
+        color: overspent ? 'rgb(var(--c-negative))' : sec.key === 'fixed' && row.paid ? 'rgb(var(--c-positive))' : 'rgb(var(--c-text))' }}>
+        {sec.key === 'fixed' && row.paid ? '✓' : R(left)}
+      </span>
+    </div>
+    {row.suggest != null && <SuggestHint row={row} />}
+    </div>
+  )
+}
+
+// A fixed bill went off at a different amount: offer it as the new budget
+function SuggestHint({ row }) {
+  const { updateCategory } = useBudget()
+  const toast = useToast()
+  const [busy, setBusy] = useState(false)
+  async function accept() {
+    setBusy(true)
+    try {
+      await updateCategory(row.id, { budget_amount: row.suggest })
+      toast(`${row.name}: budget now ${R(row.suggest)} from this cycle`, 'success')
+    } catch (e) { toast(e.message, 'error') } finally { setBusy(false) }
+  }
+  return (
+    <button onClick={accept} disabled={busy} className="tappable"
+      style={{ display: 'block', width: 'calc(100% - 24px)', margin: '0 12px 9px', padding: '6px 10px', borderRadius: 10, textAlign: 'left',
+        border: '0.5px dashed rgb(var(--c-warning) / 0.6)', background: 'rgb(var(--c-warning) / 0.08)', color: 'rgb(var(--c-warning))', fontSize: 12, cursor: 'pointer' }}>
+      Went off at <b>{R(row.suggest)}</b>, budget is {R(row.budget)} — <u>use {R(row.suggest)} as the budget?</u>
+    </button>
+  )
+}
+
+// Tap the amount to type a new one; Enter or tapping away saves it from
+// this cycle onward (earlier cycles keep their budget).
+function BudgetCell({ row }) {
+  const { updateCategory } = useBudget()
+  const toast = useToast()
+  const [value, setValue] = useState(null)
+  const inputRef = useRef(null)
+  const editing = value !== null
+
+  useEffect(() => { if (editing) inputRef.current?.select() }, [editing])
+
+  async function save() {
+    const next = value === '' ? null : parseFloat(value)
+    setValue(null)
+    if (next !== null && (Number.isNaN(next) || next < 0)) { toast('Enter an amount', 'error'); return }
+    if ((next ?? 0) === row.budget) return
+    try {
+      await updateCategory(row.id, { budget_amount: next })
+      toast(`${row.name}: ${R(next || 0)} from this cycle`, 'success')
+    } catch (e) { toast(e.message, 'error') }
+  }
+
+  if (editing) {
+    return (
+      <input ref={inputRef} type="number" inputMode="decimal" value={value} aria-label={`Budget for ${row.name}`}
+        onChange={e => setValue(e.target.value)} onBlur={save}
+        onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); if (e.key === 'Escape') setValue(null) }}
+        style={{ width: '100%', minWidth: 0, textAlign: 'right', ...display, fontSize: 12, padding: '5px 4px', borderRadius: 8,
+          border: '1px solid rgb(var(--c-accent))', background: 'rgb(var(--c-surface-2))', color: 'rgb(var(--c-text))', outline: 'none' }} />
+    )
+  }
+  return (
+    <button onClick={() => setValue(row.budget ? String(row.budget) : '')} aria-label={`Change budget for ${row.name}`}
+      className="tappable"
+      style={{ ...display, fontSize: 12, fontWeight: 700, textAlign: 'right', padding: '5px 4px', borderRadius: 8, border: 0,
+        background: 'rgb(var(--c-surface-2))', color: row.budget ? 'rgb(var(--c-text))' : 'rgb(var(--c-text-4))', cursor: 'pointer' }}>
+      {row.budget ? R(row.budget) : 'Set'}
+    </button>
+  )
+}
+
+const field = { width: '100%', padding: '11px 14px', borderRadius: 12, border: '0.5px solid rgb(var(--c-border-strong))',
+  background: 'rgb(var(--c-surface-2))', color: 'rgb(var(--c-text))', fontSize: 14, minWidth: 0 }
+const labelStyle = { fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgb(var(--c-text-3))', display: 'block', marginBottom: 6 }
+
+function FixedFields({ form, setForm }) {
+  const { accounts } = useBudget()
+  return (
+    <>
+      <div>
+        <label style={labelStyle}>Goes off on</label>
+        <select value={form.due_day} onChange={e => setForm(f => ({ ...f, due_day: e.target.value }))} style={field}>
+          <option value="">Not set</option>
+          {Array.from({ length: 31 }, (_, i) => i + 1).map(d => <option key={d} value={d}>{d}{suffix(d)} of the month</option>)}
+        </select>
+      </div>
+      <div>
+        <label style={labelStyle}>Paid from</label>
+        <div className="flex flex-wrap gap-2">
+          {[{ id: '', name: 'Not set' }, ...accounts].map(a => {
+            const sel = (form.pay_account_id || '') === a.id
+            const st = a.id ? accountStyle(a) : null
+            return (
+              <button key={a.id || 'none'} type="button" onClick={() => setForm(f => ({ ...f, pay_account_id: a.id }))}
+                style={{ padding: '8px 12px', borderRadius: 10, fontSize: 13, cursor: 'pointer',
+                  border: `1px solid ${sel ? (st?.color || 'rgb(var(--c-accent))') : 'rgb(var(--c-border-strong))'}`,
+                  background: sel ? (st?.bg || 'rgb(var(--c-accent) / 0.1)') : 'transparent',
+                  color: sel && st ? st.color : 'rgb(var(--c-text))' }}>
+                {a.id ? st.label : a.name}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    </>
+  )
+}
+
+function SaveButton({ busy, children, onClick }) {
+  return (
+    <button onClick={onClick} disabled={busy} className="tappable"
+      style={{ width: '100%', padding: '14px 0', borderRadius: 14, border: 0, ...display, fontSize: 15, fontWeight: 700,
+        background: 'rgb(var(--c-accent))', color: 'rgb(var(--c-on-accent))', opacity: busy ? 0.6 : 1, cursor: 'pointer' }}>
+      {busy ? 'Saving…' : children}
+    </button>
+  )
+}
+
+// One row in detail: name, budget, and for fixed bills when and from where it
+// goes off and a manual "paid" tick. Lists this cycle's lines for it.
+function RowSheet({ row, onClose }) {
+  const { updateCategory, toggleFixedPaid, transactions } = useBudget()
+  const toast = useToast()
+  const [form, setForm] = useState(null)
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    if (row) setForm({
+      name: row.name, budget: row.budget ? String(row.budget) : '',
+      due_day: row.category?.due_day ? String(row.category.due_day) : '',
+      pay_account_id: row.category?.pay_account_id || '',
+    })
+  }, [row])
+
+  if (!row || !form) return <BottomSheet open={false} onClose={onClose} />
+  const lines = transactions.filter(t => t.category_id === row.id).slice(0, 8)
+
+  async function save() {
+    if (!form.name.trim()) { toast('Give it a name', 'error'); return }
+    setBusy(true)
+    try {
+      const payload = { name: form.name.trim(), budget_amount: form.budget === '' ? null : parseFloat(form.budget) }
+      if (row.type === 'fixed') {
+        payload.due_day = form.due_day ? parseInt(form.due_day, 10) : null
+        payload.pay_account_id = form.pay_account_id || null
+      }
+      await updateCategory(row.id, payload)
+      toast('Saved ✓', 'success')
+      onClose()
+    } catch (e) { toast(e.message, 'error') } finally { setBusy(false) }
+  }
+
+  async function togglePaid() {
+    try { await toggleFixedPaid(row.id); toast(row.ticked ? 'Marked as not paid' : 'Marked as paid ✓', 'success'); onClose() }
+    catch (e) { toast(e.message, 'error') }
+  }
+
+  return (
+    <BottomSheet open onClose={onClose} title={`${row.icon || ''} ${row.name}`}>
+      <div className="px-5 pb-8" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div>
+          <label style={labelStyle}>Name</label>
+          <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} style={field} />
+        </div>
+        <div>
+          <label style={labelStyle}>Budget per cycle</label>
+          <input type="number" inputMode="decimal" value={form.budget} placeholder="0"
+            onChange={e => setForm(f => ({ ...f, budget: e.target.value }))} style={field} />
+          <p style={{ ...small, marginTop: 6 }}>A change applies from this cycle on. Earlier cycles keep their budget.</p>
+        </div>
+        {row.type === 'fixed' && <FixedFields form={form} setForm={setForm} />}
+        <SaveButton busy={busy} onClick={save}>Save</SaveButton>
+
+        {row.type === 'fixed' && !row.autoPaid && (
+          <button onClick={togglePaid} className="tappable flex items-center justify-center gap-2"
+            style={{ width: '100%', padding: '12px 0', borderRadius: 14, fontSize: 14, cursor: 'pointer',
+              border: '1px solid rgb(var(--c-positive) / 0.5)', background: row.ticked ? 'rgb(var(--c-positive) / 0.12)' : 'transparent', color: 'rgb(var(--c-positive))' }}>
+            <Check size={16} /> {row.ticked ? 'Paid this cycle — tap to undo' : 'Mark as paid this cycle'}
+          </button>
+        )}
+        {row.type === 'fixed' && row.autoPaid && (
+          <p style={{ ...small, color: 'rgb(var(--c-positive))' }}>Paid this cycle — it’s on your statement.</p>
         )}
 
-        {/* Summary */}
-        <section>
-          <p className="text-xs text-muted uppercase tracking-widest mb-2">Summary</p>
-          <div className="bg-surface-1 border border-border rounded-2xl overflow-hidden divide-y divide-border">
-            {[
-              { label: 'Income', value: totals.income, color: 'text-success' },
-              { label: 'Fixed (paid + still due)', value: -totals.fixedTotal, color: 'text-fg' },
-              { label: 'Predicted spend', value: -totals.variableSpent, color: 'text-fg' },
-              { label: 'Unplanned spend', value: -totals.unbudgetedSpent, color: 'text-fg' },
-              { label: 'Left', value: totals.remaining, color: totals.remaining >= 0 ? 'text-success' : 'text-danger' },
-            ].map(row => (
-              <div key={row.label} className="flex justify-between px-4 py-3 text-sm">
-                <span className="text-muted">{row.label}</span>
-                <span className={`font-mono font-medium ${row.color}`}>{formatMoney(row.value)}</span>
+        <div>
+          <label style={labelStyle}>This cycle</label>
+          {lines.length === 0
+            ? <p style={small}>Nothing yet.</p>
+            : lines.map(t => (
+              <div key={t.id} className="flex items-center justify-between gap-3" style={{ padding: '7px 0', borderTop: '0.5px solid rgb(var(--c-border))' }}>
+                <span className="truncate" style={{ fontSize: 13 }}>{t.description || t.notes || row.name}</span>
+                <span style={{ ...small, flexShrink: 0 }}>{t.transaction_date ? format(parseISO(t.transaction_date), 'd MMM') : ''}</span>
+                <span style={{ ...display, fontSize: 13, flexShrink: 0, color: t.direction === 'in' ? 'rgb(var(--c-positive))' : 'inherit' }}>
+                  {t.direction === 'in' ? '+' : '−'}{R(parseFloat(t.amount))}
+                </span>
               </div>
             ))}
-          </div>
-        </section>
-      </div>
-
-      {/* Add Fixed Expense Sheet */}
-      <BottomSheet open={fixedOpen} onClose={() => setFixedOpen(false)} title="Add Fixed Expense">
-        <div className="px-5 space-y-4 pb-8">
-          <div>
-            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Name</label>
-            <input
-              type="text"
-              value={fixedForm.name}
-              onChange={e => setFixedForm(f => ({ ...f, name: e.target.value }))}
-              placeholder="e.g. Rent"
-              className="w-full bg-surface-1 border border-border rounded-xl px-4 py-3 text-sm"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Amount</label>
-            <div className="flex items-center gap-2 bg-surface-1 border border-border rounded-xl px-4 py-3">
-              <span className="text-muted font-mono">R</span>
-              <input
-                type="number"
-                inputMode="decimal"
-                value={fixedForm.amount}
-                onChange={e => setFixedForm(f => ({ ...f, amount: e.target.value }))}
-                placeholder="0.00"
-                className="flex-1 bg-transparent font-mono text-lg outline-none"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Due Day</label>
-            <select
-              value={fixedForm.due_day}
-              onChange={e => setFixedForm(f => ({ ...f, due_day: e.target.value }))}
-              className="w-full bg-surface-1 border border-border rounded-xl px-4 py-3 text-sm"
-              style={{ colorScheme: 'dark' }}
-            >
-              {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
-                <option key={d} value={d}>Day {d}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Account</label>
-            <AccountPicker value={fixedForm.account} onChange={(val) => setFixedForm(f => ({ ...f, account: val }))} />
-          </div>
-
-          <Button variant="primary" size="lg" onClick={handleAddFixed} disabled={saving} className="w-full">
-            {saving ? 'Saving…' : 'Add Fixed Expense'}
-          </Button>
         </div>
-      </BottomSheet>
-    </div>
+      </div>
+    </BottomSheet>
+  )
+}
+
+const BLANK = { name: '', icon: '', budget: '', due_day: '', pay_account_id: '' }
+const DEFAULT_ICON = { income: '💰', fixed: '🧾', predicted: '🛒', unplanned: '🎲' }
+
+function AddSheet({ section, onClose }) {
+  const { addCategory } = useBudget()
+  const toast = useToast()
+  const [form, setForm] = useState(BLANK)
+  const [busy, setBusy] = useState(false)
+  useEffect(() => { if (section) setForm(BLANK) }, [section])
+  const title = SECTIONS.find(s => s.key === section)?.title
+
+  async function save() {
+    if (!form.name.trim()) { toast('Give it a name', 'error'); return }
+    setBusy(true)
+    try {
+      await addCategory({
+        name: form.name.trim(), type: section, icon: form.icon.trim() || DEFAULT_ICON[section],
+        budget_amount: form.budget === '' ? null : parseFloat(form.budget),
+        due_day: section === 'fixed' && form.due_day ? parseInt(form.due_day, 10) : null,
+        pay_account_id: section === 'fixed' ? form.pay_account_id || null : null,
+      })
+      toast(`${form.name.trim()} added ✓`, 'success')
+      onClose()
+    } catch (e) { toast(e.message, 'error') } finally { setBusy(false) }
+  }
+
+  return (
+    <BottomSheet open={!!section} onClose={onClose} title={`Add to ${title || ''}`}>
+      <div className="px-5 pb-8" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="flex gap-2">
+          <div style={{ width: 70 }}>
+            <label style={labelStyle}>Icon</label>
+            <input value={form.icon} placeholder={DEFAULT_ICON[section]} maxLength={4}
+              onChange={e => setForm(f => ({ ...f, icon: e.target.value }))} style={{ ...field, textAlign: 'center' }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <label style={labelStyle}>Name</label>
+            <input value={form.name} placeholder={section === 'income' ? 'e.g. Side job' : 'e.g. Gym'}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))} style={field} />
+          </div>
+        </div>
+        <div>
+          <label style={labelStyle}>{section === 'income' ? 'Expected per cycle' : 'Budget per cycle'}</label>
+          <input type="number" inputMode="decimal" value={form.budget} placeholder="0"
+            onChange={e => setForm(f => ({ ...f, budget: e.target.value }))} style={field} />
+        </div>
+        {section === 'fixed' && <FixedFields form={form} setForm={setForm} />}
+        <SaveButton busy={busy} onClick={save}>Add</SaveButton>
+      </div>
+    </BottomSheet>
   )
 }

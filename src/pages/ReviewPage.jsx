@@ -22,7 +22,7 @@ export default function ReviewPage() {
   const navigate = useNavigate()
   const toast = useToast()
   const {
-    cycles, categories, budgetHistory, incomeRecords, getTransactionsForCycle, setCategoryBudget,
+    cycles, categories, budgetHistory, getTransactionsForCycle, setCategoryBudget,
   } = useBudget()
   const finished = cycles.slice(1)                 // cycles[0] is still running
   const [idx, setIdx] = useState(0)
@@ -40,8 +40,8 @@ export default function ReviewPage() {
   }, [reviewed?.key])
 
   const review = useMemo(() => txSets && reviewCycle({
-    cycleTx: txSets[0], recentTx: txSets, categories, history: budgetHistory, incomeRecords, cycleKey: reviewed.key,
-  }), [txSets, categories, budgetHistory, incomeRecords])
+    cycleTx: txSets[0], recentTx: txSets, categories, history: budgetHistory, cycleKey: reviewed.key,
+  }), [txSets, categories, budgetHistory])
 
   if (!reviewed) {
     return (
