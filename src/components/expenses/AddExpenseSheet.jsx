@@ -77,7 +77,7 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
         onClick={() => setCategoryId(sel ? '' : cat.id)}
         style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-          padding: '8px 4px', borderRadius: 14,
+          padding: '8px 4px', borderRadius: 14, minWidth: 0,
           border: `0.5px solid ${sel ? 'rgb(var(--c-accent) / 0.5)' : 'rgb(var(--c-border-strong))'}`,
           background: sel ? 'rgb(var(--c-accent) / 0.1)' : 'rgb(var(--c-surface-2))',
           cursor: 'pointer', transition: 'all 0.15s ease',
@@ -111,7 +111,7 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
               value={amount}
               onChange={e => { setAmount(e.target.value.replace(/[^0-9.]/g,'').replace(/(\..*)\./g,'$1')); setError('') }}
               style={{
-                flex: 1, background: 'transparent', border: 'none', outline: 'none',
+                flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none',
                 fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 300,
                 color: 'rgb(var(--c-text))',
               }}
@@ -136,7 +136,7 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
         {/* Category */}
         <div>
           <label style={s.label}>Category</label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8 }}>
             {firstEight.map(cat => <CatButton key={cat.id} cat={cat} />)}
           </div>
           {rest.length > 0 && (
@@ -149,7 +149,7 @@ export default function AddExpenseSheet({ open, onClose, prefillCategory = null 
                 {showMoreCats ? 'Show less' : `${rest.length} more`}
               </button>
               {showMoreCats && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginTop: 8 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8, marginTop: 8 }}>
                   {rest.map(cat => <CatButton key={cat.id} cat={cat} />)}
                 </div>
               )}

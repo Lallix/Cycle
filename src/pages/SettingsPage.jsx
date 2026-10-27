@@ -555,7 +555,7 @@ export default function SettingsPage() {
               <input type="number" inputMode="decimal" placeholder="0.00"
                 value={incomeForm.amount}
                 onChange={e => setIncomeForm(f => ({ ...f, amount: e.target.value }))}
-                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontFamily: 'var(--font-display)', fontSize: 18, color: 'rgb(var(--c-text))' }}
+                style={{ flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none', fontFamily: 'var(--font-display)', fontSize: 18, color: 'rgb(var(--c-text))' }}
               />
             </div>
           </div>

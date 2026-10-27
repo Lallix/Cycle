@@ -22,12 +22,12 @@ export default function UpcomingBills() {
   }
 
   return (
-    <div style={{ marginBottom: 8 }}>
+    <div style={{ margin: '28px 0 8px' }}>
       <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '0 16px', marginBottom: 10 }}>
         Due Soon
       </p>
 
-      <div style={{ display: 'flex', gap: 10, padding: '0 16px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+      <div style={{ display: 'flex', gap: 10, padding: '0 16px 10px', overflowX: 'auto', scrollbarWidth: 'none' }}>
         {upcoming.map(exp => {
           const acc       = getAccountConfig(exp.account)
           const paid      = isRecurringPaid(exp.id)

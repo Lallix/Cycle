@@ -205,7 +205,7 @@ export default function VariableBudgetRow({ category }) {
                 onChange={e => setAmount(e.target.value.replace(/[^0-9.]/g,'').replace(/(\..*)\./g,'$1'))}
                 autoFocus
                 style={{
-                  flex: 1, background: 'transparent', border: 'none', outline: 'none',
+                  flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none',
                   fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 300, color: 'rgb(var(--c-text))',
                 }}
               />

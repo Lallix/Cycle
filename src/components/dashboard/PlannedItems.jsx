@@ -38,7 +38,7 @@ export default function PlannedItems() {
   }
 
   return (
-    <div style={{ margin: '0 16px 16px' }}>
+    <div style={{ margin: '28px 16px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <p style={{ ...label, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Planned</p>
         {plannedItems.length > 0 && <span style={label}>Net {net >= 0 ? '+' : '−'}{formatMoney(Math.abs(net), true)}</span>}

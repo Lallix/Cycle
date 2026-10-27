@@ -9,7 +9,7 @@ export default function RecentExpenses() {
   const recent = transactions.slice(0, 5)
 
   return (
-    <div style={{ padding: '0 16px 16px' }}>
+    <div style={{ padding: '28px 16px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, fontWeight: 600, color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           Recent
