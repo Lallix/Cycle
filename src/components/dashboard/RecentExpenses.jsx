@@ -1,10 +1,10 @@
 import { useBudget } from '../../context/BudgetContext'
-import { formatMoney, getAccountConfig } from '../../lib/format'
+import { formatMoney, accountStyleForTx } from '../../lib/format'
 import { useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
 
 export default function RecentExpenses() {
-  const { transactions } = useBudget()
+  const { transactions, accounts } = useBudget()
   const navigate = useNavigate()
   const recent = transactions.slice(0, 5)
 
@@ -32,7 +32,7 @@ export default function RecentExpenses() {
         <div style={{ background: 'rgb(var(--c-surface))', borderRadius: 16, border: '0.5px solid rgb(var(--c-border))', overflow: 'hidden' }}>
           {recent.map((tx, i) => {
             const cat    = tx.cycle_categories || tx.categories || null
-            const acc    = getAccountConfig(tx.account)
+            const acc    = accountStyleForTx(tx, accounts)
             const name   = cat?.name   || (tx.category_id ? 'Category' : 'Unbudgeted')
             const icon   = cat?.icon   || '💳'
             const colour = cat?.colour || '#888'

@@ -18,7 +18,7 @@ export function getCategoryIcon(name) {
 }
 
 export const ACCOUNT_CONFIG = {
-  Capitec:   { color: '#007aff', bg: 'rgba(0,122,255,0.15)',    label: 'Capitec' },
+  Capitec:   { color: '#2F7BFF', bg: 'rgba(47,123,255,0.16)',   label: 'Capitec' },
   FNB:       { color: 'rgb(var(--c-accent))', bg: 'rgba(212,175,55,0.15)',   label: 'FNB' },
   Absa:      { color: '#dc0032', bg: 'rgba(220,0,50,0.15)',     label: 'Absa' },
   Standard:  { color: '#0033a0', bg: 'rgba(0,51,160,0.15)',     label: 'Standard Bank' },
@@ -33,6 +33,24 @@ export const ACCOUNT_CONFIG = {
 
 export function getAccountConfig(account) {
   return ACCOUNT_CONFIG[account] || ACCOUNT_CONFIG.Cash
+}
+
+// Credit cards are red whatever the bank, so card spend stands out.
+const CREDIT_CARD = { color: '#FF4D5E', bg: 'rgba(255,77,94,0.16)' }
+
+// Colour and label for an account record (cycle_accounts row).
+export function accountStyle(acc) {
+  if (!acc) return ACCOUNT_CONFIG.Cash
+  const bankCfg = getAccountConfig(acc.bank || acc.name)
+  if (acc.kind === 'credit_card') return { ...CREDIT_CARD, label: `${bankCfg.label === 'Cash' ? acc.name : bankCfg.label} card` }
+  return bankCfg === ACCOUNT_CONFIG.Cash ? { ...bankCfg, label: acc.name } : bankCfg
+}
+
+// Colour and label for a transaction: by its linked account when there is
+// one (imports), otherwise by the account name typed on it.
+export function accountStyleForTx(tx, accounts = []) {
+  const acc = tx.account_id && accounts.find(a => a.id === tx.account_id)
+  return acc ? accountStyle(acc) : getAccountConfig(tx.account)
 }
 
 export function getProgressColor(pct) {

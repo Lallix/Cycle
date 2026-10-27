@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0E0E10" />
+    <meta name="theme-color" content="#0E0B1F" />
     <meta name="description" content="Cycle — Your budget. Your cycle." />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -17,20 +17,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Poppins:wght@300;400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet" />
     <style>
       * { -webkit-tap-highlight-color: transparent; }
-      html, body, #root { height: 100%; width: 100%; overscroll-behavior: none; background-color: rgb(var(--c-bg, 14 14 16)); }
+      html, body, #root { height: 100%; width: 100%; overscroll-behavior: none; background-color: rgb(var(--c-bg, 14 11 31)); }
       body { font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
       ::-webkit-scrollbar { width: 0; height: 0; }
-      ::selection { background: rgb(var(--c-accent, 232 195 106) / 0.25); }
+      ::selection { background: rgb(var(--c-accent, 200 255 61) / 0.3); }
     </style>
     <script>
-      // Apply the saved look (Classic or Vibe) before anything paints
+      // Apply light or dark before anything paints (see context/ThemeContext.jsx)
       (function() {
         try {
-          var t = localStorage.getItem('cycle-theme');
-          if (t === 'vibe') {
-            document.documentElement.dataset.theme = 'vibe';
-            document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0E0B1F');
+          var m = localStorage.getItem('cycle-mode');
+          var light = m === 'light' || (m === 'auto' && window.matchMedia('(prefers-color-scheme: light)').matches);
+          if (light) {
+            document.documentElement.dataset.mode = 'light';
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', '#F4F1FF');
           }
+          localStorage.removeItem('cycle-theme');   // Classic/Vibe switch is gone
         } catch (e) {}
       })();
       (function() {

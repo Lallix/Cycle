@@ -1,7 +1,6 @@
 // Theme colours for inline styles. Each one points at a CSS variable in
-// styles/globals.css, so the same component shows the Classic (refined gold)
-// or Vibe look depending on <html data-theme>. The names are historic:
-// "gold" is the accent of whichever look is active.
+// styles/globals.css, so components follow light or dark mode
+// (<html data-mode>). The names are historic: "gold" is the accent (lime).
 export const T = {
   bg:           'rgb(var(--c-bg))',   // page
   surface:      'rgb(var(--c-surface))',   // cards

@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
-import { formatMoney, getAccountConfig } from '../../lib/format'
+import { formatMoney, accountStyleForTx } from '../../lib/format'
+import { useBudget } from '../../context/BudgetContext'
 import { Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -15,7 +16,8 @@ export default function ExpenseItem({ transaction, onDelete, onEdit }) {
   const active  = useRef(false)
 
   const cat     = transaction.cycle_categories || transaction.categories || null
-  const acc     = getAccountConfig(transaction.account)
+  const { accounts } = useBudget()
+  const acc     = accountStyleForTx(transaction, accounts)
   const catName = cat?.name   || (transaction.category_id ? 'Category' : 'Unbudgeted')
   const catIcon = cat?.icon   || '💳'
   const catColor = cat?.colour || '#888'

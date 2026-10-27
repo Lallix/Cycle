@@ -1,5 +1,5 @@
 import { useBudget } from '../../context/BudgetContext'
-import { getAccountConfig } from '../../lib/format'
+import { accountStyle } from '../../lib/format'
 
 // Replaces the hardcoded 11-bank pill row everywhere in the app
 // Shows only the user's actual accounts from cycle_accounts table
@@ -17,7 +17,7 @@ export default function AccountPicker({ value, onChange, style = {} }) {
   return (
     <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', ...style }}>
       {list.map(acc => {
-        const cfg      = getAccountConfig(acc.bank || acc.name)
+        const cfg      = accountStyle(acc)
         const selected = value === acc.name
         return (
           <button

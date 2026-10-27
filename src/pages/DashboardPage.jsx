@@ -1,191 +1,51 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useBudget } from '../context/BudgetContext'
-import { getGreeting } from '../lib/format'
-import HeroCard from '../components/dashboard/HeroCard'
 import UpcomingBills from '../components/dashboard/UpcomingBills'
-import BudgetSnapshot from '../components/dashboard/BudgetSnapshot'
 import RecentExpenses from '../components/dashboard/RecentExpenses'
-import TypeBreakdown from '../components/dashboard/TypeBreakdown'
 import PlannedItems from '../components/dashboard/PlannedItems'
 import ReviewPrompt from '../components/dashboard/ReviewPrompt'
+import CoverAccounts from '../components/dashboard/CoverAccounts'
 import SavingsModal from '../components/savings/SavingsModal'
 import LoadingScreen from '../components/ui/LoadingScreen'
-import BrandLogo from '../components/branding/BrandLogo'
-import { ThemeToggleButton } from '../components/ui/ThemeSwitch'
-import { useTheme } from '../context/ThemeContext'
+import { ModeToggleButton } from '../components/ui/ThemeSwitch'
 import { VibeHeader, VibeHero, VibeBlocks, VibeTiles } from '../components/vibe/VibeDashboard'
-import { RefreshCw, PiggyBank, ChevronRight, LayoutGrid } from 'lucide-react'
 
+// Home: 3D ring hero, what each account needs this cycle, candy-block
+// types, vibe-check tiles, then planned items, bills due and recent spend.
 export default function DashboardPage() {
   const { profile } = useAuth()
-  const { loading, refreshing, refresh, totals } = useBudget()
-  const navigate = useNavigate()
+  const { loading } = useBudget()
   const [savingsOpen, setSavingsOpen] = useState(false)
-  const { theme } = useTheme()
 
   if (loading) return <LoadingScreen message="Loading your budget..." />
 
-  const firstName = profile?.full_name?.split(' ')[0] || 'there'
-
-  // Vibe look: 3D ring hero, candy-block types and the vibe-check tiles,
-  // then the same planned / bills / recent sections as Classic.
-  if (theme === 'vibe') {
-    return (
-      <div className="min-h-full animate-stagger-1">
-        <VibeHeader
-          firstName={firstName.toLowerCase()}
-          right={
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <ThemeToggleButton />
-              <button
-                onClick={() => setSavingsOpen(true)}
-                aria-label="Savings"
-                style={{ width: 46, height: 46, borderRadius: 16, display: 'grid', placeItems: 'center', fontSize: 22, border: 0, cursor: 'pointer',
-                  background: 'linear-gradient(145deg,#FFD6EC,#FF8FC6)', boxShadow: 'inset 0 -4px 8px rgb(0 0 0 / 0.18), 0 8px 18px rgb(255 92 171 / 0.35)' }}
-              >🐷</button>
-            </div>
-          }
-        />
-        <VibeHero />
-        <div className="mt-4"><ReviewPrompt /></div>
-        <VibeBlocks />
-        <VibeTiles />
-        <PlannedItems />
-        <UpcomingBills />
-        <div style={{ marginTop: 8 }}><RecentExpenses /></div>
-        <div className="h-32" />
-        <SavingsModal open={savingsOpen} onClose={() => setSavingsOpen(false)} />
-      </div>
-    )
-  }
+  const firstName = (profile?.full_name?.split(' ')[0] || 'there').toLowerCase()
 
   return (
-    <div className="min-h-full bg-bg animate-stagger-1">
-
-      {/* Header */}
-      <div
-        className="flex items-center justify-between px-4 pb-2"
-        style={{ paddingTop: 'max(env(safe-area-inset-top), 1rem)' }}
-      >
-        <div>
-          <p className="text-xs text-subtle"
-            style={{ fontFamily: 'Inter, sans-serif' }}>
-            {getGreeting()},
-          </p>
-          <h1 className="heading text-lg text-fg">{firstName}</h1>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {/* Classic ⇄ Vibe */}
-          <ThemeToggleButton />
-
-          {/* Refresh */}
-          <button
-            onClick={refresh}
-            disabled={refreshing}
-            style={{
-              width: 38, height: 38,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              borderRadius: 12, border: '0.5px solid rgb(var(--c-border))',
-              background: 'rgb(var(--c-surface))', cursor: 'pointer',
-              transition: 'all 0.15s ease',
-            }}
-          >
-            <RefreshCw size={16} color={refreshing ? 'rgb(var(--c-accent))' : 'rgb(var(--c-text-3))'}
-              className={refreshing ? 'animate-spin' : ''} />
-          </button>
-
-          {/* Savings */}
-          <button
-            onClick={() => setSavingsOpen(true)}
-            style={{
-              width: 38, height: 38,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              borderRadius: 12,
-              border: '0.5px solid rgb(var(--c-accent) / 0.25)',
-              background: 'rgb(var(--c-accent) / 0.08)',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease',
-            }}
-          >
-            <PiggyBank size={18} color="rgb(var(--c-accent))" />
-          </button>
-
-          {/* Brand mark — decorative only */}
-          <div style={{ pointerEvents: 'none' }}>
-            <BrandLogo size={32} animated />
+    <div className="min-h-full animate-stagger-1">
+      <VibeHeader
+        firstName={firstName}
+        right={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <ModeToggleButton />
+            <button
+              onClick={() => setSavingsOpen(true)}
+              aria-label="Savings"
+              className="vibe-avatar"
+            >🐷</button>
           </div>
-        </div>
-      </div>
-
-      {/* Hero */}
-      <div className="animate-stagger-1">
-        <HeroCard />
-      </div>
-
-      {/* First week after payday: review the cycle that ended */}
-      <ReviewPrompt />
-
-      {/* Where the money is going, by spend type */}
-      <div className="animate-stagger-2">
-        <TypeBreakdown />
-      </div>
-
-      {/* Planned once-offs (rebate plan) */}
-      <div className="animate-stagger-2">
-        <PlannedItems />
-      </div>
-
-      {/* Manage Budget entry point */}
-      <div className="px-4 mb-4 animate-stagger-2">
-        <button
-          onClick={() => navigate('/budget')}
-          className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border border-border tappable"
-          style={{ background: 'rgb(var(--c-surface))' }}
-        >
-          <div className="flex items-center gap-3">
-            <div
-              className="w-8 h-8 rounded-xl flex items-center justify-center"
-              style={{ background: 'rgb(var(--c-accent) / 0.1)' }}
-            >
-              <LayoutGrid size={16} className="text-gold" />
-            </div>
-            <div className="text-left">
-              <p className="text-sm font-medium text-fg"
-                style={{ fontFamily: 'Inter, sans-serif' }}>
-                Manage budget
-              </p>
-              <p className="text-xs text-subtle"
-                style={{ fontFamily: 'Inter, sans-serif' }}>
-                Fixed · Predicted · Unplanned
-              </p>
-            </div>
-          </div>
-          <ChevronRight size={16} className="text-subtle" />
-        </button>
-      </div>
-
-      {/* Upcoming bills */}
-      <div className="animate-stagger-2">
-        <UpcomingBills />
-      </div>
-
-      {/* Budget snapshot */}
-      <div className="animate-stagger-3">
-        <BudgetSnapshot />
-      </div>
-
-      {/* Recent transactions */}
-      <div className="animate-stagger-4" style={{ marginTop: 8 }}>
-        <RecentExpenses />
-      </div>
-
-      {/* Bottom spacer for nav */}
-      <div className="h-28" />
-
-      {/* Savings modal */}
+        }
+      />
+      <VibeHero />
+      <div className="mt-4"><ReviewPrompt /></div>
+      <CoverAccounts />
+      <VibeBlocks />
+      <VibeTiles />
+      <PlannedItems />
+      <UpcomingBills />
+      <div style={{ marginTop: 8 }}><RecentExpenses /></div>
+      <div className="h-32" />
       <SavingsModal open={savingsOpen} onClose={() => setSavingsOpen(false)} />
     </div>
   )

@@ -75,7 +75,7 @@ export function VibeHero() {
       <div ref={ref} className="clay vibe-hero tilt" style={{ padding: '20px 20px 22px', position: 'relative', overflow: 'hidden' }}>
         <div className="flex items-center gap-4" style={{ position: 'relative', zIndex: 1 }}>
           <div className="vibe-ring" style={{
-            background: `conic-gradient(from -90deg, rgb(var(--c-accent)) 0deg, rgb(var(--c-unplanned)) ${deg * 0.45}deg, rgb(var(--c-negative)) ${deg}deg, rgb(255 255 255 / 0.07) ${deg}deg 360deg)`,
+            background: `conic-gradient(from -90deg, rgb(var(--c-accent)) 0deg, rgb(var(--c-unplanned)) ${deg * 0.45}deg, rgb(var(--c-negative)) ${deg}deg, var(--vibe-track) ${deg}deg 360deg)`,
           }}>
             <span className="vibe-ring-emoji">{mood}</span>
             <span className="vibe-gloss" />

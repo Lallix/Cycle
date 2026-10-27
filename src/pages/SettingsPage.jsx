@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useBudget } from '../context/BudgetContext'
 import { useToast } from '../components/ui/Toast'
-import { formatMoney, COLOR_OPTIONS, getAccountConfig } from '../lib/format'
+import { formatMoney, COLOR_OPTIONS, getAccountConfig, accountStyle } from '../lib/format'
 import PageHeader from '../components/ui/PageHeader'
 import Button from '../components/ui/Button'
 import BottomSheet from '../components/ui/BottomSheet'
@@ -308,7 +308,7 @@ export default function SettingsPage() {
               <p className="text-sm text-muted px-4 py-4">No accounts yet — add one above</p>
             )}
             {accounts.map(acc => {
-              const cfg = getAccountConfig(acc.bank || acc.name)
+              const cfg = accountStyle(acc)
               return (
                 <div key={acc.id} className="flex items-center gap-3 px-4 py-3 border-b border-border last:border-0">
                   {/* Bank colour badge */}
@@ -394,7 +394,7 @@ export default function SettingsPage() {
 
         {/* Look */}
         <section>
-          <p className="text-xs text-muted uppercase tracking-widest mb-2">Look</p>
+          <p className="text-xs text-muted uppercase tracking-widest mb-2">Appearance</p>
           <ThemeSwitch />
         </section>
 
