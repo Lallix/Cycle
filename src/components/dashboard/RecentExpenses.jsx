@@ -1,12 +1,30 @@
+import { useEffect, useState } from 'react'
+import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../context/AuthContext'
 import { useBudget } from '../../context/BudgetContext'
 import { formatMoney, accountStyleForTx } from '../../lib/format'
 import { useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
 
 export default function RecentExpenses() {
+  const { user } = useAuth()
   const { transactions, accounts } = useBudget()
   const navigate = useNavigate()
-  const recent = transactions.slice(0, 5)
+  // The latest lines whatever cycle they fall in: early in a cycle, before a
+  // fresh statement is imported, the current cycle can still be empty.
+  const [recent, setRecent] = useState(transactions.slice(0, 5))
+
+  useEffect(() => {
+    if (!user) return
+    supabase
+      .from('cycle_transactions')
+      .select('*, cycle_categories(id, name, icon, colour, type)')
+      .eq('user_id', user.id)
+      .order('transaction_date', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(5)
+      .then(({ data, error }) => { if (!error && data) setRecent(data) })
+  }, [user, transactions])
 
   return (
     <div style={{ padding: '28px 16px 16px' }}>
@@ -72,7 +90,7 @@ export default function RecentExpenses() {
                       </span>
                     )}
                     <span style={{ color: 'rgb(var(--c-text-3))', fontSize: 11 }}>·</span>
-                    {tx.account && (
+                    {(tx.account || tx.account_id) && (
                       <span style={{
                         fontSize: 10, padding: '2px 7px', borderRadius: 5, fontWeight: 500,
                         color: acc.color, background: acc.bg, fontFamily: 'Inter, sans-serif',
@@ -80,12 +98,12 @@ export default function RecentExpenses() {
                         {acc.label}
                       </span>
                     )}
-                    {tx.notes && (
+                    {(tx.notes || tx.description) && (
                       <span style={{
                         fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-2))',
-                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 80,
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, minWidth: 0,
                       }}>
-                        {tx.notes}
+                        {tx.notes || tx.description}
                       </span>
                     )}
                   </div>
