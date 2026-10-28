@@ -57,7 +57,7 @@ export default function ImportPage() {
   const location = useLocation()
   const toast = useToast()
   const { user } = useAuth()
-  const { categories, accounts, addAccount, updateAccount, refresh } = useBudget()
+  const { categories, archivedCategories, accounts, addAccount, updateAccount, refresh } = useBudget()
   const fileRef = useRef(null)
 
   const [step, setStep] = useState('pick')        // pick · password · account · review · done
@@ -271,9 +271,16 @@ export default function ImportPage() {
     return [...list].reverse()          // newest first
   }, [rows, filter])
 
+  // A rule can point at a removed category (e.g. a subscription you stopped).
+  // When its payee shows up again, the category comes back with this import.
+  const reviving = useMemo(() => {
+    const used = new Set(rows.filter(r => !r.duplicate && r.categoryId).map(r => r.categoryId))
+    return archivedCategories.filter(c => used.has(c.id))
+  }, [rows, archivedCategories])
+
   const grouped = useMemo(() => TYPE_GROUPS
-    .map(([name, types]) => [name, categories.filter(c => types.includes(c.type))])
-    .filter(([, cats]) => cats.length), [categories])
+    .map(([name, types]) => [name, [...categories, ...reviving].filter(c => types.includes(c.type))])
+    .filter(([, cats]) => cats.length), [categories, reviving])
 
   // ── Step 4: write it all ─────────────────────────────────────
   async function runImport() {
@@ -281,6 +288,12 @@ export default function ImportPage() {
     if (fresh.length === 0) { toast('Nothing new to import', 'info'); return }
     setBusy(true)
     try {
+      if (reviving.length) {
+        const { error } = await supabase.from('cycle_categories')
+          .update({ is_active: true }).eq('user_id', user.id).in('id', reviving.map(c => c.id))
+        if (error) throw error
+      }
+
       const { data: batch, error: bErr } = await supabase
         .from('cycle_import_batches')
         .insert({
@@ -479,6 +492,12 @@ export default function ImportPage() {
                 <p style={label}>
                   {stats.replaced} expense{stats.replaced > 1 ? 's' : ''} you added by hand {stats.replaced > 1 ? 'are' : 'is'} on this statement.
                   The statement line{stats.replaced > 1 ? 's' : ''} will replace {stats.replaced > 1 ? 'them' : 'it'}, keeping your category and notes, so nothing counts twice.
+                </p>
+              )}
+              {reviving.length > 0 && (
+                <p style={label}>
+                  Coming back to your budget: <b style={{ color: 'rgb(var(--c-text))' }}>{reviving.map(c => c.name).join(', ')}</b>.
+                  {reviving.length > 1 ? ' These were' : ' It was'} removed, but this statement has a charge for {reviving.length > 1 ? 'them' : 'it'} again.
                 </p>
               )}
               {parsed?.pending.length > 0 && (
