@@ -29,7 +29,7 @@ export async function readPdfItems(arrayBuffer, password) {
     pages.push({
       items: content.items
         .filter(i => i.str && i.str.trim())
-        .map(i => ({ x: i.transform[4], y: i.transform[5], str: i.str })),
+        .map(i => ({ x: i.transform[4], y: i.transform[5], w: i.width, str: i.str })),
     })
   }
   await doc.destroy()

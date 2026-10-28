@@ -84,7 +84,8 @@ export function buildCategoriser(categories, rules) {
 
   return function categorise(line, accountId) {
     const key = payeeKey(line.description)
-    for (const r of compiled) {
+    // A fee split off a purchase row (Capitec PDF) is a bank fee, not the payee's
+    for (const r of line.splitFee ? [] : compiled) {
       if (r.account_id && r.account_id !== accountId) continue
       if (r.re.test(line.description) || r.re.test(key)) {
         return { categoryId: r.category_id, via: 'rule' }

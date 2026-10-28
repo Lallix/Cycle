@@ -12,11 +12,12 @@ import { parseCapitecCsv, guessAccountKind } from '../lib/import/capitec'
 import { hashLines } from '../lib/import/fingerprint'
 import { buildCategoriser, payeeKey, escapeRegex } from '../lib/import/categorise'
 import { parseGoTyme, isGoTymeStatement } from '../lib/import/gotyme'
+import { parseCapitecPdf, isCapitecStatement } from '../lib/import/capitecPdf'
 import { readPdfItems, PdfPasswordError } from '../lib/import/pdfText'
 import { matchManual, shiftDate, MATCH_DAYS } from '../lib/import/matchManual'
 
-// Import a bank statement: Capitec CSV (main account or credit card) or a
-// GoTyme / TymeBank PDF statement (password-protected PDFs ask for the
+// Import a bank statement: Capitec CSV or PDF (main account or credit card),
+// or a GoTyme / TymeBank PDF statement (password-protected PDFs ask for the
 // password, which only opens the file in memory and is never kept).
 // pick file → (password) → match it to an account → review categories → import.
 
@@ -118,7 +119,12 @@ export default function ImportPage() {
   async function openPdf(buffer, pwd) {
     // pdf.js takes ownership of the buffer it is given, so hand it a copy
     const pages = await readPdfItems(buffer.slice(0), pwd)
-    if (!isGoTymeStatement(pages)) throw new Error('This PDF is not a GoTyme / TymeBank statement.')
+    if (isCapitecStatement(pages)) {
+      const { lines, pending, kind } = parseCapitecPdf(pages)
+      await loadStatement({ lines, pending, kind, bank: 'Capitec', format: 'capitec_pdf' })
+      return
+    }
+    if (!isGoTymeStatement(pages)) throw new Error('This PDF is not a Capitec or GoTyme / TymeBank statement.')
     const { lines, pending } = parseGoTyme(pages)
     await loadStatement({ lines, pending, kind: 'bank', bank: 'TymeBank', format: 'gotyme_pdf' })
   }
@@ -195,6 +201,32 @@ export default function ImportPage() {
       data.forEach(d => existing.add(d.import_hash))
     }
 
+    // The same line from the other format (CSV vs PDF) has a different
+    // fingerprint, so also match on date, amount and running balance.
+    const dates = lines.map(l => l.date).sort()
+    const sameLine = l => `${l.date}|${l.direction}|${l.amount.toFixed(2)}|${l.balance.toFixed(2)}`
+    const stored = new Map()
+    if (dates.length && acc.id) {
+      const { data, error: sErr } = await supabase
+        .from('cycle_transactions')
+        .select('transaction_date, direction, amount, balance')
+        .eq('user_id', user.id)
+        .eq('account_id', acc.id)
+        .not('balance', 'is', null)
+        .gte('transaction_date', dates[0])
+        .lte('transaction_date', dates[dates.length - 1])
+      if (sErr) throw sErr
+      data.forEach(d => {
+        const k = sameLine({ date: d.transaction_date, direction: d.direction, amount: +d.amount, balance: +d.balance })
+        stored.set(k, (stored.get(k) || 0) + 1)
+      })
+    }
+    lines.forEach((l, i) => {
+      if (existing.has(hashes[i]) || l.balance == null) return
+      const k = sameLine(l), n = stored.get(k)
+      if (n) { stored.set(k, n - 1); existing.add(hashes[i]) }
+    })
+
     const { data: rules, error } = await supabase
       .from('cycle_payee_rules')
       .select('*')
@@ -203,7 +235,6 @@ export default function ImportPage() {
     const categorise = buildCategoriser(categories, rules || [])
 
     // Expenses you added by hand that this statement now covers
-    const dates = lines.map(l => l.date).sort()
     let manual = []
     if (dates.length) {
       const { data, error: mErr } = await supabase
@@ -377,7 +408,7 @@ export default function ImportPage() {
   // ── Render ───────────────────────────────────────────────────
   return (
     <div style={{ minHeight: '100%', background: 'rgb(var(--c-bg))', paddingBottom: step === 'review' ? 180 : 120 }}>
-      <PageHeader title="Import statement" subtitle="Capitec CSV or TymeBank PDF" back />
+      <PageHeader title="Import statement" subtitle="Capitec CSV or PDF · TymeBank PDF" back />
 
       <div className="px-4 space-y-4">
         {step === 'pick' && (
@@ -393,7 +424,7 @@ export default function ImportPage() {
               <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: 'rgb(var(--c-text))' }}>
                 {busy ? 'Reading…' : 'Choose a statement'}
               </span>
-              <span style={label}>Capitec: Account → Statements → Download → CSV</span>
+              <span style={label}>Capitec: Account → Statements → Download → CSV or PDF</span>
               <span style={label}>TymeBank: Account → Statements → PDF (any period)</span>
             </button>
             <div style={{ ...card, padding: 16 }} className="space-y-2">
