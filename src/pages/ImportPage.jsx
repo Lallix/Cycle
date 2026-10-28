@@ -58,7 +58,7 @@ export default function ImportPage() {
   const location = useLocation()
   const toast = useToast()
   const { user } = useAuth()
-  const { categories, archivedCategories, accounts, addAccount, updateAccount, refresh } = useBudget()
+  const { categories, archivedCategories, accounts, addAccount, updateAccount, refresh, cycle } = useBudget()
   const fileRef = useRef(null)
 
   const [step, setStep] = useState('pick')        // pick · password · account · review · done
@@ -206,7 +206,8 @@ export default function ImportPage() {
     const dates = lines.map(l => l.date).sort()
     const sameLine = l => `${l.date}|${l.direction}|${l.amount.toFixed(2)}|${l.balance.toFixed(2)}`
     const stored = new Map()
-    if (dates.length && acc.id) {
+    // Read page by page: the API returns at most 1 000 rows per request.
+    for (let from = 0; dates.length && acc.id; from += 1000) {
       const { data, error: sErr } = await supabase
         .from('cycle_transactions')
         .select('transaction_date, direction, amount, balance')
@@ -215,11 +216,14 @@ export default function ImportPage() {
         .not('balance', 'is', null)
         .gte('transaction_date', dates[0])
         .lte('transaction_date', dates[dates.length - 1])
+        .order('id')
+        .range(from, from + 999)
       if (sErr) throw sErr
       data.forEach(d => {
         const k = sameLine({ date: d.transaction_date, direction: d.direction, amount: +d.amount, balance: +d.balance })
         stored.set(k, (stored.get(k) || 0) + 1)
       })
+      if (data.length < 1000) break
     }
     lines.forEach((l, i) => {
       if (existing.has(hashes[i]) || l.balance == null) return
@@ -303,15 +307,21 @@ export default function ImportPage() {
   }, [rows, filter])
 
   // A rule can point at a removed category (e.g. a subscription you stopped).
-  // When its payee shows up again, the category comes back with this import.
-  const reviving = useMemo(() => {
+  // Old lines keep it, but the category only comes back into the budget when
+  // a charge falls in the current cycle or later, not for past history.
+  const archivedUsed = useMemo(() => {
     const used = new Set(rows.filter(r => !r.duplicate && r.categoryId).map(r => r.categoryId))
     return archivedCategories.filter(c => used.has(c.id))
   }, [rows, archivedCategories])
+  const reviving = useMemo(() => {
+    const recent = new Set(rows.filter(r => !r.duplicate && r.categoryId && (!cycle || r.date >= cycle.key))
+      .map(r => r.categoryId))
+    return archivedUsed.filter(c => recent.has(c.id))
+  }, [rows, archivedUsed, cycle])
 
   const grouped = useMemo(() => TYPE_GROUPS
-    .map(([name, types]) => [name, [...categories, ...reviving].filter(c => types.includes(c.type))])
-    .filter(([, cats]) => cats.length), [categories, reviving])
+    .map(([name, types]) => [name, [...categories, ...archivedUsed].filter(c => types.includes(c.type))])
+    .filter(([, cats]) => cats.length), [categories, archivedUsed])
 
   // ── Step 4: write it all ─────────────────────────────────────
   async function runImport() {
