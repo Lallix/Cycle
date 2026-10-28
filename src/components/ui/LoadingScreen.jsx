@@ -1,7 +1,11 @@
+import { createPortal } from 'react-dom'
 import BrandLogo from '../branding/BrandLogo'
 
+// Rendered into <body> so it always covers the whole screen. Inside a page,
+// the fade-in animation's transform would otherwise pin this "fixed" layer
+// to the page's own box and the ring would sit half off the top.
 export default function LoadingScreen({ message = 'Loading...' }) {
-  return (
+  return createPortal(
     <div style={{
       position: 'fixed',
       inset: 0,
@@ -31,6 +35,7 @@ export default function LoadingScreen({ message = 'Loading...' }) {
           50%       { opacity: 1; }
         }
       `}</style>
-    </div>
+    </div>,
+    document.body
   )
 }
