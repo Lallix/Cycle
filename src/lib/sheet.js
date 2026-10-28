@@ -2,7 +2,7 @@
 // Money in, then fixed, predicted and unplanned spending, each row with its
 // budget, what has actually happened this cycle and what is left.
 // Every screen that shows a plan or a "still due" figure reads from here.
-import { normaliseType, spendByCategory } from './totals.js'
+import { normaliseType, spendByCategory, typeOf } from './totals.js'
 
 const num = v => parseFloat(v || 0)
 export const SHEET_SECTIONS = ['income', 'fixed', 'predicted', 'unplanned']
@@ -11,7 +11,7 @@ export const SHEET_SECTIONS = ['income', 'fixed', 'predicted', 'unplanned']
 function incomeByCategory(transactions, catMap) {
   const out = {}
   transactions.forEach(t => {
-    if (normaliseType(catMap[t.category_id]?.type) !== 'income') return
+    if (typeOf(t, catMap) !== 'income') return
     out[t.category_id] = (out[t.category_id] || 0) + (t.direction === 'in' ? num(t.amount) : -num(t.amount))
   })
   return out

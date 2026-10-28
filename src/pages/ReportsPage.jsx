@@ -3,6 +3,7 @@ import { useBudget } from '../context/BudgetContext'
 import { formatMoney } from '../lib/format'
 import { isSpend, spendAmount } from '../lib/spend'
 import { computeCycleTotals } from '../lib/totals'
+import { effectiveBudgets } from '../lib/budgets'
 import CycleSelector from '../components/ui/CycleSelector'
 import LoadingScreen from '../components/ui/LoadingScreen'
 import { format } from 'date-fns'
@@ -150,7 +151,7 @@ function Spinner() {
 
 // ── Main page ──────────────────────────────────────────────────────────────
 export default function ReportsPage({ embedded = false, cycleIndex: cycleProp, onCategoryClick }) {
-  const { loading, categories, transactions, cycles, getTransactionsForCycle } = useBudget()
+  const { loading, categories, transactions, cycles, budgetHistory, getTransactionsForCycle } = useBudget()
 
   const [ownCycle, setCycleIndex]         = useState(0)
   const cycleIndex = embedded ? cycleProp : ownCycle
@@ -160,7 +161,8 @@ export default function ReportsPage({ embedded = false, cycleIndex: cycleProp, o
   const [loadingTrend, setLoadingTrend]   = useState(true)
 
   const navigate  = useNavigate()
-  const totalsFor = txs => computeCycleTotals({ transactions: txs, categories })
+  // Each cycle against the budget in force then (none before budgeting began)
+  const totalsFor = (txs, key) => computeCycleTotals({ transactions: txs, categories, budgets: effectiveBudgets(categories, budgetHistory, key) })
 
   // Build 6-cycle trend on mount
   useEffect(() => {
@@ -176,7 +178,7 @@ export default function ReportsPage({ embedded = false, cycleIndex: cycleProp, o
       const results = await Promise.all(
         recent.map(async (c) => {
           const txs  = c.key === current ? transactions : await getTransactionsForCycle(c.key)
-          const t    = totalsFor(txs)
+          const t    = totalsFor(txs, c.key)
           return { label: format(c.start, 'MMM'), income: t.income, spent: t.spent }
         })
       )
@@ -201,7 +203,7 @@ export default function ReportsPage({ embedded = false, cycleIndex: cycleProp, o
   if (loading) return <LoadingScreen />
 
   const activeTx  = cycleIndex === 0 ? transactions : (cycleTx || [])
-  const { income, spent } = totalsFor(activeTx)
+  const { income, spent } = totalsFor(activeTx, cycles[cycleIndex]?.key)
   const remaining = income - spent
   const spentPct  = income > 0 ? Math.min(Math.round((spent / income) * 100), 100) : 0
   const isOver    = remaining < 0

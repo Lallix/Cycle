@@ -71,7 +71,9 @@ export default function ReviewPage() {
     }
   }
 
-  const over = review?.rows.filter(r => r.diff < -0.5 && r.type !== 'fixed').slice(0, 3) || []
+  // Cycles before budgeting began only show what happened
+  const planned = !!review?.budgeted
+  const over = planned ? review.rows.filter(r => r.diff < -0.5 && r.type !== 'fixed').slice(0, 3) : []
 
   return (
     <div style={{ minHeight: '100%', background: T.bg, paddingBottom: changed.length ? 190 : 120 }}>
@@ -110,13 +112,18 @@ export default function ReviewPage() {
                 {money(review.left.actual)}
               </span>
               <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: T.text3, marginBottom: 6 }}>
-                plan {money(review.left.planned)}
+                {planned ? `plan ${money(review.left.planned)}` : 'no budget set'}
               </span>
             </div>
             <div className="grid grid-cols-2 gap-3 mt-4">
-              <Mini name="Income" planned={review.income.planned} actual={review.income.actual} good={review.income.actual >= review.income.planned - 1} />
-              <Mini name="Spending" planned={review.spend.planned} actual={review.spend.actual} good={review.spend.actual <= review.spend.planned} />
+              <Mini name="Income" planned={planned ? review.income.planned : null} actual={review.income.actual} good={!planned || review.income.actual >= review.income.planned - 1} />
+              <Mini name="Spending" planned={planned ? review.spend.planned : null} actual={review.spend.actual} good={!planned || review.spend.actual <= review.spend.planned} />
             </div>
+            {!planned && (
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: T.text3, marginTop: 12 }}>
+                This cycle was before you started budgeting, so it shows what happened only. Its spending still feeds the suggested limits below.
+              </p>
+            )}
             {(review.onceOff !== 0 || review.debt !== 0) && (
               <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: T.text3, marginTop: 12 }}>
                 Outside the plan: once-offs {money(review.onceOff)}, loans {money(review.debt)}.
@@ -134,7 +141,7 @@ export default function ReviewPage() {
             <p style={{ ...label, marginBottom: 12 }}>By type</p>
             <div className="space-y-3">
               {Object.entries(review.byType).map(([type, v]) => {
-                const pct = v.planned > 0 ? Math.min(140, (v.actual / v.planned) * 100) : 0
+                const pct = !planned ? 0 : v.planned > 0 ? Math.min(140, (v.actual / v.planned) * 100) : 0
                 return (
                   <div key={type}>
                     <div className="flex justify-between" style={{ fontFamily: 'Inter, sans-serif', fontSize: 13 }}>
@@ -142,13 +149,15 @@ export default function ReviewPage() {
                         <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 4, background: TYPE_COLOUR[type], marginRight: 8 }} />
                         {TYPE_LABEL[type]}
                       </span>
-                      <span style={{ color: v.actual > v.planned + 0.5 ? T.negative : T.text2 }}>
-                        {money(v.actual)} <span style={{ color: T.text3 }}>/ {money(v.planned)}</span>
+                      <span style={{ color: planned && v.actual > v.planned + 0.5 ? T.negative : T.text2 }}>
+                        {money(v.actual)} {planned && <span style={{ color: T.text3 }}>/ {money(v.planned)}</span>}
                       </span>
                     </div>
-                    <div style={{ height: 6, background: T.surface2, borderRadius: 3, marginTop: 6, overflow: 'hidden' }}>
-                      <div style={{ width: `${Math.min(100, pct)}%`, height: 6, borderRadius: 3, background: pct > 100 ? T.negative : TYPE_COLOUR[type] }} />
-                    </div>
+                    {planned && (
+                      <div style={{ height: 6, background: T.surface2, borderRadius: 3, marginTop: 6, overflow: 'hidden' }}>
+                        <div style={{ width: `${Math.min(100, pct)}%`, height: 6, borderRadius: 3, background: pct > 100 ? T.negative : TYPE_COLOUR[type] }} />
+                      </div>
+                    )}
                   </div>
                 )
               })}
@@ -193,9 +202,9 @@ export default function ReviewPage() {
                         <div className="flex-1 min-w-0">
                           <p className="truncate" style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: T.text }}>{r.name}</p>
                           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: T.text3 }}>
-                            spent {money(r.spent)} of {money(r.planned)}
-                            {r.diff < -0.5 && <span style={{ color: T.negative }}> · over {money(-r.diff)}</span>}
-                            {r.diff > 0.5 && r.type !== 'fixed' && <span style={{ color: T.positive }}> · under {money(r.diff)}</span>}
+                            spent {money(r.spent)}{planned && ` of ${money(r.planned)}`}
+                            {planned && r.diff < -0.5 && <span style={{ color: T.negative }}> · over {money(-r.diff)}</span>}
+                            {planned && r.diff > 0.5 && r.type !== 'fixed' && <span style={{ color: T.positive }}> · under {money(r.diff)}</span>}
                           </p>
                           {differs && edits[r.id] == null && (
                             <button onClick={() => setEdits(e => ({ ...e, [r.id]: String(r.suggestion) }))}
@@ -242,7 +251,7 @@ function Mini({ name, planned, actual, good }) {
     <div style={{ background: T.surface2, borderRadius: 12, padding: '10px 12px' }}>
       <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: T.text3 }}>{name}</p>
       <p style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 500, color: good ? T.text : T.negative }}>{money(actual)}</p>
-      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: T.text3 }}>plan {money(planned)}</p>
+      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: T.text3 }}>{planned == null ? 'no budget' : `plan ${money(planned)}`}</p>
     </div>
   )
 }

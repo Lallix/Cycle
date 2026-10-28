@@ -20,11 +20,16 @@ export function normaliseType(type) {
 
 const num = v => parseFloat(v || 0)
 
+// A line's type: from the category list, else from the category the line was
+// loaded with (a removed category is not in the list but its history counts)
+export const typeOf = (tx, catMap) =>
+  normaliseType(catMap[tx.category_id]?.type ?? (tx.cycle_categories || tx.categories)?.type)
+
 // Net spend per category id (out − refunds in), for spending categories only.
 export function spendByCategory(transactions, catMap) {
   const out = {}
   transactions.forEach(t => {
-    const type = normaliseType(catMap[t.category_id]?.type)
+    const type = typeOf(t, catMap)
     if (!['fixed', 'predicted', 'unplanned'].includes(type)) return
     const key = t.category_id || 'none'
     out[key] = (out[key] || 0) + (t.direction === 'in' ? -num(t.amount) : num(t.amount))
@@ -37,7 +42,7 @@ export function computeCycleTotals({ transactions, categories, budgets = null, s
   const t = { income: 0, fixed: 0, predicted: 0, unplanned: 0, onceOff: 0, debt: 0 }
 
   transactions.forEach(tx => {
-    const type = normaliseType(catMap[tx.category_id]?.type)
+    const type = typeOf(tx, catMap)
     const signed = tx.direction === 'in' ? num(tx.amount) : -num(tx.amount)
     if (type === 'transfer') return
     if (type === 'income') t.income += signed

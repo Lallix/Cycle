@@ -10,7 +10,7 @@ import BottomSheet from '../components/ui/BottomSheet'
 import Button from '../components/ui/Button'
 import { formatMoney } from '../lib/format'
 import { summariseYear, monthEndBalances, averageOf, SPEND_TYPES } from '../lib/yearData'
-import { effectiveBudgets } from '../lib/budgets'
+import { effectiveBudgets, isBudgeted } from '../lib/budgets'
 import { normaliseType } from '../lib/totals'
 
 // A calendar year at a glance: money in, where it went by type and by
@@ -101,8 +101,10 @@ export default function YearPage({ embedded = false }) {
     () => (rows ? monthEndBalances(rows, snapshots, balanceMonths) : {}),
     [rows, snapshots, balanceMonths])
 
-  // Planned spending per month: the limits in force on the 1st of that month
+  // Planned spending per month: the limits in force on the 1st of that month.
+  // Months before the first budget have no plan.
   const plan = useMemo(() => Object.fromEntries(months.map(m => {
+    if (!isBudgeted(budgetHistory, `${m}-01`)) return [m, null]
     const b = effectiveBudgets(allCats, budgetHistory, `${m}-01`)
     const spend = allCats
       .filter(c => SPEND_TYPES.includes(normaliseType(c.type)))
@@ -110,13 +112,25 @@ export default function YearPage({ embedded = false }) {
     return [m, { spend, byCat: b }]
   })), [months, allCats, budgetHistory])
   months.forEach(m => {
-    if (summary[m]) { summary[m].planned = plan[m].spend; summary[m].vsPlan = plan[m].spend - summary[m].spent }
+    if (summary[m]) {
+      summary[m].planned = plan[m] ? plan[m].spend : null
+      summary[m].vsPlan = plan[m] ? plan[m].spend - summary[m].spent : null
+    }
   })
 
   const ytd = useMemo(() => {
     const keys = ['income', 'fixed', 'predicted', 'unplanned', 'spent', 'planned', 'vsPlan', 'leftOver', 'onceOff', 'debt', 'afterAll']
     const sum = Object.fromEntries(keys.map(k => [k, months.reduce((s, m) => s + (summary[m]?.[k] || 0), 0)]))
-    const avg = Object.fromEntries(keys.map(k => [k, averageOf(fullMonths.map(m => summary[m]?.[k] || 0))]))
+    // Plan figures average over the planned months only
+    const avg = Object.fromEntries(keys.map(k => [k, averageOf(fullMonths
+      .filter(m => !['planned', 'vsPlan'].includes(k) || summary[m]?.[k] != null)
+      .map(m => summary[m]?.[k] || 0))]))
+    // No planned month yet: nothing to total
+    const hasPlan = (list, k) => list.some(m => summary[m]?.[k] != null)
+    ;['planned', 'vsPlan'].forEach(k => {
+      if (!hasPlan(months, k)) sum[k] = null
+      if (!hasPlan(fullMonths, k)) avg[k] = null
+    })
     return { sum, avg }
   }, [summary, months, fullMonths, plan])
 
@@ -221,9 +235,9 @@ export default function YearPage({ embedded = false }) {
                   ].map(([name, key, strong]) => (
                     <tr key={key} style={{ borderTop: '0.5px solid rgb(var(--c-border))' }}>
                       <td style={{ ...td(true), fontWeight: strong ? 600 : 400 }}>{name}</td>
-                      {months.map(m => <td key={m} style={td(false, strong, summary[m][key])}>{money(summary[m][key])}</td>)}
-                      <td style={td(false, true, ytd.sum[key])}>{money(ytd.sum[key])}</td>
-                      <td style={td(false, false, ytd.avg[key])}>{money(ytd.avg[key])}</td>
+                      {months.map(m => <td key={m} style={td(false, strong, summary[m][key])}>{summary[m][key] == null ? '—' : money(summary[m][key])}</td>)}
+                      <td style={td(false, true, ytd.sum[key])}>{ytd.sum[key] == null ? '—' : money(ytd.sum[key])}</td>
+                      <td style={td(false, false, ytd.avg[key])}>{ytd.avg[key] == null ? '—' : money(ytd.avg[key])}</td>
                     </tr>
                   ))}
                 </tbody>

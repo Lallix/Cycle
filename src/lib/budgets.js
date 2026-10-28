@@ -4,9 +4,23 @@ import { normaliseType, spendByCategory, computeCycleTotals } from './totals.js'
 
 const num = v => parseFloat(v || 0)
 
+// The first cycle with a budget. Cycles before it were never planned, so
+// they show what happened only (no budget, nothing "over").
+export function budgetStart(history) {
+  return history.reduce((min, h) => (!min || h.effective_from < min ? h.effective_from : min), null)
+}
+export const isBudgeted = (history, cycleKey) => {
+  const start = budgetStart(history)
+  return !start || cycleKey >= start
+}
+
 // { categoryId: amount } in force for the cycle starting cycleKey
 export function effectiveBudgets(categories, history, cycleKey) {
   const out = {}
+  if (!isBudgeted(history, cycleKey)) {
+    categories.forEach(c => { out[c.id] = 0 })
+    return out
+  }
   categories.forEach(c => { if (c.budget_amount != null) out[c.id] = num(c.budget_amount) })
   const latest = {}
   history
@@ -56,6 +70,7 @@ export function reviewCycle({ cycleTx, recentTx, categories, history, cycleKey }
   const uncategorised = actual.none || 0
 
   return {
+    budgeted: isBudgeted(history, cycleKey),
     income: { planned: totals.incomeExpected, actual: totals.incomeReceived },
     byType: Object.fromEntries(['fixed', 'predicted', 'unplanned'].map(t => [t, { planned: sumBy(t, 'planned'), actual: totals[`${t}Spent`] }])),
     spend: { planned: plannedSpend, actual: totals.spent },
