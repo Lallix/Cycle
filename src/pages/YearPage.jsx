@@ -47,7 +47,7 @@ async function fetchAll(build) {
   }
 }
 
-export default function YearPage() {
+export default function YearPage({ embedded = false }) {
   const { user } = useAuth()
   const { accounts, addAccount, categories: allCats, budgetHistory } = useBudget()
   const toast = useToast()
@@ -124,7 +124,9 @@ export default function YearPage() {
 
   return (
     <div style={{ minHeight: '100%', background: 'rgb(var(--c-bg))', paddingBottom: 120 }}>
-      <PageHeader title="Year view" subtitle="Calendar months · all accounts" back />
+      {embedded
+        ? <p style={{ padding: '0 16px 10px', fontSize: 12, color: 'rgb(var(--c-text-3))' }}>Calendar months · all accounts</p>
+        : <PageHeader title="Year view" subtitle="Calendar months · all accounts" back />}
 
       {/* Year switcher */}
       <div className="flex items-center justify-between mx-4 mb-3 px-3 py-2"

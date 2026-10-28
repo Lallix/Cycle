@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, Check, ChevronRight } from 'lucide-react'
+import { Plus, Check, ChevronRight } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { useBudget } from '../context/BudgetContext'
 import { useToast } from '../components/ui/Toast'
@@ -45,11 +45,6 @@ export default function BudgetPage() {
   return (
     <div style={{ paddingBottom: 120 }}>
       <div className="flex items-center gap-3 px-4 pb-2" style={{ paddingTop: 'max(env(safe-area-inset-top), 1rem)' }}>
-        <button onClick={() => navigate('/')} aria-label="Back"
-          className="w-9 h-9 flex items-center justify-center rounded-2xl border border-border tappable"
-          style={{ background: 'rgb(var(--c-surface))' }}>
-          <ArrowLeft size={18} className="text-subtle" />
-        </button>
         <div>
           <h1 style={{ ...display, fontSize: 22, fontWeight: 800 }}>Budget</h1>
           <p style={small}>{cycle?.shortLabel} · tap a budget to change it</p>
@@ -117,7 +112,9 @@ function Section({ sec, data, onEdit, onAdd }) {
           <h2 className="flex items-center gap-2" style={{ ...display, fontSize: 17, fontWeight: 800 }}>
             <span style={{ width: 10, height: 10, borderRadius: 5, background: tone }} />{sec.title}
           </h2>
-          <p style={small}>{sec.hint}</p>
+          <p style={small}>{sec.key === 'fixed' && data.rows.length
+            ? `${data.rows.filter(r => r.paid).length} of ${data.rows.length} paid · tap ○ to tick one off`
+            : sec.hint}</p>
         </div>
         <button onClick={onAdd} className="flex items-center gap-1 tappable"
           style={{ fontSize: 12, fontWeight: 600, color: 'rgb(var(--c-accent))', background: 'none', border: 0 }}>
@@ -137,7 +134,7 @@ function Section({ sec, data, onEdit, onAdd }) {
         <div className="grid items-center" style={{ gridTemplateColumns: COLS, gap: 6, padding: '10px 12px', background: `rgb(var(--c-${sec.tone}) / 0.1)`, fontWeight: 700 }}>
           <span style={{ fontSize: 13 }}>Total</span>
           <span style={{ ...display, fontSize: 12, textAlign: 'right' }}>{R(data.budget)}</span>
-          <span style={{ ...display, fontSize: 12, textAlign: 'right' }}>{R(data.actual)}</span>
+          <span style={{ ...display, fontSize: 12, textAlign: 'right' }}>{R(sec.key === 'fixed' ? data.paidAmount : data.actual)}</span>
           <span style={{ ...display, fontSize: 12, textAlign: 'right', color: leftTotal < -0.5 ? 'rgb(var(--c-negative))' : 'inherit' }}>{R(leftTotal)}</span>
         </div>
       </div>
@@ -157,18 +154,21 @@ function Row({ row, sec, onEdit }) {
   return (
     <div style={{ borderBottom: '0.5px solid rgb(var(--c-border))' }}>
     <div className="grid items-center" style={{ gridTemplateColumns: COLS, gap: 6, padding: '9px 12px' }}>
+      <div className="flex items-center gap-2" style={{ minWidth: 0 }}>
+      {sec.key === 'fixed' && <PaidTick row={row} />}
       <button onClick={() => !row.uncategorised && onEdit(row)} className="flex items-center gap-2 tappable"
         style={{ minWidth: 0, background: 'none', border: 0, padding: 0, textAlign: 'left', color: 'inherit', cursor: row.uncategorised ? 'default' : 'pointer' }}>
-        <span style={{ fontSize: 16, flexShrink: 0 }}>{row.icon || '💳'}</span>
+        {sec.key !== 'fixed' && <span style={{ fontSize: 16, flexShrink: 0 }}>{row.icon || '💳'}</span>}
         <span style={{ minWidth: 0 }}>
           <span className="block" style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.25, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', overflowWrap: 'anywhere' }}>{row.name}</span>
           {meta && <span className="block truncate" style={{ ...small, fontSize: 10, color: row.paid ? 'rgb(var(--c-positive))' : small.color }}>{meta}</span>}
         </span>
       </button>
+      </div>
       {row.uncategorised
         ? <span style={{ ...small, textAlign: 'right' }}>—</span>
         : <BudgetCell row={row} />}
-      <span style={{ ...display, fontSize: 12, textAlign: 'right', color: 'rgb(var(--c-text-2))' }}>{R(row.actual)}</span>
+      <span style={{ ...display, fontSize: 12, textAlign: 'right', color: 'rgb(var(--c-text-2))' }}>{R(sec.key === 'fixed' ? row.paidAmount : row.actual)}</span>
       <span style={{ ...display, fontSize: 12, textAlign: 'right', fontWeight: 700,
         color: overspent ? 'rgb(var(--c-negative))' : sec.key === 'fixed' && row.paid ? 'rgb(var(--c-positive))' : 'rgb(var(--c-text))' }}>
         {sec.key === 'fixed' && row.paid ? '✓' : R(left)}
@@ -196,6 +196,31 @@ function SuggestHint({ row }) {
       style={{ display: 'block', width: 'calc(100% - 24px)', margin: '0 12px 9px', padding: '6px 10px', borderRadius: 10, textAlign: 'left',
         border: '0.5px dashed rgb(var(--c-warning) / 0.6)', background: 'rgb(var(--c-warning) / 0.08)', color: 'rgb(var(--c-warning))', fontSize: 12, cursor: 'pointer' }}>
       Went off at <b>{R(row.suggest)}</b>, budget is {R(row.budget)} — <u>use {R(row.suggest)} as the budget?</u>
+    </button>
+  )
+}
+
+// The payments checklist: tick a fixed bill off once it is paid. A bill whose
+// debit is on an imported statement is ticked already and stays that way.
+function PaidTick({ row }) {
+  const { toggleFixedPaid } = useBudget()
+  const toast = useToast()
+  const [busy, setBusy] = useState(false)
+  async function tap() {
+    if (row.autoPaid) { toast(`${row.name} is on your statement — already paid`, 'info'); return }
+    setBusy(true)
+    try {
+      await toggleFixedPaid(row.id)
+      toast(row.ticked ? `${row.name} marked as not paid` : `${row.name} paid ✓`, 'success')
+    } catch (e) { toast(e.message, 'error') } finally { setBusy(false) }
+  }
+  return (
+    <button onClick={tap} disabled={busy} role="checkbox" aria-checked={row.paid}
+      aria-label={row.paid ? `${row.name} is paid` : `Mark ${row.name} as paid`} className="tappable"
+      style={{ width: 24, height: 24, flexShrink: 0, borderRadius: 12, cursor: 'pointer', display: 'grid', placeItems: 'center', padding: 0,
+        border: row.paid ? 0 : '1.5px solid rgb(var(--c-text-3))',
+        background: row.paid ? 'rgb(var(--c-positive))' : 'transparent', opacity: busy ? 0.5 : 1 }}>
+      {row.paid && <Check size={14} strokeWidth={3} color="rgb(var(--c-bg))" />}
     </button>
   )
 }

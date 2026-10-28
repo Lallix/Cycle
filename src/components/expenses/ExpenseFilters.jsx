@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useBudget } from '../../context/BudgetContext'
 import { getAccountConfig } from '../../lib/format'
 import { isEverydayType } from '../../lib/spend'
@@ -13,6 +14,14 @@ export default function ExpenseFilters({ activeFilter, onFilterChange }) {
   const usedAccounts = [...new Set(transactions.map(t => t.account).filter(Boolean))]
 
   const varCategories = categories.filter(c => isEverydayType(c.type))
+
+  // Keep the active pill in view (e.g. when opened from Overview with a category set)
+  const rowRef = useRef(null)
+  useEffect(() => {
+    const row = rowRef.current
+    const pill = row?.querySelector('[data-active="true"]')
+    if (row && pill) row.scrollTo({ left: Math.max(0, pill.offsetLeft - 16), behavior: 'smooth' })
+  }, [activeFilter?.id, activeFilter?.value])
 
   const pillStyle = (active) => ({
     flexShrink: 0,
@@ -30,7 +39,7 @@ export default function ExpenseFilters({ activeFilter, onFilterChange }) {
   })
 
   return (
-    <div style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '0 16px 4px', scrollbarWidth: 'none' }}>
+    <div ref={rowRef} style={{ position: 'relative', display: 'flex', gap: 6, overflowX: 'auto', padding: '0 16px 4px', scrollbarWidth: 'none' }}>
 
       {/* All */}
       <button
@@ -44,6 +53,7 @@ export default function ExpenseFilters({ activeFilter, onFilterChange }) {
       {varCategories.map(cat => (
         <button
           key={cat.id}
+          data-active={activeFilter?.type === 'category' && activeFilter.id === cat.id}
           style={pillStyle(activeFilter?.type === 'category' && activeFilter.id === cat.id)}
           onClick={() => onFilterChange(
             activeFilter?.type === 'category' && activeFilter.id === cat.id

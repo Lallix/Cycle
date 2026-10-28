@@ -8,12 +8,11 @@ import AppLayout from './components/layout/AppLayout'
 import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
 import BudgetPage from './pages/BudgetPage'
-import ExpensesPage from './pages/ExpensesPage'
-import ReportsPage from './pages/ReportsPage'
 import SettingsPage from './pages/SettingsPage'
 import AdminPage from './pages/AdminPage'
 import ImportPage from './pages/ImportPage'
 import YearPage from './pages/YearPage'
+import ActivityPage from './pages/ActivityPage'
 import ReviewPage from './pages/ReviewPage'
 import { useServiceWorker } from './hooks/useServiceWorker'
 
@@ -72,12 +71,13 @@ function AppRoutes() {
       >
         <Route index          element={<DashboardPage />} />
         <Route path="budget"  element={<BudgetPage />} />
-        <Route path="expenses" element={<ExpensesPage />} />
-        <Route path="reports" element={<ReportsPage />} />
+        <Route path="activity" element={<ActivityPage />} />
+        <Route path="expenses" element={<Navigate to="/activity?tab=transactions" replace />} />
+        <Route path="reports" element={<Navigate to="/activity?tab=overview" replace />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="admin"   element={<AdminPage />} />
         <Route path="import"  element={<ImportPage />} />
-        <Route path="year"    element={<YearPage />} />
+        <Route path="year"    element={<Navigate to="/activity?tab=year" replace />} />
         <Route path="review"  element={<ReviewPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -149,10 +149,11 @@ function Spinner() {
 }
 
 // ── Main page ──────────────────────────────────────────────────────────────
-export default function ReportsPage() {
+export default function ReportsPage({ embedded = false, cycleIndex: cycleProp, onCategoryClick }) {
   const { loading, categories, transactions, cycles, getTransactionsForCycle } = useBudget()
 
-  const [cycleIndex, setCycleIndex]       = useState(0)
+  const [ownCycle, setCycleIndex]         = useState(0)
+  const cycleIndex = embedded ? cycleProp : ownCycle
   const [cycleTx, setCycleTx]             = useState(null)
   const [loadingCycle, setLoadingCycle]   = useState(false)
   const [trendData, setTrendData]         = useState([])
@@ -225,14 +226,14 @@ export default function ReportsPage() {
   return (
     <div style={{ minHeight: '100%', background: 'rgb(var(--c-bg))', paddingBottom: 120 }}>
 
-      {/* Header */}
-      <div style={{ padding: 'max(env(safe-area-inset-top), 16px) 16px 12px' }}>
+      {/* Header (Activity shows its own) */}
+      {!embedded && <div style={{ padding: 'max(env(safe-area-inset-top), 16px) 16px 12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 600, color: 'rgb(var(--c-text))' }}>
             Reports
           </h1>
           <button
-            onClick={() => navigate('/year')}
+            onClick={() => navigate('/activity?tab=year')}
             className="flex items-center gap-1.5 tappable"
             style={{ padding: '6px 12px', borderRadius: 10, background: 'rgb(var(--c-accent) / 0.1)',
               border: '0.5px solid rgb(var(--c-accent) / 0.3)', color: 'rgb(var(--c-accent))', fontSize: 12, fontFamily: 'Inter, sans-serif' }}
@@ -240,10 +241,10 @@ export default function ReportsPage() {
             <CalendarRange size={14} /> Year view
           </button>
         </div>
-      </div>
+      </div>}
 
       {/* Cycle selector */}
-      <CycleSelector cycleIndex={cycleIndex} onChange={setCycleIndex} />
+      {!embedded && <CycleSelector cycleIndex={cycleIndex} onChange={setCycleIndex} />}
 
       {loadingCycle ? <Spinner /> : (
         <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -324,6 +325,24 @@ export default function ReportsPage() {
             <SectionLabel>By category</SectionLabel>
             <DonutChart data={categoryData} />
           </Card>
+
+          {/* ── Every category; tap one to see its transactions ── */}
+          {categoryData.length > 0 && (
+            <Card style={{ padding: 0 }}>
+              <div style={{ padding: '14px 16px 6px' }}><SectionLabel>Spending by category</SectionLabel></div>
+              {categoryData.map(c => (
+                <button key={c.id} onClick={() => onCategoryClick ? onCategoryClick(c) : navigate('/activity?tab=transactions')}
+                  className="tappable"
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 16px', background: 'none', border: 0,
+                    borderTop: '0.5px solid rgb(var(--c-border))', color: 'inherit', cursor: 'pointer', textAlign: 'left' }}>
+                  <span style={{ fontSize: 16, width: 22, textAlign: 'center' }}>{c.icon || '💳'}</span>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
+                  <span style={{ fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 600 }}>{formatMoney(c.value)}</span>
+                  <span style={{ color: 'rgb(var(--c-text-3))', fontSize: 14 }}>›</span>
+                </button>
+              ))}
+            </Card>
+          )}
 
           {/* ── Largest expenses — ivory rows ── */}
           {topTx.length > 0 && (

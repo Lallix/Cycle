@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom'
 import { FileUp } from 'lucide-react'
 import { spendAmount } from '../lib/spend'
 
-export default function ExpensesPage() {
+export default function ExpensesPage({ embedded = false, cycleIndex: cycleProp, filter, onFilterChange }) {
   const { loading, transactions, categories, cycles, deleteTransaction, updateTransaction, getTransactionsForCycle } = useBudget()
   const { profile } = useAuth()
   const toast = useToast()
@@ -34,10 +34,13 @@ export default function ExpensesPage() {
   const [editOpen, setEditOpen]       = useState(false)
   const [editingTx, setEditingTx]     = useState(null)
   const [search, setSearch]           = useState('')
-  const [activeFilter, setActiveFilter] = useState(null)
+  const [ownFilter, setOwnFilter]     = useState(null)
+  const activeFilter = embedded ? filter : ownFilter
+  const setActiveFilter = embedded ? onFilterChange : setOwnFilter
   const [editForm, setEditForm]       = useState({})
   const [saving, setSaving]           = useState(false)
-  const [cycleIndex, setCycleIndex]   = useState(0)
+  const [ownCycle, setCycleIndex]     = useState(0)
+  const cycleIndex = embedded ? cycleProp : ownCycle
   const [historyTx, setHistoryTx]     = useState(null)
   const [loadingHistory, setLoadingHistory] = useState(false)
 
@@ -136,11 +139,11 @@ export default function ExpensesPage() {
     <div style={{ minHeight: '100%', background: 'rgb(var(--c-bg))', paddingBottom: 120 }}>
 
       {/* Header */}
-      <div style={{ padding: 'max(env(safe-area-inset-top), 16px) 16px 12px' }}>
+      <div style={{ padding: embedded ? '0 16px 12px' : 'max(env(safe-area-inset-top), 16px) 16px 12px' }}>
         <div className="flex items-center justify-between">
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 600, color: 'rgb(var(--c-text))' }}>
-            Transactions
-          </h1>
+          {embedded
+            ? <span />
+            : <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 600, color: 'rgb(var(--c-text))' }}>Transactions</h1>}
           <input ref={importRef} type="file" accept=".csv,text/csv,.pdf,application/pdf" onChange={onImportFile} hidden />
           <button
             onClick={() => importRef.current?.click()}
@@ -157,8 +160,8 @@ export default function ExpensesPage() {
         </p>
       </div>
 
-      {/* Cycle selector */}
-      <CycleSelector cycleIndex={cycleIndex} onChange={setCycleIndex} />
+      {/* Cycle selector (Activity shows its own) */}
+      {!embedded && <CycleSelector cycleIndex={cycleIndex} onChange={setCycleIndex} />}
 
       {/* Search */}
       <div style={{ margin: '0 16px 12px', position: 'relative' }}>

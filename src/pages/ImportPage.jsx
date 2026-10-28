@@ -529,7 +529,7 @@ export default function ImportPage() {
             </p>
             <div className="flex gap-2 w-full pt-2">
               <Button variant="secondary" fullWidth onClick={reset}>Import another</Button>
-              <Button fullWidth onClick={() => navigate('/expenses')}>View transactions</Button>
+              <Button fullWidth onClick={() => navigate('/activity?tab=transactions')}>View transactions</Button>
             </div>
           </div>
         )}

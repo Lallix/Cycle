@@ -33,7 +33,7 @@ export default function RecentExpenses() {
           Recent
         </p>
         <button
-          onClick={() => navigate('/expenses')}
+          onClick={() => navigate('/activity?tab=transactions')}
           style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: 'rgb(var(--c-accent))', background: 'none', border: 'none', cursor: 'pointer' }}
         >
           See all →
@@ -58,7 +58,7 @@ export default function RecentExpenses() {
             return (
               <div
                 key={tx.id}
-                onClick={() => navigate('/expenses')}
+                onClick={() => navigate('/activity?tab=transactions')}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '12px 16px',

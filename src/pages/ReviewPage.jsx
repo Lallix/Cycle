@@ -123,7 +123,7 @@ export default function ReviewPage() {
               </p>
             )}
             {review.uncategorised > 0.5 && (
-              <button onClick={() => navigate('/expenses')} style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: T.warning, marginTop: 8, background: 'none', border: 'none', padding: 0 }}>
+              <button onClick={() => navigate('/activity?tab=transactions')} style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: T.warning, marginTop: 8, background: 'none', border: 'none', padding: 0 }}>
                 {money(review.uncategorised)} has no category — sort it on Transactions →
               </button>
             )}

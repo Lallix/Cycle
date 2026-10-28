@@ -62,6 +62,8 @@ export function buildSheet({ categories, transactions, budgets = null, paidTicks
       row.ticked = paidTicks.has(c.id)
       row.paid = row.autoPaid || row.ticked
       row.stillDue = row.paid ? 0 : Math.max(0, budget - actual)
+      // What counts as paid: a ticked bill not yet on a statement counts in full
+      row.paidAmount = row.ticked && !row.autoPaid ? Math.max(actual, budget) : actual
       // The bill went off at a different amount than budgeted: higher, or lower
       // and the same as last cycle (so not just the first of two halves)
       const differs = actual > 0.5 && Math.abs(actual - budget) > 1
@@ -86,6 +88,7 @@ export function buildSheet({ categories, transactions, budgets = null, paidTicks
     sec.left = sec.budget - sec.actual
   })
   sections.fixed.stillDue = sections.fixed.rows.reduce((t, r) => t + r.stillDue, 0)
+  sections.fixed.paidAmount = sections.fixed.rows.reduce((t, r) => t + r.paidAmount, 0)
 
   const planned = sections.fixed.budget + sections.predicted.budget + sections.unplanned.budget
   return {

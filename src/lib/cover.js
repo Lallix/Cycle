@@ -55,11 +55,13 @@ export function coverByBank({ accounts, categories, recent, current, balances, p
     const expected = num(c.budget_amount) > 0 ? num(c.budget_amount) : average
     if (expected < 1) return null
 
-    const paid = Math.max(0, current.filter(t => t.category_id === c.id).reduce((s, t) => s + outflow(t), 0))
+    const onStatement = Math.max(0, current.filter(t => t.category_id === c.id).reduce((s, t) => s + outflow(t), 0))
+    // Ticked as paid but not on a statement yet: counts as paid in full
+    const paid = paidTicks.has(c.id) ? Math.max(onStatement, expected) : onStatement
     const last = hits.map(t => t.transaction_date).sort().pop()
     return {
       id: c.id, name: c.name, icon: c.icon, bank, expected, paid,
-      remaining: paidTicks.has(c.id) ? 0 : Math.max(0, expected - paid),
+      remaining: Math.max(0, expected - paid),
       dueDay: c.due_day || (last ? parseInt(last.slice(8, 10), 10) : null),
     }
   }).filter(Boolean)

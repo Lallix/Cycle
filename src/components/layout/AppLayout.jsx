@@ -1,18 +1,18 @@
 import { useState } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, BarChart3, List, Settings, Plus } from 'lucide-react'
+import { LayoutDashboard, BarChart3, Wallet, Settings, Plus } from 'lucide-react'
 import AddExpenseSheet from '../expenses/AddExpenseSheet'
 
-// 4 + 1 nav layout — design bible section 7
-// Home · Transactions · [Add FAB] · Reports · Settings
-// Budget is accessed via Manage Budget on the home screen
+// 4 + 1 nav layout
+// Home · Budget · [Add FAB] · Activity · Settings
+// Activity holds Transactions, Overview and Year
 
 const LEFT_NAV  = [
   { to: '/',            icon: LayoutDashboard, label: 'Home',         exact: true },
-  { to: '/expenses',    icon: List,            label: 'Transactions' },
+  { to: '/budget',      icon: Wallet,          label: 'Budget' },
 ]
 const RIGHT_NAV = [
-  { to: '/reports',     icon: BarChart3,       label: 'Reports' },
+  { to: '/activity',    icon: BarChart3,       label: 'Activity' },
   { to: '/settings',    icon: Settings,        label: 'Settings' },
 ]
 
