@@ -3,38 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../components/ui/Toast'
+import BrandLogo, { Backdrop } from '../components/branding/BrandLogo'
 
 const MODES = { SIGNIN: 'signin', SIGNUP: 'signup', RESET: 'reset' }
-
-// Mini ring for auth page header
-function AuthRing() {
-  return (
-    <>
-      <style>{`
-        @keyframes arCW  { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes arCCW { from{transform:rotate(0deg)} to{transform:rotate(-360deg)} }
-      `}</style>
-      <div style={{ width: 64, height: 64, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{
-          position: 'absolute', width: 60, height: 60, borderRadius: '50%',
-          border: '2px solid transparent',
-          borderTopColor: 'rgb(var(--c-accent))', borderRightColor: 'rgb(var(--c-accent))',
-          borderBottomColor: '#2A2010', borderLeftColor: '#2A2010',
-          animation: 'arCW 4s linear infinite',
-          filter: 'drop-shadow(0 0 0 0 transparent)',
-        }} />
-        <div style={{
-          position: 'absolute', width: 40, height: 40, borderRadius: '50%',
-          border: '1.5px solid transparent',
-          borderTopColor: 'rgb(var(--c-accent-light))', borderLeftColor: 'rgb(var(--c-accent-light))',
-          borderBottomColor: '#1A1508', borderRightColor: '#1A1508',
-          animation: 'arCCW 2.5s linear infinite',
-        }} />
-        <div style={{ position: 'absolute', width: 20, height: 20, borderRadius: '50%', background: 'rgb(var(--c-bg))' }} />
-      </div>
-    </>
-  )
-}
 
 export default function AuthPage() {
   const navigate = useNavigate()
@@ -133,28 +104,24 @@ export default function AuthPage() {
       minHeight: '100svh', background: 'rgb(var(--c-bg))',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
-      padding: '48px 24px',
+      padding: '48px 24px', position: 'relative', overflow: 'hidden',
     }}>
+      <Backdrop />
 
       {/* Header */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 36 }}>
-        <AuthRing />
-        <div style={{
-          fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 300,
-          color: 'rgb(var(--c-accent))', letterSpacing: '0.28em', textTransform: 'uppercase', marginTop: 16,
-        }}>
-          CYCLE
+      <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
+        <BrandLogo size={84} fill={0.75} label="R" />
+        <div style={{ fontFamily: 'var(--font-display)', fontSize: 36, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, color: 'rgb(var(--c-text))', marginTop: 16 }}>
+          cycle
         </div>
-        <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: 'rgb(var(--c-text-3))', marginTop: 4, letterSpacing: '0.1em' }}>
-          Your budget. Your cycle.
-        </div>
-        <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 10, color: 'rgb(var(--c-text-4))', marginTop: 4, letterSpacing: '0.08em' }}>
-          Crafted by PGV
+        <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: 'rgb(var(--c-text-2))', marginTop: 6 }}>
+          your money, rn
         </div>
       </div>
 
       {/* Card */}
-      <div style={{
+      <div className="clay" style={{
+        position: 'relative',
         width: '100%', maxWidth: 380,
         background: 'rgb(var(--c-surface))',
         borderRadius: 24, border: '0.5px solid rgb(var(--c-border))',
@@ -379,7 +346,7 @@ export default function AuthPage() {
       {/* Footer */}
       <div style={{ marginTop: 32, textAlign: 'center' }}>
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-4))', letterSpacing: '0.06em' }}>
-          Crafted by PGV
+          crafted by PGV
         </p>
       </div>
     </div>

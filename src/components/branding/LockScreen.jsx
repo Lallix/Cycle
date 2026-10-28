@@ -1,61 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useToast } from '../ui/Toast'
-
-// Portal ring — same mark as splash, smaller
-function MiniRing({ size = 80 }) {
-  const s = size
-  return (
-    <>
-      <style>{`
-        @keyframes lsCW  { from { transform: rotate(0deg) }   to { transform: rotate(360deg) } }
-        @keyframes lsCCW { from { transform: rotate(0deg) }   to { transform: rotate(-360deg) } }
-        @keyframes lsSpark {
-          0%,100% { opacity: 0.4; transform: scale(0.8); }
-          50%     { opacity: 1;   transform: scale(1.2); }
-        }
-      `}</style>
-      <div style={{ width: s, height: s, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        {/* Outer ring CW */}
-        <div style={{
-          position: 'absolute', width: s * 0.94, height: s * 0.94, borderRadius: '50%',
-          border: `${Math.max(1.5, s * 0.025)}px solid transparent`,
-          borderTopColor: 'rgb(var(--c-accent))', borderRightColor: 'rgb(var(--c-accent))',
-          borderBottomColor: '#2A2010', borderLeftColor: '#2A2010',
-          animation: 'lsCW 4s linear infinite',
-          filter: 'drop-shadow(0 0 0 0 transparent)',
-        }} />
-        {/* Inner ring CCW */}
-        <div style={{
-          position: 'absolute', width: s * 0.66, height: s * 0.66, borderRadius: '50%',
-          border: `${Math.max(1, s * 0.02)}px solid transparent`,
-          borderTopColor: 'rgb(var(--c-accent-light))', borderLeftColor: 'rgb(var(--c-accent-light))',
-          borderBottomColor: '#1A1508', borderRightColor: '#1A1508',
-          animation: 'lsCCW 2.5s linear infinite',
-        }} />
-        {/* Sparks */}
-        <div style={{ position: 'absolute', width: s * 0.94, height: s * 0.94, animation: 'lsCW 3s linear infinite' }}>
-          {[
-            { top: '-2px', left: '48%' },
-            { bottom: '2px', right: '25%' },
-          ].map((pos, i) => (
-            <div key={i} style={{
-              position: 'absolute', width: 3, height: 3, borderRadius: '50%',
-              background: '#FFE87A', ...pos,
-              boxShadow: '0 0 4px #FFE87A',
-              animation: `lsSpark ${0.8 + i * 0.4}s ease-in-out infinite`,
-            }} />
-          ))}
-        </div>
-        {/* Centre */}
-        <div style={{
-          position: 'absolute', width: s * 0.34, height: s * 0.34, borderRadius: '50%',
-          background: 'rgb(var(--c-bg))', border: '1px solid rgb(var(--c-accent) / 0.12)',
-        }} />
-      </div>
-    </>
-  )
-}
+import BrandLogo, { Backdrop } from './BrandLogo'
 
 // Blurred dashboard preview behind the lock
 function BlurredDashboard() {
@@ -81,16 +27,16 @@ function BlurredDashboard() {
             border: '10px solid rgb(var(--c-accent))', opacity: 0.4, flexShrink: 0,
           }} />
           <div>
-            <div style={{ width: 80, height: 10, background: '#333', borderRadius: 4, marginBottom: 8 }} />
+            <div style={{ width: 80, height: 10, background: 'rgb(var(--c-surface-2))', borderRadius: 4, marginBottom: 8 }} />
             <div style={{ width: 120, height: 28, background: 'rgb(var(--c-accent))', borderRadius: 6, opacity: 0.3, marginBottom: 8 }} />
-            <div style={{ width: 100, height: 8, background: '#333', borderRadius: 4 }} />
+            <div style={{ width: 100, height: 8, background: 'rgb(var(--c-surface-2))', borderRadius: 4 }} />
           </div>
         </div>
         <div style={{ display: 'flex', gap: 0, marginTop: 16, borderTop: '0.5px solid rgb(var(--c-border))', paddingTop: 12 }}>
           {['Income', 'Spent', 'Left'].map(l => (
             <div key={l} style={{ flex: 1, textAlign: 'center' }}>
-              <div style={{ width: 40, height: 6, background: '#444', borderRadius: 3, margin: '0 auto 6px' }} />
-              <div style={{ width: 50, height: 12, background: '#333', borderRadius: 4, margin: '0 auto' }} />
+              <div style={{ width: 40, height: 6, background: 'rgb(var(--c-border-strong))', borderRadius: 3, margin: '0 auto 6px' }} />
+              <div style={{ width: 50, height: 12, background: 'rgb(var(--c-surface-2))', borderRadius: 4, margin: '0 auto' }} />
             </div>
           ))}
         </div>
@@ -169,6 +115,7 @@ export default function LockScreen({ onUnlocked }) {
         display: 'flex', flexDirection: 'column',
       }}
     >
+      <Backdrop />
       {/* Blurred dashboard behind */}
       <BlurredDashboard />
 
@@ -181,13 +128,13 @@ export default function LockScreen({ onUnlocked }) {
         background: 'linear-gradient(to top, rgb(var(--c-bg)) 60%, transparent)',
       }}>
         {/* Ring mark */}
-        <MiniRing size={72} />
+        <BrandLogo size={76} fill={0.75} label="R" />
 
         {/* Greeting */}
         <div style={{ textAlign: 'center', marginTop: 16, marginBottom: 28 }}>
           <p style={{
-            fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 300,
-            color: 'rgb(var(--c-text))', letterSpacing: '-0.01em',
+            fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 800,
+            color: 'rgb(var(--c-text))', letterSpacing: '-0.02em',
           }}>
             Welcome back, {firstName}
           </p>

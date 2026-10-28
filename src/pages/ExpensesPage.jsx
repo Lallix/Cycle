@@ -56,8 +56,6 @@ export default function ExpensesPage({ embedded = false, cycleIndex: cycleProp, 
       .finally(() => setLoadingHistory(false))
   }, [cycleIndex])
 
-  if (loading) return <LoadingScreen />
-
   // Use current cycle transactions or historical ones
   const sourceTx = cycleIndex === 0 ? transactions : (historyTx || [])
 
@@ -88,6 +86,9 @@ export default function ExpensesPage({ embedded = false, cycleIndex: cycleProp, 
   }, [filtered])
 
   const totalSpent = filtered.reduce((s, t) => s + spendAmount(t), 0)
+
+  // After every hook: returning earlier breaks React when data reloads while open
+  if (loading) return <LoadingScreen />
 
   async function handleDelete(id) {
     try {

@@ -15,7 +15,7 @@ export default function LoadingScreen({ message = 'Loading...' }) {
       justifyContent: 'center',
       zIndex: 9999,
     }}>
-      <BrandLogo size={80} animated />
+      <BrandLogo size={72} fill={0.3} animate="spin" />
       <p style={{
         marginTop: 24,
         fontFamily: 'Inter, sans-serif',
