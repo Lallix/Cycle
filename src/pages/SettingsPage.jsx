@@ -13,6 +13,13 @@ import ThemeSwitch from '../components/ui/ThemeSwitch'
 import Picker from '@emoji-mart/react'
 import data from '@emoji-mart/data'
 import { TYPE_OPTIONS } from '../lib/spend'
+import { normaliseType } from '../lib/totals'
+
+// Colour of each category type, as on the Budget screen
+const TYPE_TONE = {
+  income: 'rgb(var(--c-positive))', fixed: 'rgb(var(--c-fixed))', predicted: 'rgb(var(--c-predicted))',
+  unplanned: 'rgb(var(--c-unplanned))', once_off: 'rgb(var(--c-warning))', debt: 'rgb(var(--c-negative))',
+}
 
 const BANK_OPTIONS = [
   'Capitec', 'FNB', 'Absa', 'Standard', 'Nedbank',
@@ -21,7 +28,7 @@ const BANK_OPTIONS = [
 
 const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev'
 
-const BLANK_CAT = { name: '', icon: '🛒', colour: 'rgb(var(--c-accent))', budget_amount: '', type: 'predicted' }
+const BLANK_CAT = { name: '', icon: '🛒', colour: 'rgb(var(--c-accent))', type: 'predicted' }
 
 export default function SettingsPage() {
   const { user, profile, signOut, updateProfile, biometricAvailable, biometricEnabled, registerBiometric, disableBiometric } = useAuth()
@@ -111,7 +118,6 @@ export default function SettingsPage() {
       name:          cat.name,
       icon:          cat.icon || '💳',
       colour:        cat.colour || 'rgb(var(--c-accent))',
-      budget_amount: cat.budget_amount ? String(cat.budget_amount) : '',
       type:          cat.type || 'predicted',
     })
     setCatOpen(true)
@@ -125,7 +131,6 @@ export default function SettingsPage() {
         name:          catForm.name.trim(),
         icon:          catForm.icon,
         colour:        catForm.colour,
-        budget_amount: catForm.budget_amount ? parseFloat(catForm.budget_amount) : null,
         type:          catForm.type,
       }
       if (editingCat) {
@@ -283,23 +288,29 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Variable budget categories */}
+        {/* Categories: what you sort transactions into. Amounts live on the Budget sheet. */}
         <section>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs text-muted uppercase tracking-widest">Budget Categories</p>
+            <p className="text-xs text-muted uppercase tracking-widest">Categories</p>
             <button onClick={openAddCat} className="flex items-center gap-1 text-xs text-gold hover:opacity-80">
               <Plus size={13} /> Add
             </button>
           </div>
+          <button onClick={() => navigate('/budget')}
+            className="w-full flex items-center justify-between gap-3 px-4 py-3 mb-2 border border-border rounded-2xl tappable"
+            style={{ background: 'rgb(var(--c-accent) / 0.08)' }}>
+            <span className="text-sm text-left" style={{ fontFamily: 'Inter, sans-serif' }}>Budget amounts are set on the Budget screen</span>
+            <span className="text-xs text-gold flex-shrink-0">Open →</span>
+          </button>
           <div className="bg-surface-1 border border-border rounded-2xl overflow-hidden divide-y divide-border">
             {categories.map(cat => (
               <div key={cat.id} className="flex items-center gap-3 px-4 py-3">
                 <span className="text-lg w-7 text-center">{cat.icon || '💳'}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">{cat.name}</p>
-                  {cat.budget_amount && (
-                    <p className="text-xs text-muted">{formatMoney(cat.budget_amount)}/cycle</p>
-                  )}
+                  <p className="text-xs" style={{ color: TYPE_TONE[normaliseType(cat.type)] || 'rgb(var(--c-text-3))' }}>
+                    {TYPE_OPTIONS.find(o => o.value === normaliseType(cat.type))?.label || 'Unplanned'}
+                  </p>
                 </div>
                 <div className="flex gap-1">
                   <button onClick={() => openEditCat(cat)} className="p-1.5 rounded-lg hover:bg-surface-2 transition-colors">
@@ -497,21 +508,6 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="text-xs text-muted uppercase tracking-widest block mb-2">Budget amount / cycle <span style={{textTransform:'none',color:'rgb(var(--c-text-4))'}}>(optional)</span></label>
-            <div className="flex items-center gap-2 bg-surface-1 border border-border rounded-xl px-4 py-3">
-              <span className="text-muted font-mono text-sm">R</span>
-              <input
-                type="number"
-                inputMode="decimal"
-                value={catForm.budget_amount}
-                onChange={e => setCatForm(f => ({ ...f, budget_amount: e.target.value }))}
-                placeholder="0.00"
-                className="flex-1 bg-transparent font-mono text-sm outline-none"
-              />
-            </div>
-          </div>
-
-          <div>
             <label className="text-xs text-muted uppercase tracking-widest block mb-2">Icon</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{
@@ -569,7 +565,7 @@ export default function SettingsPage() {
               ))}
             </div>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-4))', marginTop: 6 }}>
-              Variable = has a budget cap · Tracking = records spend only
+              Which section of the Budget screen it sits in. Once-off, debt and transfers stay out of the budget.
             </p>
           </div>
 
