@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useBudget } from '../../context/BudgetContext'
 import { formatMoney, accountStyleForTx } from '../../lib/format'
+import BankLogo from '../ui/BankLogo'
 import { useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
 
@@ -92,9 +93,11 @@ export default function RecentExpenses() {
                     <span style={{ color: 'rgb(var(--c-text-3))', fontSize: 11 }}>·</span>
                     {(tx.account || tx.account_id) && (
                       <span style={{
-                        fontSize: 10, padding: '2px 7px', borderRadius: 5, fontWeight: 500,
+                        fontSize: 10, padding: '2px 7px 2px 3px', borderRadius: 5, fontWeight: 500,
                         color: acc.color, background: acc.bg, fontFamily: 'Inter, sans-serif',
+                        display: 'inline-flex', alignItems: 'center', gap: 4,
                       }}>
+                        <BankLogo st={acc} size={14} />
                         {acc.label}
                       </span>
                     )}

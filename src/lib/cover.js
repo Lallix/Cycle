@@ -70,7 +70,8 @@ export function coverByBank({ accounts, categories, recent, current, balances, p
   return banks.map(bank => {
     const list = items.filter(i => i.bank === bank).sort((a, b) => b.remaining - a.remaining)
     const accs = accounts.filter(a => (a.bank || a.name) === bank)
-    const cash = accs.filter(a => a.kind !== 'credit_card' && a.kind !== 'loan' && a.kind !== 'home_loan')
+    // Debit orders come off the everyday account, not savings pockets (GoalSave)
+    const cash = accs.filter(a => !['credit_card', 'loan', 'home_loan', 'savings'].includes(a.kind))
     const cards = accs.filter(a => a.kind === 'credit_card')
     const available = cash.reduce((s, a) => s + (balances[a.id]?.balance ?? 0), 0)
     const owed = cards.reduce((s, a) => s + Math.min(0, balances[a.id]?.balance ?? 0), 0)

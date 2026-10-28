@@ -1,6 +1,7 @@
 import { useBudget } from '../../context/BudgetContext'
 import { getUpcomingDays } from '../../lib/cycle'
 import { formatMoney, accountStyle } from '../../lib/format'
+import BankLogo from '../ui/BankLogo'
 import { useToast } from '../ui/Toast'
 import { CheckCircle, Clock } from 'lucide-react'
 import { format } from 'date-fns'
@@ -85,9 +86,11 @@ export default function UpcomingBills() {
                 {acc && (
                   <span style={{
                     fontFamily: 'Inter, sans-serif', fontSize: 10, fontWeight: 500,
-                    padding: '2px 6px', borderRadius: 4,
+                    padding: '2px 6px 2px 3px', borderRadius: 4,
                     color: acc.color, background: acc.bg,
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
                   }}>
+                    <BankLogo st={acc} size={14} />
                     {acc.label}
                   </span>
                 )}

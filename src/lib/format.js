@@ -17,17 +17,20 @@ export function getCategoryIcon(name) {
   return CATEGORY_ICONS[name] || '💳'
 }
 
+// Logos come from each bank's own website (public/banks).
+const LOGO = name => `${import.meta.env?.BASE_URL ?? '/'}banks/${name}`
+
 export const ACCOUNT_CONFIG = {
-  Capitec:   { color: '#2F7BFF', bg: 'rgba(47,123,255,0.16)',   label: 'Capitec' },
-  FNB:       { color: 'rgb(var(--c-accent))', bg: 'rgba(212,175,55,0.15)',   label: 'FNB' },
-  Absa:      { color: '#dc0032', bg: 'rgba(220,0,50,0.15)',     label: 'Absa' },
-  Standard:  { color: '#0033a0', bg: 'rgba(0,51,160,0.15)',     label: 'Standard Bank' },
-  Nedbank:   { color: '#007b40', bg: 'rgba(0,123,64,0.15)',     label: 'Nedbank' },
-  Investec:  { color: '#002b5c', bg: 'rgba(0,43,92,0.15)',      label: 'Investec' },
-  TymeBank:  { color: '#ff6200', bg: 'rgba(255,98,0,0.15)',     label: 'TymeBank' },
-  Discovery: { color: '#7b2d8b', bg: 'rgba(123,45,139,0.15)',   label: 'Discovery' },
-  African:   { color: '#c8a000', bg: 'rgba(200,160,0,0.15)',    label: 'African Bank' },
-  Bidvest:   { color: '#555555', bg: 'rgba(85,85,85,0.15)',     label: 'Bidvest' },
+  Capitec:   { color: '#2F7BFF', bg: 'rgba(47,123,255,0.16)',   label: 'Capitec',       logo: LOGO('capitec.svg') },
+  FNB:       { color: 'rgb(var(--c-accent))', bg: 'rgba(212,175,55,0.15)',   label: 'FNB', logo: LOGO('fnb.svg') },
+  Absa:      { color: '#dc0032', bg: 'rgba(220,0,50,0.15)',     label: 'Absa',          logo: LOGO('absa.png') },
+  Standard:  { color: '#0033a0', bg: 'rgba(0,51,160,0.15)',     label: 'Standard Bank', logo: LOGO('standard.png') },
+  Nedbank:   { color: '#007b40', bg: 'rgba(0,123,64,0.15)',     label: 'Nedbank',       logo: LOGO('nedbank.svg') },
+  Investec:  { color: '#002b5c', bg: 'rgba(0,43,92,0.15)',      label: 'Investec',      logo: LOGO('investec.png') },
+  TymeBank:  { color: '#ff6200', bg: 'rgba(255,98,0,0.15)',     label: 'TymeBank',      logo: LOGO('gotyme.png') },
+  Discovery: { color: '#7b2d8b', bg: 'rgba(123,45,139,0.15)',   label: 'Discovery',     logo: LOGO('discovery.png') },
+  African:   { color: '#c8a000', bg: 'rgba(200,160,0,0.15)',    label: 'African Bank',  logo: LOGO('african.png') },
+  Bidvest:   { color: '#555555', bg: 'rgba(85,85,85,0.15)',     label: 'Bidvest',       logo: LOGO('bidvest.png') },
   Cash:      { color: '#888888', bg: 'rgba(136,136,136,0.15)', label: 'Cash' },
 }
 
@@ -42,8 +45,10 @@ const CREDIT_CARD = { color: '#FF4D5E', bg: 'rgba(255,77,94,0.16)' }
 export function accountStyle(acc) {
   if (!acc) return ACCOUNT_CONFIG.Cash
   const bankCfg = getAccountConfig(acc.bank || acc.name)
-  if (acc.kind === 'credit_card') return { ...CREDIT_CARD, label: `${bankCfg.label === 'Cash' ? acc.name : bankCfg.label} card` }
-  return bankCfg === ACCOUNT_CONFIG.Cash ? { ...bankCfg, label: acc.name } : bankCfg
+  if (acc.kind === 'credit_card') {
+    return { ...CREDIT_CARD, logo: bankCfg.logo, kind: acc.kind, label: `${bankCfg.label === 'Cash' ? acc.name : bankCfg.label} card` }
+  }
+  return { ...bankCfg, kind: acc.kind, label: bankCfg === ACCOUNT_CONFIG.Cash ? acc.name : bankCfg.label }
 }
 
 // Colour and label for a transaction: by its linked account when there is

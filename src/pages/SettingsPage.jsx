@@ -4,6 +4,7 @@ import { useBudget } from '../context/BudgetContext'
 import { useToast } from '../components/ui/Toast'
 import { formatMoney, COLOR_OPTIONS, getAccountConfig, accountStyle } from '../lib/format'
 import PageHeader from '../components/ui/PageHeader'
+import BankLogo from '../components/ui/BankLogo'
 import Button from '../components/ui/Button'
 import BottomSheet from '../components/ui/BottomSheet'
 import AccountPicker from '../components/ui/AccountPicker'
@@ -241,13 +242,8 @@ export default function SettingsPage() {
               const cfg = accountStyle(acc)
               return (
                 <div key={acc.id} className="flex items-center gap-3 px-4 py-3 border-b border-border last:border-0">
-                  {/* Bank colour badge */}
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: cfg.bg, border: `0.5px solid ${cfg.color}40` }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: cfg.color, fontFamily: 'Inter, sans-serif' }}>
-                      {(acc.bank || acc.name)?.slice(0,2).toUpperCase()}
-                    </span>
-                  </div>
+                  {/* Bank logo (card and savings accounts get a corner badge) */}
+                  <BankLogo st={cfg} size={36} />
                   {/* Bank name (primary) + descriptor (secondary) */}
                   <div className="flex-1 min-w-0">
                     <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 14, fontWeight: 500, color: 'rgb(var(--c-text))' }}>
@@ -444,8 +440,10 @@ export default function SettingsPage() {
                       color: sel ? cfg.color : 'rgb(var(--c-text-3))',
                       fontFamily: 'Inter, sans-serif', fontSize: 12,
                       transition: 'all 0.15s ease',
+                      display: 'inline-flex', alignItems: 'center', gap: 6,
                     }}
                   >
+                    <BankLogo st={cfg} size={16} />
                     {bank}
                   </button>
                 )

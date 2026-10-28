@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { formatMoney, accountStyleForTx } from '../../lib/format'
+import BankLogo from '../ui/BankLogo'
 import { useBudget } from '../../context/BudgetContext'
 import { Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
@@ -149,9 +150,11 @@ export default function ExpenseItem({ transaction, onDelete, onEdit }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3, flexWrap: 'wrap' }}>
             {transaction.account && (
               <span style={{
-                fontSize: 10, padding: '2px 7px', borderRadius: 5, fontWeight: 500,
+                fontSize: 10, padding: '2px 7px 2px 3px', borderRadius: 5, fontWeight: 500,
                 color: acc.color, background: acc.bg, fontFamily: 'Inter, sans-serif',
+                display: 'inline-flex', alignItems: 'center', gap: 4,
               }}>
+                <BankLogo st={acc} size={14} />
                 {acc.label}
               </span>
             )}

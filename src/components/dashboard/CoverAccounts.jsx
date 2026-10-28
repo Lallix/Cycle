@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useBudget } from '../../context/BudgetContext'
 import { coverByBank, latestBalance } from '../../lib/cover'
 import { accountStyle, getAccountConfig } from '../../lib/format'
+import BankLogo from '../ui/BankLogo'
 
 // What each bank still has to pay this cycle (debit orders, bills,
 // subscriptions) against what is in it — so you know what to move where.
@@ -62,7 +63,7 @@ export default function CoverAccounts() {
             <div key={g.bank} className="clay" style={{ padding: 16 }}>
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2" style={{ fontWeight: 700, fontSize: 15 }}>
-                  <span style={{ width: 10, height: 10, borderRadius: 5, background: cfg.color, boxShadow: `0 0 10px ${cfg.color}` }} />
+                  <BankLogo st={cfg} size={26} />
                   {g.bank}
                 </span>
                 <span style={{
@@ -90,7 +91,9 @@ export default function CoverAccounts() {
                 const st = accountStyle(a)
                 return (
                   <div key={a.id} className="flex items-center justify-between" style={{ marginTop: 10, padding: '8px 12px', borderRadius: 14, background: st.bg }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: st.color }}>{st.label} owes</span>
+                    <span className="flex items-center gap-2" style={{ fontSize: 12, fontWeight: 600, color: st.color }}>
+                      <BankLogo st={st} size={20} />{st.label} owes
+                    </span>
                     <span style={{ ...display, fontWeight: 700, color: st.color }}>{balances[a.id] ? R(balances[a.id].balance) : '—'}</span>
                   </div>
                 )

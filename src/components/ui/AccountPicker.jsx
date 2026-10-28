@@ -1,5 +1,6 @@
 import { useBudget } from '../../context/BudgetContext'
 import { accountStyle } from '../../lib/format'
+import BankLogo from './BankLogo'
 
 // Replaces the hardcoded 11-bank pill row everywhere in the app
 // Shows only the user's actual accounts from cycle_accounts table
@@ -36,8 +37,10 @@ export default function AccountPicker({ value, onChange, style = {} }) {
               whiteSpace: 'nowrap',
               cursor: 'pointer',
               transition: 'all 0.15s ease',
+              display: 'inline-flex', alignItems: 'center', gap: 6,
             }}
           >
+            <BankLogo st={cfg} size={18} />
             {acc.name}
           </button>
         )
