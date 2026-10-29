@@ -41,6 +41,8 @@ export function coverByBank({ accounts, categories, recent, current, balances, p
   const fixed = categories.filter(c => normaliseType(c.type) === 'fixed')
 
   const items = fixed.map(c => {
+    // A bill the card pays (e.g. its own interest and fees) needs no cash
+    if (c.pay_account_id && accById[c.pay_account_id]?.kind === 'credit_card') return null
     const hits = recent.flat().filter(t => t.category_id === c.id && t.direction !== 'in')
     const byBank = {}
     hits.forEach(t => { const b = bankOf(t.account_id); if (b) byBank[b] = (byBank[b] || 0) + 1 })
