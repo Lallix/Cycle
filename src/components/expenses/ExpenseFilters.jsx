@@ -4,7 +4,8 @@ import { isEverydayType } from '../../lib/spend'
 import { normaliseType } from '../../lib/totals'
 
 // Filter row: an "All" button that clears the filter, and one dropdown
-// holding every category (grouped by type) and the accounts used this cycle.
+// holding every category (grouped by type, A–Z within each group) and the
+// accounts used this cycle.
 // The dropdown's value is "category:<id>" or "account:<name>".
 
 const TYPE_GROUPS = [
@@ -16,10 +17,11 @@ export default function ExpenseFilters({ activeFilter, onFilterChange }) {
   const { categories, transactions } = useBudget()
 
   // Derive unique accounts actually used in this cycle
-  const usedAccounts = [...new Set(transactions.map(t => t.account).filter(Boolean))]
+  const usedAccounts = [...new Set(transactions.map(t => t.account).filter(Boolean))].sort()
 
   const groups = TYPE_GROUPS
-    .map(([label, type]) => [label, categories.filter(c => isEverydayType(c.type) && normaliseType(c.type) === type)])
+    .map(([label, type]) => [label, categories.filter(c => isEverydayType(c.type) && normaliseType(c.type) === type)
+      .sort((x, y) => x.name.localeCompare(y.name, 'en', { sensitivity: 'base' }))])
     .filter(([, cats]) => cats.length)
 
   const value = activeFilter?.type === 'category' ? `category:${activeFilter.id}`
