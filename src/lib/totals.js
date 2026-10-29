@@ -39,7 +39,7 @@ export function spendByCategory(transactions, catMap) {
 
 export function computeCycleTotals({ transactions, categories, budgets = null, savingGoals = [] }) {
   const catMap = Object.fromEntries(categories.map(c => [c.id, c]))
-  const t = { income: 0, fixed: 0, predicted: 0, unplanned: 0, onceOff: 0, debt: 0 }
+  const t = { income: 0, fixed: 0, predicted: 0, unplanned: 0, onceOff: 0, debt: 0, debtRepaid: 0 }
 
   transactions.forEach(tx => {
     const type = typeOf(tx, catMap)
@@ -47,7 +47,7 @@ export function computeCycleTotals({ transactions, categories, budgets = null, s
     if (type === 'transfer') return
     if (type === 'income') t.income += signed
     else if (type === 'once_off') t.onceOff += signed
-    else if (type === 'debt') t.debt += signed
+    else if (type === 'debt') { t.debt += signed; if (tx.direction !== 'in') t.debtRepaid += num(tx.amount) }
     else t[type] -= signed            // spending shown as a positive number
   })
 
@@ -66,7 +66,10 @@ export function computeCycleTotals({ transactions, categories, budgets = null, s
   const incomeExpected = budgetOf('income')
   const income = Math.max(t.income, incomeExpected)
   const spent = t.fixed + t.predicted + t.unplanned
-  const remaining = income - spent - fixedDue
+  // Paying back a loan (e.g. a micro loan from last cycle) uses this cycle's
+  // money even though it isn't spending, so it comes off what's left.
+  // Money borrowed this cycle is not added: it isn't income.
+  const remaining = income - spent - fixedDue - t.debtRepaid
 
   return {
     income, incomeReceived: t.income, incomeExpected,
@@ -74,7 +77,7 @@ export function computeCycleTotals({ transactions, categories, budgets = null, s
     fixedSpent: t.fixed, fixedDue, fixedPlanned,
     predictedSpent: t.predicted, predictedBudget: budgetOf('predicted'),
     unplannedSpent: t.unplanned, unplannedBudget: budgetOf('unplanned'),
-    onceOff: t.onceOff, debt: t.debt,
+    onceOff: t.onceOff, debt: t.debt, debtRepaid: t.debtRepaid,
     savingsTotal: savingGoals.reduce((s, g) => s + num(g.current_amount), 0),
     // names the older screens still read
     fixedTotal: t.fixed + fixedDue, fixedPaid: t.fixed,

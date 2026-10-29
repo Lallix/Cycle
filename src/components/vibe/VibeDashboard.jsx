@@ -63,7 +63,7 @@ export function VibeHeader({ firstName, right }) {
 export function VibeHero() {
   const { totals, cycle } = useBudget()
   const ref = useTilt()
-  const committed = totals.spent + totals.fixedDue
+  const committed = totals.spent + totals.fixedDue + totals.debtRepaid
   const used = totals.income > 0 ? committed / totals.income : 0
   const left = totals.remaining
   const daysLeft = Math.max(1, cycle?.daysRemaining || 1)
@@ -94,6 +94,7 @@ export function VibeHero() {
           <Pill tone="accent">💰 in {R(totals.income)}</Pill>
           <Pill tone="unplanned">⏳ {daysLeft} days to payday</Pill>
           {totals.fixedDue > 0 && <Pill tone="negative">🧾 {Rk(totals.fixedDue)} bills still due</Pill>}
+          {totals.debtRepaid > 0.5 && <Pill tone="negative">💸 {Rk(totals.debtRepaid)} loans repaid</Pill>}
         </div>
       </div>
     </div>
