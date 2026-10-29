@@ -17,11 +17,14 @@ import { normaliseType } from '../lib/totals'
 // category, and where each account stood at the end of every month.
 
 const PAGE_SIZE = 1000          // Supabase returns at most 1000 rows per request
+// Bright orange so income stands apart from the green spending bars
+const INCOME = '#FF8A00'
+
 const TYPE_META = {
   fixed:     { label: 'Fixed',     colour: 'rgb(var(--c-fixed))' },
   predicted: { label: 'Predicted', colour: 'rgb(var(--c-accent))' },
   unplanned: { label: 'Unplanned', colour: 'rgb(var(--c-unplanned))' },
-  income:    { label: 'Income',    colour: 'rgb(var(--c-positive))' },
+  income:    { label: 'Income',    colour: INCOME },
   once_off:  { label: 'Once-off',  colour: '#9B6FB5' },
   debt:      { label: 'Debt',      colour: '#8A8A8A' },
 }
@@ -168,7 +171,7 @@ export default function YearPage({ embedded = false }) {
               {year} to date · {months.length} month{months.length > 1 ? 's' : ''}
             </p>
             <div className="grid grid-cols-3 gap-2 text-center">
-              {[['Income', ytd.sum.income, 'rgb(var(--c-positive))'], ['Spent', ytd.sum.spent, 'rgb(var(--c-negative))'], ['Left over', ytd.sum.leftOver, ytd.sum.leftOver < 0 ? 'rgb(var(--c-negative))' : 'rgb(var(--c-accent))']].map(([t, v, c]) => (
+              {[['Income', ytd.sum.income, INCOME], ['Spent', ytd.sum.spent, 'rgb(var(--c-negative))'], ['Left over', ytd.sum.leftOver, ytd.sum.leftOver < 0 ? 'rgb(var(--c-negative))' : 'rgb(var(--c-accent))']].map(([t, v, c]) => (
                 <div key={t}>
                   <p style={{ ...label, color: 'rgb(var(--c-text-3))', fontSize: 10, textTransform: 'uppercase' }}>{t}</p>
                   <p style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 15, color: c }}>{money(v)}</p>
@@ -203,14 +206,14 @@ export default function YearPage({ embedded = false }) {
                       {SPEND_TYPES.map(t => (
                         <div key={t} style={{ width: `${(Math.max(0, r[t]) / maxBar) * 100}%`, background: TYPE_META[t].colour }} />
                       ))}
-                      <div title="Income" style={{ position: 'absolute', top: 0, bottom: 0, width: 2, background: 'rgb(var(--c-positive))', left: `${Math.min(100, (r.income / maxBar) * 100)}%` }} />
+                      <div title="Income" style={{ position: 'absolute', top: 0, bottom: 0, width: 3, marginLeft: -1, borderRadius: 2, background: INCOME, boxShadow: '0 0 6px rgb(255 138 0 / 0.7)', left: `${Math.min(100, (r.income / maxBar) * 100)}%` }} />
                     </div>
                   </div>
                 )
               })}
               <div className="flex flex-wrap gap-3 pt-1">
                 {SPEND_TYPES.map(t => <Legend key={t} colour={TYPE_META[t].colour} text={TYPE_META[t].label} />)}
-                <Legend colour="rgb(var(--c-positive))" text="Income" line />
+                <Legend colour={INCOME} text="Income" line />
               </div>
             </div>
           </Section>
@@ -339,7 +342,7 @@ function Section({ title, action, children }) {
 function Legend({ colour, text, line }) {
   return (
     <span className="flex items-center gap-1.5" style={{ fontFamily: 'Inter, sans-serif', fontSize: 10, color: 'rgb(var(--c-text-3))' }}>
-      <span style={{ width: line ? 2 : 8, height: 8, borderRadius: line ? 0 : 2, background: colour }} />{text}
+      <span style={{ width: line ? 3 : 8, height: 8, borderRadius: line ? 0 : 2, background: colour }} />{text}
     </span>
   )
 }
