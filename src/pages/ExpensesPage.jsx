@@ -15,10 +15,14 @@ import AccountPicker from '../components/ui/AccountPicker'
 import { format } from 'date-fns'
 import { useNavigate } from 'react-router-dom'
 import { FileUp } from 'lucide-react'
-import { spendAmount } from '../lib/spend'
+import { spendAmount, TYPE_OPTIONS } from '../lib/spend'
+import { normaliseType } from '../lib/totals'
+
+// Category picker groups, in the Budget sheet's order
+const TYPE_ORDER = ['income', 'fixed', 'predicted', 'unplanned', 'once_off', 'debt', 'transfer']
 
 export default function ExpensesPage({ embedded = false, cycleIndex: cycleProp, filter, onFilterChange }) {
-  const { loading, transactions, categories, cycles, deleteTransaction, updateTransaction, getTransactionsForCycle } = useBudget()
+  const { loading, transactions, categories, archivedCategories, cycles, deleteTransaction, updateTransaction, getTransactionsForCycle } = useBudget()
   const { profile } = useAuth()
   const toast = useToast()
   const navigate = useNavigate()
@@ -115,18 +119,33 @@ export default function ExpensesPage({ embedded = false, cycleIndex: cycleProp, 
     }
     setSaving(true)
     try {
-      await updateTransaction(editingTx.id, {
-        amount:      parseFloat(editForm.amount),
+      // A statement line keeps its amount, date and account (they come from
+      // the bank and are used to spot it again on the next import)
+      const fromStatement = editingTx.source === 'import'
+      const saved = await updateTransaction(editingTx.id, {
+        amount:      fromStatement ? parseFloat(editingTx.amount) : parseFloat(editForm.amount),
         category_id: editForm.category_id || null,
-        account:     editForm.account,
-        date:        editForm.date,
+        account:     fromStatement ? editingTx.account : editForm.account,
+        date:        fromStatement ? editingTx.transaction_date : editForm.date,
         notes:       editForm.notes || null,
       })
+      // Past cycles are loaded here, not in the shared list, so update them too
+      if (historyTx) setHistoryTx(prev => prev.map(t => t.id === saved.id ? saved : t))
       toast('Updated ✓', 'success')
       setEditOpen(false)
     } catch (e) { toast(e.message, 'error') }
     finally { setSaving(false) }
   }
+
+  // Every active category, grouped by type. A line in a removed category
+  // keeps it in the list so the current choice still shows.
+  const currentArchived = archivedCategories.find(c => c.id === editingTx?.category_id)
+  const editCategoryGroups = TYPE_ORDER
+    .map(type => [TYPE_OPTIONS.find(o => o.value === type)?.label || type,
+      [...categories, ...(currentArchived ? [currentArchived] : [])]
+        .filter(c => normaliseType(c.type) === type).sort((a, b) => a.name.localeCompare(b.name))])
+    .filter(([, cats]) => cats.length)
+  const optStyle = { background: 'rgb(var(--c-surface))', color: 'rgb(var(--c-text))' }
 
   const inputStyle = {
     width: '100%', padding: '12px 16px',
@@ -208,7 +227,7 @@ export default function ExpensesPage({ embedded = false, cycleIndex: cycleProp, 
                     <ExpenseItem
                       transaction={tx}
                       onDelete={handleDelete}
-                      onEdit={cycleIndex === 0 ? handleEdit : undefined}
+                      onEdit={handleEdit}
                     />
                   </div>
                 ))}
@@ -219,9 +238,32 @@ export default function ExpensesPage({ embedded = false, cycleIndex: cycleProp, 
       )}
 
       {/* Edit sheet */}
-      <BottomSheet open={editOpen} onClose={() => setEditOpen(false)} title="Edit Expense">
+      <BottomSheet open={editOpen} onClose={() => setEditOpen(false)} title={editingTx?.source === 'import' ? 'Edit transaction' : 'Edit Expense'}>
         <div style={{ padding: '0 20px 32px', display: 'flex', flexDirection: 'column', gap: 14 }}>
 
+          {editingTx?.source === 'import' && (
+            <div style={{ padding: '10px 12px', borderRadius: 12, background: 'rgb(var(--c-surface-2))', fontFamily: 'Inter, sans-serif' }}>
+              <p style={{ fontSize: 13, color: 'rgb(var(--c-text))', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{editingTx.description}</p>
+              <p style={{ fontSize: 12, color: 'rgb(var(--c-text-3))', marginTop: 2 }}>
+                {format(new Date(editingTx.transaction_date), 'd MMM yyyy')} · {editingTx.direction === 'in' ? '+' : '−'}{formatMoney(editingTx.amount)} · from your statement
+              </p>
+            </div>
+          )}
+
+          <div>
+            <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Category</label>
+            <select value={editForm.category_id || ''} onChange={e => setEditForm(f => ({ ...f, category_id: e.target.value }))}
+              style={{ ...inputStyle, appearance: 'auto' }}>
+              <option value="" style={optStyle}>No category</option>
+              {editCategoryGroups.map(([label, cats]) => (
+                <optgroup key={label} label={label} style={optStyle}>
+                  {cats.map(c => <option key={c.id} value={c.id} style={optStyle}>{c.icon} {c.name}</option>)}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+
+          {editingTx?.source !== 'import' && (<>
           <div>
             <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Amount</label>
             <div style={{ position: 'relative' }}>
@@ -230,10 +272,14 @@ export default function ExpensesPage({ embedded = false, cycleIndex: cycleProp, 
             </div>
           </div>
 
+          </>)}
+
           <div>
             <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Notes</label>
             <input type="text" placeholder="Optional note" value={editForm.notes || ''} onChange={e => setEditForm(f => ({...f, notes: e.target.value}))} style={inputStyle} />
           </div>
+
+          {editingTx?.source !== 'import' && (<>
 
           <div>
             <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Date</label>
@@ -244,6 +290,7 @@ export default function ExpensesPage({ embedded = false, cycleIndex: cycleProp, 
             <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 8 }}>Account</label>
             <AccountPicker value={editForm.account} onChange={(val) => setEditForm(f => ({...f, account: val}))} />
           </div>
+          </>)}
 
           <button
             onClick={handleSaveEdit} disabled={saving}
