@@ -6,6 +6,7 @@ const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
   const [user, setUser]                       = useState(null)
   const [profile, setProfile]                 = useState(null)
+  const [hasAccess, setHasAccess]             = useState(null)  // Cycle on this login? null = not checked yet
   const [loading, setLoading]                 = useState(true)
   const [biometricAvailable, setBiometricAvailable] = useState(false)
   const [biometricEnabled, setBiometricEnabled]     = useState(false)
@@ -43,13 +44,17 @@ export function AuthProvider({ children }) {
         setUser(session.user)
         await fetchProfile(session.user.id)
       } else if (event === 'SIGNED_OUT') {
-        setUser(null); setProfile(null)
+        setUser(null); setProfile(null); setHasAccess(null)
       }
     })
     return () => { mounted = false; subscription.unsubscribe() }
   }, [])
 
   async function fetchProfile(userId) {
+    // The login is shared with GEM Planner; app_access says who gets Cycle.
+    // If the check itself fails, let them in: the database still enforces it.
+    supabase.rpc('has_app', { p_app: 'cycle' })
+      .then(({ data, error }) => setHasAccess(error ? true : data === true))
     try {
       const { data, error } = await supabase
         .from('profiles').select('*').eq('id', userId).single()
@@ -156,7 +161,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{
-      user, profile, loading,
+      user, profile, loading, hasAccess,
       biometricAvailable, biometricEnabled,
       signIn, signUp, signOut, resetPassword,
       sessionUnlocked, setSessionUnlocked,

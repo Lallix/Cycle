@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { useAuth } from './context/AuthContext'
 import SplashScreen from './components/branding/SplashScreen'
 import LockScreen from './components/branding/LockScreen'
+import NoAccessScreen from './components/branding/NoAccessScreen'
 import LoadingScreen from './components/ui/LoadingScreen'
 import AppLayout from './components/layout/AppLayout'
 import AuthPage from './pages/AuthPage'
@@ -34,10 +35,12 @@ const SEQ = {
 // ─── Auth guard ───────────────────────────────────────────────────────────────
 
 function RequireAuth({ children }) {
-  const { user, loading } = useAuth()
+  const { user, loading, hasAccess } = useAuth()
   const location = useLocation()
   if (loading) return <LoadingScreen />
   if (!user)   return <Navigate to="/auth" state={{ from: location }} replace />
+  if (hasAccess === null)  return <LoadingScreen />
+  if (hasAccess === false) return <NoAccessScreen />
   return children
 }
 
