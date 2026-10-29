@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { ChevronLeft, ChevronRight, ChevronDown, Plus } from 'lucide-react'
 import { supabase } from '../lib/supabase'
@@ -220,7 +220,7 @@ export default function YearPage({ embedded = false }) {
 
           {/* Table */}
           <Section title="Totals by type">
-            <div className="overflow-x-auto -mx-4 px-4">
+            <MonthScroller>
               <table style={{ borderCollapse: 'collapse', fontFamily: 'Inter, sans-serif', fontSize: 12, minWidth: '100%' }}>
                 <thead>
                   <tr>
@@ -245,7 +245,7 @@ export default function YearPage({ embedded = false }) {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </MonthScroller>
           </Section>
 
           {/* Categories */}
@@ -347,12 +347,36 @@ function Legend({ colour, text, line }) {
   )
 }
 
+// The label column stays put while the months scroll under it, with a
+// divider and a soft edge so it reads as a separate column.
+const pinned = {
+  position: 'sticky', left: 0, zIndex: 1,
+  boxShadow: 'inset -1px 0 0 rgb(var(--c-border-strong)), 8px 0 10px -6px rgb(0 0 0 / 0.6)',
+}
+
+// Horizontal scroller for the Year tables: the months snap a whole column
+// at a time to the edge of the pinned label column, so no half-hidden
+// number shows next to it.
+function MonthScroller({ children }) {
+  const ref = useRef(null)
+  useLayoutEffect(() => {
+    const el = ref.current
+    const first = el?.querySelector('th')
+    if (first) el.style.scrollPaddingLeft = `${first.offsetWidth}px`
+  })
+  return (
+    <div ref={ref} className="overflow-x-auto" style={{ scrollSnapType: 'x mandatory', overscrollBehaviorX: 'contain' }}>
+      {children}
+    </div>
+  )
+}
+
 const th = (first) => ({
-  position: first ? 'sticky' : undefined, left: first ? 0 : undefined, background: 'rgb(var(--c-surface))',
+  ...(first ? pinned : { scrollSnapAlign: 'start' }), background: 'rgb(var(--c-surface))',
   padding: '6px 8px', color: 'rgb(var(--c-text-3))', fontWeight: 500, textAlign: first ? 'left' : 'right', whiteSpace: 'nowrap',
 })
 const td = (first, strong, value) => ({
-  position: first ? 'sticky' : undefined, left: first ? 0 : undefined, background: 'rgb(var(--c-surface))',
+  ...(first ? pinned : {}), background: 'rgb(var(--c-surface))',
   padding: '6px 8px', whiteSpace: 'nowrap', textAlign: first ? 'left' : 'right',
   color: first ? 'rgb(var(--c-text))' : value < 0 && strong ? 'rgb(var(--c-negative))' : strong ? 'rgb(var(--c-text))' : 'rgb(var(--c-text-2))',
   fontWeight: strong ? 600 : 400,
@@ -363,7 +387,7 @@ function BalancesTable({ accounts, balances, months }) {
   if (!shown.length) return <p style={label}>No balances yet.</p>
   const net = m => shown.reduce((s, a) => s + (balances[a.id][m] ?? 0), 0)
   return (
-    <div className="overflow-x-auto -mx-4 px-4">
+    <MonthScroller>
       <table style={{ borderCollapse: 'collapse', fontFamily: 'Inter, sans-serif', fontSize: 12, minWidth: '100%' }}>
         <thead>
           <tr>
@@ -387,7 +411,7 @@ function BalancesTable({ accounts, balances, months }) {
           </tr>
         </tbody>
       </table>
-    </div>
+    </MonthScroller>
   )
 }
 
