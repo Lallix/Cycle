@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Outlet, NavLink, useLocation } from 'react-router-dom'
 import { LayoutDashboard, BarChart3, Wallet, Settings, Plus } from 'lucide-react'
 import AddExpenseSheet from '../expenses/AddExpenseSheet'
 
@@ -49,10 +49,19 @@ function NavItem({ to, icon: Icon, label, exact }) {
 export default function AppLayout() {
   const [addOpen, setAddOpen] = useState(false)
 
+  // Pages share one scrolling area, so a new page would open at the old
+  // page's scroll position. Start each page (and Activity tab) at the top;
+  // links with a #section scroll to that section themselves.
+  const mainRef = useRef(null)
+  const { pathname, search, hash } = useLocation()
+  useEffect(() => {
+    if (!hash) mainRef.current?.scrollTo(0, 0)
+  }, [pathname, search, hash])
+
   return (
     <div className="flex flex-col bg-bg" style={{ height: '100dvh' }}>
       {/* Page content — fade transition on route change */}
-      <main className="flex-1 overflow-y-auto overscroll-contain">
+      <main ref={mainRef} className="flex-1 overflow-y-auto overscroll-contain">
         <div style={{ animation: 'pageFadeIn 0.25s ease-out both' }}>
           <Outlet />
         </div>

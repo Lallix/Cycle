@@ -167,7 +167,7 @@ export function VibeTiles() {
           const [msg, tone] = vibe(t.pct)
           const over = t.pct >= 100
           return (
-            <button key={t.id} onClick={() => navigate(`/budget#${normaliseType(t.type)}`)} className="clay vibe-tile tappable" style={{ textAlign: 'left' }}>
+            <button key={t.id} onClick={() => navigate(`/activity?tab=transactions&category=${t.id}`)} className="clay vibe-tile tappable" style={{ textAlign: 'left' }}>
               <span className="vibe-icon" style={{ background: TILE_GRADS[i % TILE_GRADS.length] }}>{t.icon || '💳'}</span>
               <span style={{ ...display, display: 'block', fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', marginTop: 12,
                 color: over ? `rgb(var(--c-${tone}))` : 'rgb(var(--c-text))' }}>{Math.round(t.pct)}%</span>

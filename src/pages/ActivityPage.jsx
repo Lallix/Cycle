@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import CycleSelector from '../components/ui/CycleSelector'
 import ExpensesPage from './ExpensesPage'
@@ -7,7 +7,8 @@ import YearPage from './YearPage'
 
 // Activity: what happened with your money. Three tabs share one cycle picker:
 // Transactions (the list), Overview (how the cycle went) and Year (by month).
-// Tapping a category in Overview opens Transactions filtered to it.
+// Tapping a category in Overview (or a vibe check tile on Home, via
+// ?category=<id>) opens Transactions filtered to it.
 const TABS = [
   { key: 'transactions', label: 'Transactions' },
   { key: 'overview', label: 'Overview' },
@@ -19,6 +20,11 @@ export default function ActivityPage() {
   const tab = TABS.some(t => t.key === params.get('tab')) ? params.get('tab') : 'transactions'
   const [cycleIndex, setCycleIndex] = useState(0)
   const [filter, setFilter] = useState(null)
+
+  const categoryParam = params.get('category')
+  useEffect(() => {
+    if (categoryParam) setFilter({ type: 'category', id: categoryParam })
+  }, [categoryParam])
 
   const go = key => setParams({ tab: key }, { replace: true })
   function openCategory(cat) {
