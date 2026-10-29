@@ -5,6 +5,7 @@ import { useToast } from '../components/ui/Toast'
 import { formatMoney, COLOR_OPTIONS, getAccountConfig, accountStyle } from '../lib/format'
 import PageHeader from '../components/ui/PageHeader'
 import BankLogo from '../components/ui/BankLogo'
+import CategorySortToggle, { useCategorySort, sortCategories } from '../components/ui/CategorySort'
 import Button from '../components/ui/Button'
 import BottomSheet from '../components/ui/BottomSheet'
 import AccountPicker from '../components/ui/AccountPicker'
@@ -17,6 +18,8 @@ import { TYPE_OPTIONS } from '../lib/spend'
 import { normaliseType } from '../lib/totals'
 
 // Colour of each category type, as on the Budget screen
+const TYPE_ORDER = ['income', 'fixed', 'predicted', 'unplanned', 'once_off', 'debt', 'transfer']
+
 const TYPE_TONE = {
   income: 'rgb(var(--c-positive))', fixed: 'rgb(var(--c-fixed))', predicted: 'rgb(var(--c-predicted))',
   unplanned: 'rgb(var(--c-unplanned))', once_off: 'rgb(var(--c-warning))', debt: 'rgb(var(--c-negative))',
@@ -49,6 +52,7 @@ export default function SettingsPage() {
   const [savingAccount, setSavingAccount]     = useState(false)
   const [editingAccount, setEditingAccount]   = useState(null)
   const [archivedOpen, setArchivedOpen]       = useState(false)
+  const [catSort, setCatSort]                 = useCategorySort()
 
   // ── Profile ────────────────────────────────────────────────
   function openProfile() {
@@ -286,11 +290,14 @@ export default function SettingsPage() {
 
         {/* Categories: what you sort transactions into. Amounts live on the Budget sheet. */}
         <section>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between gap-2 mb-2">
             <p className="text-xs text-muted uppercase tracking-widest">Categories</p>
-            <button onClick={openAddCat} className="flex items-center gap-1 text-xs text-gold hover:opacity-80">
-              <Plus size={13} /> Add
-            </button>
+            <div className="flex items-center gap-3">
+              <CategorySortToggle sort={catSort} onChange={setCatSort} />
+              <button onClick={openAddCat} className="flex items-center gap-1 text-xs text-gold hover:opacity-80">
+                <Plus size={13} /> Add
+              </button>
+            </div>
           </div>
           <button onClick={() => navigate('/budget')}
             className="w-full flex items-center justify-between gap-3 px-4 py-3 mb-2 border border-border rounded-2xl tappable"
@@ -299,7 +306,16 @@ export default function SettingsPage() {
             <span className="text-xs text-gold flex-shrink-0">Open →</span>
           </button>
           <div className="bg-surface-1 border border-border rounded-2xl overflow-hidden divide-y divide-border">
-            {categories.map(cat => (
+            {/* Always grouped by type, in the Budget sheet's order */}
+            {TYPE_ORDER.flatMap(type => {
+              const group = categories.filter(c => normaliseType(c.type) === type)
+              if (!group.length) return []
+              return [
+                <p key={`h-${type}`} className="px-4 pt-3 pb-1 text-xs uppercase tracking-widest"
+                  style={{ color: TYPE_TONE[type] || 'rgb(var(--c-text-3))', fontWeight: 600, background: 'rgb(var(--c-surface-2) / 0.5)' }}>
+                  {TYPE_OPTIONS.find(o => o.value === type)?.label} · {group.length}
+                </p>,
+                ...sortCategories(group, catSort, c => parseFloat(c.budget_amount)).map(cat => (
               <div key={cat.id} className="flex items-center gap-3 px-4 py-3">
                 <span className="text-lg w-7 text-center">{cat.icon || '💳'}</span>
                 <div className="flex-1 min-w-0">
@@ -317,7 +333,9 @@ export default function SettingsPage() {
                   </button>
                 </div>
               </div>
-            ))}
+                )),
+              ]
+            })}
             {categories.length === 0 && (
               <p className="text-sm text-muted px-4 py-4">No categories yet</p>
             )}

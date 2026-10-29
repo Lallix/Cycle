@@ -6,6 +6,7 @@ import { useBudget } from '../context/BudgetContext'
 import { useToast } from '../components/ui/Toast'
 import BottomSheet from '../components/ui/BottomSheet'
 import { accountStyle } from '../lib/format'
+import CategorySortToggle, { useCategorySort, sortCategories } from '../components/ui/CategorySort'
 
 // The budget sheet: the plan for this cycle, laid out like the spreadsheet.
 // Money in, fixed, predicted and unplanned, each row with Budget (tap to
@@ -32,6 +33,7 @@ export default function BudgetPage() {
   const { hash } = useLocation()
   const [editing, setEditing] = useState(null)       // a row in the edit sheet
   const [adding, setAdding] = useState(null)         // section key for a new row
+  const [sort, setSort] = useCategorySort()
 
   // Opened from a dashboard block: jump to that section
   useEffect(() => {
@@ -44,11 +46,12 @@ export default function BudgetPage() {
 
   return (
     <div style={{ paddingBottom: 120 }}>
-      <div className="flex items-center gap-3 px-4 pb-2" style={{ paddingTop: 'max(env(safe-area-inset-top), 1rem)' }}>
+      <div className="flex items-center justify-between gap-3 px-4 pb-2" style={{ paddingTop: 'max(env(safe-area-inset-top), 1rem)' }}>
         <div>
           <h1 style={{ ...display, fontSize: 22, fontWeight: 800 }}>Budget</h1>
           <p style={small}>{cycle?.shortLabel} · tap a budget to change it</p>
         </div>
+        <CategorySortToggle sort={sort} onChange={setSort} />
       </div>
 
       {/* The plan in one line: money in − everything planned */}
@@ -74,7 +77,7 @@ export default function BudgetPage() {
       </div>
 
       {SECTIONS.map(sec => (
-        <Section key={sec.key} sec={sec} data={sheet.sections[sec.key]}
+        <Section key={sec.key} sec={sec} data={sheet.sections[sec.key]} sort={sort}
           onEdit={setEditing} onAdd={() => setAdding(sec.key)} />
       ))}
 
@@ -102,7 +105,7 @@ function Figure({ label, value, tone }) {
   )
 }
 
-function Section({ sec, data, onEdit, onAdd }) {
+function Section({ sec, data, sort, onEdit, onAdd }) {
   const tone = `rgb(var(--c-${sec.tone}))`
   const leftTotal = sec.key === 'fixed' ? data.stillDue : data.left
   return (
@@ -129,7 +132,7 @@ function Section({ sec, data, onEdit, onAdd }) {
         </div>
 
         {data.rows.length === 0 && <p style={{ ...small, padding: '14px 12px' }}>Nothing here yet — tap Add.</p>}
-        {data.rows.map(row => <Row key={row.id} row={row} sec={sec} onEdit={onEdit} />)}
+        {sortCategories(data.rows, sort, r => r.budget).map(row => <Row key={row.id} row={row} sec={sec} onEdit={onEdit} />)}
 
         <div className="grid items-center" style={{ gridTemplateColumns: COLS, gap: 6, padding: '10px 12px', background: `rgb(var(--c-${sec.tone}) / 0.1)`, fontWeight: 700 }}>
           <span style={{ fontSize: 13 }}>Total</span>
