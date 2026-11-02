@@ -8,3 +8,6 @@ dist
 # Environment variables
 .env
 .env.local
+
+# Non-code material for this app (synced by OneDrive, never committed)
+_files/
