@@ -2,10 +2,11 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "cycle-dev",
+      "name": "cycle",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--", "--port", "5173", "--strictPort"],
-      "port": 5173
+      "runtimeArgs": ["run", "dev", "--", "--port", "5201", "--strictPort"],
+      "port": 5201,
+      "autoPort": false
     }
   ]
 }

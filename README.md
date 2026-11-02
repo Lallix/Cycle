@@ -66,7 +66,7 @@ This creates all tables, RLS policies, triggers, and seeds default categories an
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173)
+Open [http://localhost:5201/Cycle/](http://localhost:5201/Cycle/)
 
 ---
 

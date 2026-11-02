@@ -11,3 +11,6 @@ dist
 
 # Non-code material for this app (synced by OneDrive, never committed)
 _files/
+
+# Claude local settings (machine-specific)
+.claude/settings.local.json

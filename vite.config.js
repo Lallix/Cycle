@@ -4,6 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   base: '/Cycle/',
+  server: { port: 5201, strictPort: true },
   define: {
     // Bake build timestamp into the app as a global — visible in Settings
     __APP_VERSION__: JSON.stringify((() => {
