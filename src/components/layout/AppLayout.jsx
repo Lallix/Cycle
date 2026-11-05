@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Outlet, NavLink, useLocation } from 'react-router-dom'
 import { LayoutDashboard, BarChart3, Wallet, Settings, Plus } from 'lucide-react'
 import AddExpenseSheet from '../expenses/AddExpenseSheet'
+import AskClaude from '../claude/AskClaude'
 
 // 4 + 1 nav layout
 // Home · Budget · [Add FAB] · Activity · Settings
@@ -121,6 +122,7 @@ export default function AppLayout() {
       </nav>
 
       <AddExpenseSheet open={addOpen} onClose={() => setAddOpen(false)} />
+      <AskClaude />
     </div>
   )
 }

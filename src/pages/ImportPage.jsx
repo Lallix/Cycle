@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { FileUp, CheckCircle2, AlertTriangle, Copy, ArrowDownLeft, ArrowUpRight, Lock } from 'lucide-react'
+import { FileUp, CheckCircle2, AlertTriangle, Copy, ArrowDownLeft, ArrowUpRight, Lock, Sparkles } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useBudget } from '../context/BudgetContext'
@@ -15,10 +15,13 @@ import { parseGoTyme, isGoTymeStatement } from '../lib/import/gotyme'
 import { parseCapitecPdf, isCapitecStatement } from '../lib/import/capitecPdf'
 import { readPdfItems, PdfPasswordError } from '../lib/import/pdfText'
 import { matchManual, shiftDate, MATCH_DAYS } from '../lib/import/matchManual'
+import { pagesToText, linesFromClaude } from '../lib/import/claudeStatement'
+import { callClaude, claudeChanged, useClaude } from '../lib/claude'
 
 // Import a bank statement: Capitec CSV or PDF (main account or credit card),
 // or a GoTyme / TymeBank PDF statement (password-protected PDFs ask for the
-// password, which only opens the file in memory and is never kept).
+// password, which only opens the file in memory and is never kept). A PDF
+// from any other bank is read by Claude when you've added your Claude key.
 // pick file → (password) → match it to an account → review categories → import.
 
 const PAGE = 150
@@ -76,6 +79,9 @@ export default function ImportPage() {
   const [filter, setFilter] = useState('new')
   const [shown, setShown] = useState(PAGE)
   const [result, setResult] = useState(null)
+  const [reading, setReading] = useState(false)   // Claude is reading a statement
+  const [readCost, setReadCost] = useState(null)  // what that reading cost, in Rand
+  const claude = useClaude()
 
   // ── Step 1: read the file ─────────────────────────────────────
   // A statement picked straight from the Transactions page arrives in the
@@ -100,7 +106,7 @@ export default function ImportPage() {
       if (/\.pdf$/i.test(file.name) || file.type === 'application/pdf') {
         const buffer = await file.arrayBuffer()
         try {
-          await openPdf(buffer, '')
+          await openPdf(buffer, '', file.name)
         } catch (err) {
           if (!(err instanceof PdfPasswordError)) throw err
           setPdfBuffer(buffer); setPassword(''); setPasswordError(''); setStep('password')
@@ -116,7 +122,7 @@ export default function ImportPage() {
     }
   }
 
-  async function openPdf(buffer, pwd) {
+  async function openPdf(buffer, pwd, name = fileName) {
     // pdf.js takes ownership of the buffer it is given, so hand it a copy
     const pages = await readPdfItems(buffer.slice(0), pwd)
     if (isCapitecStatement(pages)) {
@@ -124,9 +130,25 @@ export default function ImportPage() {
       await loadStatement({ lines, pending, kind, bank: 'Capitec', format: 'capitec_pdf' })
       return
     }
-    if (!isGoTymeStatement(pages)) throw new Error('This PDF is not a Capitec or GoTyme / TymeBank statement.')
-    const { lines, pending } = parseGoTyme(pages)
-    await loadStatement({ lines, pending, kind: 'bank', bank: 'TymeBank', format: 'gotyme_pdf' })
+    if (isGoTymeStatement(pages)) {
+      const { lines, pending } = parseGoTyme(pages)
+      await loadStatement({ lines, pending, kind: 'bank', bank: 'TymeBank', format: 'gotyme_pdf' })
+      return
+    }
+    // Any other bank: Claude reads the statement's text, then it's checked
+    // against the balances like every other import
+    if (!claude.hasKey) {
+      throw new Error('Cycle reads Capitec and TymeBank statements itself. For other banks, add your Claude key in Settings → Claude assistant.')
+    }
+    setReading(true)
+    try {
+      const { statement, cost_zar } = await callClaude('statement', { text: pagesToText(pages), file_name: name })
+      claudeChanged()
+      setReadCost(cost_zar)
+      await loadStatement(linesFromClaude(statement))
+    } finally {
+      setReading(false)
+    }
   }
 
   async function submitPassword(e) {
@@ -418,9 +440,18 @@ export default function ImportPage() {
   // ── Render ───────────────────────────────────────────────────
   return (
     <div style={{ minHeight: '100%', background: 'rgb(var(--c-bg))', paddingBottom: step === 'review' ? 180 : 120 }}>
-      <PageHeader title="Import statement" subtitle="Capitec CSV or PDF · TymeBank PDF" back />
+      <PageHeader title="Import statement" subtitle={claude.hasKey ? 'Capitec · TymeBank · any bank with Claude' : 'Capitec CSV or PDF · TymeBank PDF'} back />
 
       <div className="px-4 space-y-4">
+        {reading && (
+          <div style={{ ...card, padding: 16, borderColor: 'rgb(var(--c-accent) / 0.4)' }} className="flex items-center gap-3" role="status">
+            <Sparkles size={18} color="rgb(var(--c-accent))" style={{ animation: 'pulse 1.5s ease-in-out infinite', flexShrink: 0 }} />
+            <div>
+              <p style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: 'rgb(var(--c-text))' }}>Claude is reading your statement…</p>
+              <p style={label}>This can take a minute for a long statement. Every line is checked against the balances before you see it.</p>
+            </div>
+          </div>
+        )}
         {step === 'pick' && (
           <>
             <input ref={fileRef} type="file" accept=".csv,text/csv,.pdf,application/pdf" onChange={onFile} hidden />
@@ -436,6 +467,9 @@ export default function ImportPage() {
               </span>
               <span style={label}>Capitec: Account → Statements → Download → CSV or PDF</span>
               <span style={label}>TymeBank: Account → Statements → PDF (any period)</span>
+              <span style={label}>
+                {claude.hasKey ? 'Other banks: any PDF statement, read by Claude' : 'Other banks: add your Claude key in Settings'}
+              </span>
             </button>
             <div style={{ ...card, padding: 16 }} className="space-y-2">
               <p style={{ ...label, color: 'rgb(var(--c-text-2))' }}>How it works</p>
@@ -455,7 +489,7 @@ export default function ImportPage() {
               <p style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: 'rgb(var(--c-text))' }}>Statement password</p>
             </div>
             <p style={label}>
-              {fileName} is protected. Enter the password TymeBank gave you for it. It only opens the file here on
+              {fileName} is protected. Enter the password your bank gave you for it. It only opens the file here on
               your device and isn't saved or sent anywhere.
             </p>
             <input
@@ -515,6 +549,11 @@ export default function ImportPage() {
                 <div>
                   <p style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: 'rgb(var(--c-text))' }}>{account?.name}</p>
                   <p style={label}>{fileName} · {stats.from} → {stats.to}</p>
+                  {parsed?.format === 'claude_pdf' && (
+                    <p style={{ ...label, color: 'rgb(var(--c-accent))' }}>
+                      Read by Claude{readCost != null ? ` · about ${formatMoney(readCost)}` : ''} · every line matches the statement's balances
+                    </p>
+                  )}
                 </div>
                 <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, background: 'rgb(var(--c-accent) / 0.1)', color: 'rgb(var(--c-accent))' }}>
                   {KIND_LABEL[account?.kind] || 'Account'}

@@ -12,6 +12,7 @@ import AccountPicker from '../components/ui/AccountPicker'
 import { User, Wallet, LogOut, Plus, Edit2, Trash2, RefreshCw, Smile, FileUp, ChevronDown, RotateCcw } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import ThemeSwitch from '../components/ui/ThemeSwitch'
+import ClaudeSettings from '../components/claude/ClaudeSettings'
 import Picker from '@emoji-mart/react'
 import data from '@emoji-mart/data'
 import { TYPE_OPTIONS } from '../lib/spend'
@@ -372,6 +373,8 @@ export default function SettingsPage() {
             </div>
           )}
         </section>
+
+        <ClaudeSettings />
 
         {/* Look */}
         <section>
