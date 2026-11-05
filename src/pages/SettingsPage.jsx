@@ -75,13 +75,21 @@ export default function SettingsPage() {
   }
 
   // ── Accounts ──────────────────────────────────────────────
-  async function handleAddAccount() {
-    if (!accountForm.name.trim()) { toast('Enter an account name', 'error'); return }
+  // Add a new account, or save changes to the one being edited. The
+  // descriptor is optional; without one the account is named after its bank.
+  async function handleSaveAccount() {
+    const name = accountForm.name.trim() || accountForm.bank
     setSavingAccount(true)
     try {
-      await addAccount({ name: accountForm.name.trim(), bank: accountForm.bank })
-      toast('Account added ✓', 'success')
+      if (editingAccount) {
+        await updateAccount(editingAccount.id, { name, bank: accountForm.bank })
+        toast('Account saved ✓', 'success')
+      } else {
+        await addAccount({ name, bank: accountForm.bank })
+        toast('Account added ✓', 'success')
+      }
       setAccountOpen(false)
+      setEditingAccount(null)
       setAccountForm({ name: '', bank: 'Capitec' })
     } catch (e) { toast(e.message, 'error') }
     finally { setSavingAccount(false) }
@@ -235,7 +243,7 @@ export default function SettingsPage() {
         <section>
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs text-muted uppercase tracking-widest">My Accounts</p>
-            <button onClick={() => setAccountOpen(true)} className="flex items-center gap-1 text-xs text-gold hover:opacity-80">
+            <button onClick={() => { setEditingAccount(null); setAccountForm({ name: '', bank: 'Capitec' }); setAccountOpen(true) }} className="flex items-center gap-1 text-xs text-gold hover:opacity-80">
               <Plus size={13} /> Add
             </button>
           </div>
@@ -472,7 +480,7 @@ export default function SettingsPage() {
             </div>
           </div>
           <button
-            onClick={handleAddAccount} disabled={savingAccount}
+            onClick={handleSaveAccount} disabled={savingAccount}
             style={{ width: '100%', padding: '14px 0', background: savingAccount ? 'rgb(var(--c-accent-dark))' : 'rgb(var(--c-accent))', borderRadius: 14, border: 'none', fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 600, color: 'rgb(var(--c-bg))', cursor: 'pointer' }}
           >
             {savingAccount ? 'Saving...' : editingAccount ? 'Save Changes' : 'Add Account'}

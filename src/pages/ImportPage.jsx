@@ -13,12 +13,14 @@ import { hashLines } from '../lib/import/fingerprint'
 import { buildCategoriser, payeeKey, escapeRegex } from '../lib/import/categorise'
 import { parseGoTyme, isGoTymeStatement } from '../lib/import/gotyme'
 import { parseCapitecPdf, isCapitecStatement } from '../lib/import/capitecPdf'
+import { parseNedbankPdf, isNedbankStatement } from '../lib/import/nedbankPdf'
 import { readPdfItems, PdfPasswordError } from '../lib/import/pdfText'
 import { matchManual, shiftDate, MATCH_DAYS } from '../lib/import/matchManual'
 import { pagesToText, linesFromClaude } from '../lib/import/claudeStatement'
 import { callClaude, claudeChanged, useClaude } from '../lib/claude'
 
 // Import a bank statement: Capitec CSV or PDF (main account or credit card),
+// a Nedbank PDF (current or savings account),
 // or a GoTyme / TymeBank PDF statement (password-protected PDFs ask for the
 // password, which only opens the file in memory and is never kept). A PDF
 // from any other bank is read by Claude when you've added your Claude key.
@@ -130,6 +132,11 @@ export default function ImportPage() {
       await loadStatement({ lines, pending, kind, bank: 'Capitec', format: 'capitec_pdf' })
       return
     }
+    if (isNedbankStatement(pages)) {
+      const { lines, pending, kind } = parseNedbankPdf(pages)
+      await loadStatement({ lines, pending, kind, bank: 'Nedbank', format: 'nedbank_pdf' })
+      return
+    }
     if (isGoTymeStatement(pages)) {
       const { lines, pending } = parseGoTyme(pages)
       await loadStatement({ lines, pending, kind: 'bank', bank: 'TymeBank', format: 'gotyme_pdf' })
@@ -138,7 +145,7 @@ export default function ImportPage() {
     // Any other bank: Claude reads the statement's text, then it's checked
     // against the balances like every other import
     if (!claude.hasKey) {
-      throw new Error('Cycle reads Capitec and TymeBank statements itself. For other banks, add your Claude key in Settings → Claude assistant.')
+      throw new Error('Cycle reads Capitec, Nedbank and TymeBank statements itself. For other banks, add your Claude key in Settings → Claude assistant.')
     }
     setReading(true)
     try {
@@ -440,7 +447,7 @@ export default function ImportPage() {
   // ── Render ───────────────────────────────────────────────────
   return (
     <div style={{ minHeight: '100%', background: 'rgb(var(--c-bg))', paddingBottom: step === 'review' ? 180 : 120 }}>
-      <PageHeader title="Import statement" subtitle={claude.hasKey ? 'Capitec · TymeBank · any bank with Claude' : 'Capitec CSV or PDF · TymeBank PDF'} back />
+      <PageHeader title="Import statement" subtitle={claude.hasKey ? 'Capitec · Nedbank · TymeBank · any bank with Claude' : 'Capitec · Nedbank · TymeBank'} back />
 
       <div className="px-4 space-y-4">
         {reading && (
@@ -466,6 +473,7 @@ export default function ImportPage() {
                 {busy ? 'Reading…' : 'Choose a statement'}
               </span>
               <span style={label}>Capitec: Account → Statements → Download → CSV or PDF</span>
+              <span style={label}>Nedbank: Statements → PDF (current or savings account)</span>
               <span style={label}>TymeBank: Account → Statements → PDF (any period)</span>
               <span style={label}>
                 {claude.hasKey ? 'Other banks: any PDF statement, read by Claude' : 'Other banks: add your Claude key in Settings'}

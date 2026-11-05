@@ -13,6 +13,7 @@
        Use as rgb(var(--c-accent)) or with alpha rgb(var(--c-accent) / 0.12).
        Dark is the default; :root[data-mode="light"] below swaps the values.
        The --vibe-* values colour the 3D pieces (hero, ring, nav, shadows). */
+    color-scheme: dark;
     --c-bg:            14 11 31;
     --c-surface:       28 23 54;
     --c-surface-2:     37 30 71;
@@ -60,6 +61,7 @@
 
   /* ── Light: lavender-white, white clay cards, deeper accents for contrast ── */
   :root[data-mode="light"] {
+    color-scheme: light;
     --c-bg:            244 241 255;
     --c-surface:       255 255 255;
     --c-surface-2:     240 236 254;
@@ -138,11 +140,11 @@
     color: rgb(var(--c-text-3));
   }
 
-  /* Dark colour scheme for native pickers */
+  /* Native pickers follow the light / dark mode set on :root */
   input[type="date"],
   input[type="number"],
   select {
-    color-scheme: dark;
+    color-scheme: inherit;
   }
 
   button {
