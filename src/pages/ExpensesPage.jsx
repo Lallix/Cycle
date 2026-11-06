@@ -15,15 +15,14 @@ import AccountPicker from '../components/ui/AccountPicker'
 import { format } from 'date-fns'
 import { useNavigate } from 'react-router-dom'
 import { FileUp } from 'lucide-react'
-import { spendAmount, TYPE_OPTIONS } from '../lib/spend'
-import { normaliseType } from '../lib/totals'
-
-// Category picker groups, in the Budget sheet's order
-const TYPE_ORDER = ['income', 'fixed', 'predicted', 'unplanned', 'once_off', 'debt', 'transfer']
+import { spendAmount } from '../lib/spend'
+import CategoryPicker, { categoryGroups } from '../components/ui/CategoryPicker'
+import { supabase } from '../lib/supabase'
+import { payeeKey, escapeRegex } from '../lib/import/categorise'
 
 export default function ExpensesPage({ embedded = false, cycleIndex: cycleProp, filter, onFilterChange }) {
-  const { loading, transactions, categories, archivedCategories, cycles, deleteTransaction, updateTransaction, getTransactionsForCycle } = useBudget()
-  const { profile } = useAuth()
+  const { loading, transactions, categories, archivedCategories, cycles, deleteTransaction, updateTransaction, getTransactionsForCycle, addCategory, refresh } = useBudget()
+  const { profile, user } = useAuth()
   const toast = useToast()
   const navigate = useNavigate()
   const importRef = useRef(null)
@@ -43,6 +42,7 @@ export default function ExpensesPage({ embedded = false, cycleIndex: cycleProp, 
   const setActiveFilter = embedded ? onFilterChange : setOwnFilter
   const [editForm, setEditForm]       = useState({})
   const [saving, setSaving]           = useState(false)
+  const [remember, setRemember]       = useState(false)   // make the picked category a payee rule
   const [ownCycle, setCycleIndex]     = useState(0)
   const cycleIndex = embedded ? cycleProp : ownCycle
   const [historyTx, setHistoryTx]     = useState(null)
@@ -73,6 +73,7 @@ export default function ExpensesPage({ embedded = false, cycleIndex: cycleProp, 
         (tx.description || '').toLowerCase().includes(search.toLowerCase()) ||
         (tx.account || '').toLowerCase().includes(search.toLowerCase())
       const matchFilter = !activeFilter ||
+        (activeFilter.type === 'none' && !tx.category_id) ||
         (activeFilter.type === 'category' && tx.category_id === activeFilter.id) ||
         (activeFilter.type === 'account' && tx.account === activeFilter.value)
       return matchSearch && matchFilter
@@ -101,7 +102,35 @@ export default function ExpensesPage({ embedded = false, cycleIndex: cycleProp, 
     } catch (e) { toast(e.message, 'error') }
   }
 
+  // "Use this for <payee> from now on": save a payee rule, ranked above the
+  // general rules (only the card-fee and income rules come first), and file
+  // that payee's uncategorised lines too. Returns how many were filed.
+  async function rememberPayee(description, categoryId) {
+    const key = payeeKey(description)
+    const pattern = escapeRegex(key)
+    const { data: existing, error: rErr } = await supabase.from('cycle_payee_rules')
+      .select('id').eq('user_id', user.id).eq('pattern', pattern)
+    if (rErr) throw rErr
+    const rule = { category_id: categoryId, priority: 8, is_active: true, notes: 'Set when editing a transaction' }
+    const { error } = existing?.length
+      ? await supabase.from('cycle_payee_rules').update(rule).in('id', existing.map(r => r.id))
+      : await supabase.from('cycle_payee_rules').insert({ user_id: user.id, pattern, ...rule })
+    if (error) throw error
+
+    const { data: loose, error: lErr } = await supabase.from('cycle_transactions')
+      .select('id, description').eq('user_id', user.id).is('category_id', null).not('description', 'is', null)
+    if (lErr) throw lErr
+    const ids = (loose || []).filter(t => payeeKey(t.description) === key).map(t => t.id)
+    if (ids.length) {
+      const { error: uErr } = await supabase.from('cycle_transactions').update({ category_id: categoryId }).in('id', ids)
+      if (uErr) throw uErr
+      await refresh()
+    }
+    return ids.length
+  }
+
   function handleEdit(tx) {
+    setRemember(false)
     setEditingTx(tx)
     setEditForm({
       amount:      String(tx.amount || ''),
@@ -131,7 +160,10 @@ export default function ExpensesPage({ embedded = false, cycleIndex: cycleProp, 
       })
       // Past cycles are loaded here, not in the shared list, so update them too
       if (historyTx) setHistoryTx(prev => prev.map(t => t.id === saved.id ? saved : t))
-      toast('Updated ✓', 'success')
+      const refiled = canRemember && remember ? await rememberPayee(editingTx.description, editForm.category_id) : null
+      toast(refiled == null ? 'Updated ✓'
+        : `Updated ✓ · future imports from this payee will use it${refiled ? ` · ${refiled} uncategorised line${refiled === 1 ? '' : 's'} filed too` : ''}`,
+        'success', refiled == null ? 3000 : 5000)
       setEditOpen(false)
     } catch (e) { toast(e.message, 'error') }
     finally { setSaving(false) }
@@ -140,12 +172,10 @@ export default function ExpensesPage({ embedded = false, cycleIndex: cycleProp, 
   // Every active category, grouped by type. A line in a removed category
   // keeps it in the list so the current choice still shows.
   const currentArchived = archivedCategories.find(c => c.id === editingTx?.category_id)
-  const editCategoryGroups = TYPE_ORDER
-    .map(type => [TYPE_OPTIONS.find(o => o.value === type)?.label || type,
-      [...categories, ...(currentArchived ? [currentArchived] : [])]
-        .filter(c => normaliseType(c.type) === type).sort((a, b) => a.name.localeCompare(b.name))])
-    .filter(([, cats]) => cats.length)
-  const optStyle = { background: 'rgb(var(--c-surface))', color: 'rgb(var(--c-text))' }
+  // The rule option shows once you pick a different category for a statement line
+  const payee = editingTx?.description ? payeeKey(editingTx.description) : ''
+  const canRemember = Boolean(payee && editForm.category_id && editForm.category_id !== (editingTx?.category_id || ''))
+  const editCategoryGroups = categoryGroups([...categories, ...(currentArchived ? [currentArchived] : [])])
 
   const inputStyle = {
     width: '100%', padding: '12px 16px',
@@ -252,15 +282,24 @@ export default function ExpensesPage({ embedded = false, cycleIndex: cycleProp, 
 
           <div>
             <label style={{ fontFamily: 'Inter, sans-serif', fontSize: 11, color: 'rgb(var(--c-text-3))', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Category</label>
-            <select value={editForm.category_id || ''} onChange={e => setEditForm(f => ({ ...f, category_id: e.target.value }))}
-              style={{ ...inputStyle, appearance: 'auto' }}>
-              <option value="" style={optStyle}>No category</option>
-              {editCategoryGroups.map(([label, cats]) => (
-                <optgroup key={label} label={label} style={optStyle}>
-                  {cats.map(c => <option key={c.id} value={c.id} style={optStyle}>{c.icon} {c.name}</option>)}
-                </optgroup>
-              ))}
-            </select>
+            <CategoryPicker
+              groups={editCategoryGroups} value={editForm.category_id || null} none="No category" placeholder="No category"
+              onChange={id => setEditForm(f => ({ ...f, category_id: id || '' }))}
+              onCreate={async c => (await addCategory(c)).id}
+              style={{ padding: '12px 16px', fontSize: 14 }}
+            />
+            {canRemember && (
+              <label className="flex items-start gap-2.5 mt-3 cursor-pointer" style={{ fontFamily: 'Inter, sans-serif' }}>
+                <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)}
+                  style={{ width: 18, height: 18, marginTop: 1, accentColor: 'rgb(var(--c-accent))', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: 'rgb(var(--c-text-2))', lineHeight: 1.4 }}>
+                  Use this for <b style={{ color: 'rgb(var(--c-text))' }}>{payee.length > 40 ? `${payee.slice(0, 40)}…` : payee}</b> from now on
+                  <span style={{ display: 'block', fontSize: 11, color: 'rgb(var(--c-text-3))', marginTop: 2 }}>
+                    Future imports from this payee get this category, and its uncategorised lines are filed too.
+                  </span>
+                </span>
+              </label>
+            )}
           </div>
 
           {editingTx?.source !== 'import' && (<>

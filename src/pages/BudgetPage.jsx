@@ -35,11 +35,28 @@ export default function BudgetPage() {
   const [adding, setAdding] = useState(null)         // section key for a new row
   const [sort, setSort] = useCategorySort()
 
-  // Opened from a dashboard block: jump to that section
+  // Opened from a dashboard block: jump to that section. On a phone the rows
+  // above it are often still loading when the page opens, which pushes the
+  // section down after the jump; so keep it lined up while the page settles
+  // (up to 2 s), and stop as soon as you touch or scroll yourself.
   useEffect(() => {
     if (!hash) return
-    const el = document.getElementById(hash.slice(1))
-    if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80)
+    const id = hash.slice(1)
+    let stopped = false
+    const align = () => { if (!stopped) document.getElementById(id)?.scrollIntoView({ block: 'start' }) }
+    const stop = () => { stopped = true }
+    const timers = [80, 250, 500, 900, 1400, 2000].map(ms => setTimeout(align, ms))
+    const observer = new ResizeObserver(align)
+    const main = document.querySelector('main')
+    if (main?.firstElementChild) observer.observe(main.firstElementChild)
+    const done = setTimeout(() => observer.disconnect(), 2000)
+    const events = ['touchstart', 'wheel', 'keydown']
+    events.forEach(e => window.addEventListener(e, stop, { passive: true }))
+    return () => {
+      stopped = true
+      timers.forEach(clearTimeout); clearTimeout(done); observer.disconnect()
+      events.forEach(e => window.removeEventListener(e, stop))
+    }
   }, [hash])
 
   const over = sheet.toAllocate < -0.5

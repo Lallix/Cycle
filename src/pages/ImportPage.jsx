@@ -17,6 +17,7 @@ import { parseNedbankPdf, isNedbankStatement } from '../lib/import/nedbankPdf'
 import { readPdfItems, PdfPasswordError } from '../lib/import/pdfText'
 import { matchManual, shiftDate, MATCH_DAYS } from '../lib/import/matchManual'
 import { pagesToText, linesFromClaude } from '../lib/import/claudeStatement'
+import CategoryPicker, { categoryGroups } from '../components/ui/CategoryPicker'
 import { callClaude, claudeChanged, useClaude } from '../lib/claude'
 
 // Import a bank statement: Capitec CSV or PDF (main account or credit card),
@@ -34,16 +35,6 @@ const KIND_LABEL = {
   loan: 'Loan', home_loan: 'Home loan', cash: 'Cash',
 }
 
-// Category groups for the picker; legacy types sit with their new equivalents.
-const TYPE_GROUPS = [
-  ['Income',    ['income']],
-  ['Fixed',     ['fixed']],
-  ['Predicted', ['predicted', 'variable']],
-  ['Unplanned', ['unplanned', 'unbudgeted']],
-  ['Once-off',  ['once_off']],
-  ['Debt',      ['debt']],
-  ['Transfer',  ['transfer']],
-]
 
 const card = { background: 'rgb(var(--c-surface))', border: '0.5px solid rgb(var(--c-border))', borderRadius: 16 }
 const label = { fontFamily: 'Inter, sans-serif', fontSize: 12, color: 'rgb(var(--c-text-3))' }
@@ -63,7 +54,7 @@ export default function ImportPage() {
   const location = useLocation()
   const toast = useToast()
   const { user } = useAuth()
-  const { categories, archivedCategories, accounts, addAccount, updateAccount, refresh, cycle } = useBudget()
+  const { categories, archivedCategories, accounts, addAccount, updateAccount, refresh, cycle, addCategory } = useBudget()
   const fileRef = useRef(null)
 
   const [step, setStep] = useState('pick')        // pick · password · account · review · done
@@ -348,9 +339,9 @@ export default function ImportPage() {
     return archivedUsed.filter(c => recent.has(c.id))
   }, [rows, archivedUsed, cycle])
 
-  const grouped = useMemo(() => TYPE_GROUPS
-    .map(([name, types]) => [name, [...categories, ...archivedUsed].filter(c => types.includes(c.type))])
-    .filter(([, cats]) => cats.length), [categories, archivedUsed])
+  const grouped = useMemo(() => categoryGroups([...categories, ...archivedUsed]), [categories, archivedUsed])
+  // "+ New category" in a line's picker: create it, then pick it for that line
+  const createCategory = async c => (await addCategory(c)).id
 
   // ── Step 4: write it all ─────────────────────────────────────
   async function runImport() {
@@ -611,7 +602,7 @@ export default function ImportPage() {
             <div style={card} className="overflow-hidden">
               {visible.length === 0 && <p className="px-4 py-6 text-center" style={label}>Nothing here</p>}
               {visible.slice(0, shown).map(r => (
-                <ReviewRow key={r.hash} row={r} groups={grouped} onChange={setCategory} />
+                <ReviewRow key={r.hash} row={r} groups={grouped} onChange={setCategory} onCreate={createCategory} />
               ))}
             </div>
             {visible.length > shown && (
@@ -662,7 +653,7 @@ function Stat({ label: text, value, warn }) {
   )
 }
 
-function ReviewRow({ row, groups, onChange }) {
+function ReviewRow({ row, groups, onChange, onCreate }) {
   const isIn = row.direction === 'in'
   const Arrow = isIn ? ArrowDownLeft : ArrowUpRight
   return (
@@ -686,22 +677,13 @@ function ReviewRow({ row, groups, onChange }) {
       ) : (
         <div className="flex items-center gap-2">
           {!row.categoryId && <AlertTriangle size={14} color="rgb(var(--c-warning))" style={{ flexShrink: 0 }} />}
-          <select
-            value={row.categoryId || ''}
-            onChange={e => onChange(row.hash, e.target.value || null)}
-            style={{
-              flex: 1, padding: '8px 10px', background: 'rgb(var(--c-surface-2))', borderRadius: 10, fontSize: 12,
-              border: `0.5px solid ${row.categoryId ? 'rgb(var(--c-border-strong))' : 'rgb(var(--c-warning) / 0.5)'}`,
-              color: row.categoryId ? 'rgb(var(--c-text))' : 'rgb(var(--c-warning))', fontFamily: 'Inter, sans-serif',
-            }}
-          >
-            <option value="">Choose a category…</option>
-            {groups.map(([name, cats]) => (
-              <optgroup key={name} label={name}>
-                {cats.map(c => <option key={c.id} value={c.id}>{c.icon ? `${c.icon} ` : ''}{c.name}</option>)}
-              </optgroup>
-            ))}
-          </select>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <CategoryPicker
+              groups={groups} value={row.categoryId || null} size="sm" tone={row.categoryId ? undefined : 'warning'}
+              onChange={id => onChange(row.hash, id || null)} onCreate={onCreate}
+              title={row.description.slice(0, 40)}
+            />
+          </div>
           {row.via === 'rule' && <span style={{ fontSize: 10, color: 'rgb(var(--c-accent))', flexShrink: 0 }}>rule</span>}
           {row.replaces && <span title="Replaces an expense you added by hand" style={{ fontSize: 10, color: 'rgb(var(--c-accent))', flexShrink: 0 }}>hand-added ✓</span>}
         </div>
