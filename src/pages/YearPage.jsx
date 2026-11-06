@@ -259,7 +259,7 @@ export default function YearPage({ embedded = false }) {
                 return (
                   <div key={type} style={{ border: '0.5px solid rgb(var(--c-border))', borderRadius: 12, overflow: 'hidden' }}>
                     <button onClick={() => setOpenType(open ? null : type)} className="w-full flex items-center justify-between px-3 py-2.5"
-                      style={{ background: '#161616' }}>
+                      style={{ background: 'rgb(var(--c-surface-2))' }}>
                       <span className="flex items-center gap-2" style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: 'rgb(var(--c-text))', fontWeight: 500 }}>
                         <span style={{ width: 8, height: 8, borderRadius: 4, background: TYPE_META[type].colour }} />
                         {TYPE_META[type].label}
